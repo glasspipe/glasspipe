@@ -45,3 +45,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Internal planning docs (kept locally in ~/Desktop/glasspipe-private/)
+/docs/*.pdf
