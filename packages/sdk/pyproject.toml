@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "glasspipe"
+version = "0.0.0"
+description = "The flight recorder for your AI agents."
+readme = "../../README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jonathan" }]
+dependencies = [
+    "sqlalchemy",
+    "httpx",
+    "click",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/glasspipe"]
