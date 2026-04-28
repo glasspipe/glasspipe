@@ -12,8 +12,12 @@
                 aria-label="Cancel">✕</button>
       </div>
       <p class="dimmed modal-subtitle">
-        Secrets detected below are auto-redacted.
-        Confirm what will be public.
+        {% if total_redacted > 0 %}
+          {{ total_redacted }} secret{{ 's' if total_redacted != 1 else '' }} found and auto-redacted.
+          Confirm what will be public.
+        {% else %}
+          No secrets detected. Confirm what will be public.
+        {% endif %}
       </p>
 
       <div class="preview-run-summary">

@@ -2,42 +2,15 @@
 import json
 import os
 import random
-import re
 import string
 import sys
 
 import httpx
 from sqlalchemy import select
 
+from glasspipe.redact import redact_trace
 from glasspipe.storage import Run, Span, get_session
 
-# ---------------------------------------------------------------------------
-# Redaction
-# ---------------------------------------------------------------------------
-
-_KEY_RE = re.compile(r"(key|secret|password|token|auth)", re.IGNORECASE)
-_VAL_RE = re.compile(r"^(sk-|Bearer |eyJ|AKIA|AIza)")
-
-
-def redact(value, _key=None):
-    """Recursively redact secrets from dicts/lists/strings.
-
-    Triggers on key names matching common secret field names, or on string
-    values that look like API keys or auth tokens.
-    """
-    if isinstance(value, dict):
-        return {k: redact(v, _key=k) for k, v in value.items()}
-    if isinstance(value, list):
-        return [redact(item) for item in value]
-    if isinstance(value, str) and value:
-        if (_key and _KEY_RE.search(str(_key))) or _VAL_RE.match(value):
-            return "[REDACTED]"
-    return value
-
-
-# ---------------------------------------------------------------------------
-# Upload
-# ---------------------------------------------------------------------------
 
 def _short_id(length: int = 6) -> str:
     alphabet = string.ascii_letters + string.digits
@@ -81,7 +54,6 @@ def _build_payload(run_id: str) -> dict:
                 "started_at": sp.started_at.isoformat(),
                 "ended_at": sp.ended_at.isoformat() if sp.ended_at else None,
                 "status": sp.status,
-                # Parse JSON strings → dicts so the API stores clean nested JSON
                 "input": _parse(sp.input_json),
                 "output": _parse(sp.output_json),
                 "metadata": _parse(sp.metadata_json),
@@ -92,12 +64,12 @@ def _build_payload(run_id: str) -> dict:
 
 
 def upload_run(run_id: str) -> str:
-    """Package run + spans and return a shareable URL.
+    """Package run + spans, redact secrets, and return a shareable URL.
 
     Behaviour:
-    - GLASSPIPE_SHARE_API=mock (or unset during dev) → local mock, no network call
-    - GLASSPIPE_SHARE_API=<url>                      → POST to that URL
-    - Any connection error or non-2xx response       → silent fallback to mock
+    - GLASSPIPE_SHARE_API=mock  → local mock URL, no network call
+    - GLASSPIPE_SHARE_API=<url> → POST to that URL
+    - Any connection error      → silent fallback to mock
     """
     api_url = os.environ.get(
         "GLASSPIPE_SHARE_API",
@@ -105,6 +77,7 @@ def upload_run(run_id: str) -> str:
     )
 
     payload = _build_payload(run_id)
+    payload = redact_trace(payload)  # sanitize before upload
 
     if api_url == "mock":
         return f"https://glasspipe.dev/t/{_short_id()}"
