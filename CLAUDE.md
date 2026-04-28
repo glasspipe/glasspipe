@@ -21,10 +21,10 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ## Current state
 
-- **Last commit:** `733f3bd` — feat(dashboard): share button, redaction modal, success screen
+- **Last commit:** `e4c63f1` — chore(deploy): point SDK at live Railway API by default
 - **Test suite:** 12/12 green
-- **What works:** @trace, span(), SQLite, auto-instrumentation, local dashboard, share flow with redaction modal and mock URL
-- **Next session:** Public viewer — the hosted page at glasspipe.dev/t/\<id\>
+- **What works:** full stack live — SDK, local dashboard, share flow, public viewer at glasspipe-app-production.up.railway.app
+- **Next session:** Session 9 — examples and README quickstart
 
 ---
 
