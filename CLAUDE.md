@@ -21,10 +21,10 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ## Current state
 
-- **Last commit:** `548f170` — feat(dashboard): waterfall timeline UI with HTMX span detail panel
+- **Last commit:** `733f3bd` — feat(dashboard): share button, redaction modal, success screen
 - **Test suite:** 12/12 green
-- **What works:** @trace, span(), SQLite storage, auto-instrumentation, local dashboard at localhost:3000
-- **Next session:** Share service — click Share → mandatory redaction review → public URL at glasspipe.dev/t/\<id\>
+- **What works:** @trace, span(), SQLite, auto-instrumentation, local dashboard, share flow with redaction modal and mock URL
+- **Next session:** Public viewer — the hosted page at glasspipe.dev/t/\<id\>
 
 ---
 
