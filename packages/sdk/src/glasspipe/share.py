@@ -99,7 +99,10 @@ def upload_run(run_id: str) -> str:
     - GLASSPIPE_SHARE_API=<url>                      → POST to that URL
     - Any connection error or non-2xx response       → silent fallback to mock
     """
-    api_url = os.environ.get("GLASSPIPE_SHARE_API", "mock")
+    api_url = os.environ.get(
+        "GLASSPIPE_SHARE_API",
+        "https://glasspipe-app-production.up.railway.app/v1/share",
+    )
 
     payload = _build_payload(run_id)
 
