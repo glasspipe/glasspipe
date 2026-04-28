@@ -50,8 +50,8 @@ glasspipe/                          ← repo root, ~/Desktop/glasspipe
     │       ├── storage.py          ← SQLAlchemy models + DB write functions
     │       ├── redact.py           ← secret detection (stub until session 10)
     │       ├── share.py            ← upload to api.glasspipe.dev (stub until session 12)
-    │       ├── cli.py              ← click CLI (stub until later)
-    │       └── instruments/        ← auto-patch openai, anthropic (stub until session 4-5)
+    │       ├── cli.py              ← click CLI (`glasspipe dashboard` command)
+    │       └── instruments/        ← auto-patch openai, anthropic (implemented session 3)
     ├── dashboard/                  ← local Flask app, port 5050
     │   ├── app.py
     │   ├── requirements.txt
@@ -191,7 +191,7 @@ pip install -e "packages/sdk[dev]"
 pytest packages/sdk/tests/ -v
 
 # run dashboard
-python packages/dashboard/app.py   # → localhost:5050
+glasspipe dashboard   # → localhost:3000
 
 # run API
 python packages/api/app.py         # → localhost:5051
