@@ -11,6 +11,8 @@ from glasspipe import storage
 _current_run_id: ContextVar[str | None] = ContextVar("glasspipe_run_id", default=None)
 _current_span_id: ContextVar[str | None] = ContextVar("glasspipe_span_id", default=None)
 
+_patched = False
+
 
 def _new_id() -> str:
     return nanoid_generate(size=12)
@@ -45,6 +47,11 @@ def trace(fn=None, *, name: str | None = None):
 def _make_wrapper(fn, run_name: str):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
+        global _patched
+        if not _patched:
+            _patched = True
+            from glasspipe.instruments import patch_all
+            patch_all()
         run_id = _new_id()
         _safe_write(storage.write_run_start, run_id, run_name)
         token = _current_run_id.set(run_id)
