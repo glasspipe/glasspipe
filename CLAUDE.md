@@ -8,7 +8,7 @@
 ## What this project is
 
 GlassPipe is a Python observability tool — "the flight recorder for AI agents."
-Built by Jonathan as a 30-day portfolio project (started April 27, 2026).
+Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 **Tagline:** "See what your AI agent actually did. Share the trace in one click."
 
@@ -19,12 +19,12 @@ Built by Jonathan as a 30-day portfolio project (started April 27, 2026).
 
 ---
 
-## Current state (update this section each day)
+## Current state
 
-- **Day:** 1 complete, Day 2 starting
-- **Last commit:** `6b76815` — docs: add landing page mockup and docs scaffolding
-- **What works:** virtualenv, editable install, stub `@trace` (no-op), Flask stubs on :5050 and :5051
-- **What's next:** Day 2 — real `@trace` decorator + SQLite storage + `span()` context manager
+- **Last commit:** `29a402f` — feat(sdk): auto-instrument OpenAI and Anthropic SDKs
+- **Test suite:** 12/12 green
+- **What works:** @trace, span(), SQLite storage, auto-instrumentation for OpenAI + Anthropic
+- **Next session:** Dashboard — waterfall timeline UI (packages/dashboard/)
 
 ---
 
@@ -48,10 +48,10 @@ glasspipe/                          ← repo root, ~/Desktop/glasspipe
     │       ├── __init__.py         ← exports: trace, span
     │       ├── trace.py            ← @trace decorator + span() context manager
     │       ├── storage.py          ← SQLAlchemy models + DB write functions
-    │       ├── redact.py           ← secret detection (stub until Day 10)
-    │       ├── share.py            ← upload to api.glasspipe.dev (stub until Day 12)
+    │       ├── redact.py           ← secret detection (stub until session 10)
+    │       ├── share.py            ← upload to api.glasspipe.dev (stub until session 12)
     │       ├── cli.py              ← click CLI (stub until later)
-    │       └── instruments/        ← auto-patch openai, anthropic (stub until Day 4-5)
+    │       └── instruments/        ← auto-patch openai, anthropic (stub until session 4-5)
     ├── dashboard/                  ← local Flask app, port 5050
     │   ├── app.py
     │   ├── requirements.txt
@@ -100,7 +100,7 @@ glasspipe/                          ← repo root, ~/Desktop/glasspipe
 ❌ Browser extension
 ```
 
-If a feature isn't in today's day plan, ASK before adding it.
+If a feature isn't in the current session plan, ASK before adding it.
 
 ---
 
@@ -248,7 +248,7 @@ We are the **fastest, lowest-friction path** from broken agent to shareable trac
 
 ## Jonathan's working style
 
-- Pastes full day-N prompts from Claude (claude.ai) into Claude Code
+- Pastes full session-N prompts from Claude (claude.ai) into Claude Code
 - Reads every diff before approving — never just says "yes" blindly
 - Asks "why did you do this?" for anything non-obvious
 - Git checkpoint before each major change
