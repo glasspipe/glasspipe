@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ run.name }}{% endblock %}
+{% block content %}
+
+<div class="run-header">
+  <a href="/" class="back">← All runs</a>
+  <div class="run-title-row">
+    <h1 class="mono">{{ run.name }}</h1>
+    {% if run.status == 'ok' %}
+      <span class="badge badge-ok">ok</span>
+    {% elif run.status == 'error' %}
+      <span class="badge badge-error">error</span>
+    {% else %}
+      <span class="badge badge-running">running</span>
+    {% endif %}
+  </div>
+  <div class="run-meta">
+    <span class="mono dimmed">{{ run.id }}</span>
+    <span class="sep dimmed">·</span>
+    <span class="dimmed">{{ run.started_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</span>
+    <span class="sep dimmed">·</span>
+    <span class="mono">{{ run_duration_ms }}ms total</span>
+    {% if run.error_message %}
+    <span class="sep dimmed">·</span>
+    <span class="error-msg">{{ run.error_message }}</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="waterfall-layout">
+
+  <!-- Left: waterfall -->
+  <div class="waterfall-pane">
+
+    <div class="ruler">
+      <span>0</span>
+      <span>{{ (run_duration_ms * 0.25)|round|int }}ms</span>
+      <span>{{ (run_duration_ms * 0.5)|round|int }}ms</span>
+      <span>{{ (run_duration_ms * 0.75)|round|int }}ms</span>
+      <span>{{ run_duration_ms }}ms</span>
+    </div>
+
+    {% for sp in spans %}
+    <div class="span-row">
+      <div class="span-label mono" title="{{ sp.name }}">{{ sp.name }}</div>
+      <div class="span-track">
+        <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }}"
+             style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+             hx-get="/span/{{ sp.id }}"
+             hx-target="#detail-panel"
+             hx-swap="innerHTML"
+             title="{{ sp.name }} · {{ sp.duration_ms }}ms">
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty">No spans recorded yet.</p>
+    {% endfor %}
+
+  </div>
+
+  <!-- Right: detail panel -->
+  <div id="detail-panel" class="detail-pane">
+    <p class="detail-hint dimmed">← Click a span to inspect it</p>
+  </div>
+
+</div>
+
+{% endblock %}

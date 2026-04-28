@@ -1,0 +1,62 @@
+<div class="detail-inner">
+
+  <div class="detail-header">
+    <span class="kind-dot {{ 'kind-error' if span.status == 'error' else 'kind-' + span.kind }}">●</span>
+    <span class="mono">{{ span.name }}</span>
+    <span class="badge badge-{{ span.status }}">{{ span.status }}</span>
+  </div>
+
+  <dl class="detail-grid">
+    <dt>kind</dt>
+    <dd class="mono">{{ span.kind }}</dd>
+
+    <dt>span id</dt>
+    <dd class="mono dimmed">{{ span.id }}</dd>
+
+    <dt>duration</dt>
+    <dd class="mono">
+      {% if span.ended_at and span.started_at %}
+        {{ ((span.ended_at - span.started_at).total_seconds() * 1000)|round(1) }}ms
+      {% else %}
+        running…
+      {% endif %}
+    </dd>
+
+    {% if metadata %}
+      {% if metadata.model %}
+      <dt>model</dt>
+      <dd class="mono">{{ metadata.model }}</dd>
+      {% endif %}
+
+      {% if metadata.prompt_tokens is not none %}
+      <dt>tokens</dt>
+      <dd class="mono">{{ metadata.prompt_tokens }} in / {{ metadata.completion_tokens }} out</dd>
+      {% endif %}
+
+      {% if metadata.cost_usd is not none %}
+      <dt>cost</dt>
+      <dd class="mono">${{ "%.6f" | format(metadata.cost_usd) }}</dd>
+      {% endif %}
+
+      {% if metadata.latency_ms is not none %}
+      <dt>latency</dt>
+      <dd class="mono">{{ metadata.latency_ms }}ms</dd>
+      {% endif %}
+    {% endif %}
+  </dl>
+
+  {% if input_data is not none %}
+  <div class="detail-section">
+    <div class="detail-section-label">input</div>
+    <pre class="detail-json">{{ input_data | tojson(indent=2) }}</pre>
+  </div>
+  {% endif %}
+
+  {% if output_data is not none %}
+  <div class="detail-section">
+    <div class="detail-section-label">output</div>
+    <pre class="detail-json">{{ output_data | tojson(indent=2) }}</pre>
+  </div>
+  {% endif %}
+
+</div>

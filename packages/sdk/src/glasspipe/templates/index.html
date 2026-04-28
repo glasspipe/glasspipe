@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Runs{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Recent Runs</h1>
+  <span class="live-badge">● live</span>
+</div>
+
+<table class="run-table">
+  <thead>
+    <tr>
+      <th>Run ID</th>
+      <th>Function</th>
+      <th>Started</th>
+      <th>Duration</th>
+      <th>Spans</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody
+    hx-get="/"
+    hx-trigger="every 5s"
+    hx-select="tbody"
+    hx-swap="outerHTML">
+    {% for run in runs %}
+    <tr class="run-row" onclick="window.location='/run/{{ run.id }}'">
+      <td class="mono dimmed">{{ run.id[:8] }}…</td>
+      <td class="mono">{{ run.name }}</td>
+      <td class="dimmed">{{ run.started_at.strftime('%H:%M:%S') }}</td>
+      <td class="mono">{{ run.duration_ms }}ms</td>
+      <td class="dimmed">{{ run.span_count }}</td>
+      <td>
+        {% if run.status == 'ok' %}
+          <span class="badge badge-ok">ok</span>
+        {% elif run.status == 'error' %}
+          <span class="badge badge-error">error</span>
+        {% else %}
+          <span class="badge badge-running">running</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="6" class="empty">
+        No runs yet — decorate a function with <span class="mono accent">@trace</span> and run it.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
