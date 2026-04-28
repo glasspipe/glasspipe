@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ run.name }} — GlassPipe trace</title>
+  <meta name="description" content="AI agent trace for {{ run.name }} — {{ spans|length }} spans, {{ run_duration_ms }}ms. Shared via GlassPipe.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ---- DESIGN TOKENS ---- */
+    :root {
+      --bg:       #080b10;
+      --bg-2:     #0d1117;
+      --bg-3:     #131920;
+      --border:   #1e2a38;
+      --border-2: #263545;
+      --text:     #e2eaf4;
+      --text-2:   #7a95b0;
+      --text-3:   #3d5570;
+      --accent:   #00c2ff;
+      --green:    #00e5a0;
+      --orange:   #ff9f40;
+      --red:      #ff4d6a;
+      --purple:   #a78bfa;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* Grid texture — matches landing mockup */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,194,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,194,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- UTILITIES ---- */
+    .mono   { font-family: 'DM Mono', monospace; }
+    .dimmed { color: var(--text-2); }
+    .accent { color: var(--accent); }
+    .sep    { margin: 0 8px; color: var(--text-3); }
+
+    /* ---- TOPBAR ---- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 52px;
+      background: rgba(8,11,16,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 10px;
+    }
+    .topbar-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .topbar-logo .accent { color: var(--accent); }
+    .topbar-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .topbar-cta {
+      margin-left: auto;
+      padding: 6px 16px;
+      border: 1px solid rgba(0,194,255,0.3);
+      background: rgba(0,194,255,0.07);
+      color: var(--accent);
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+    .topbar-cta:hover {
+      background: rgba(0,194,255,0.14);
+      border-color: rgba(0,194,255,0.6);
+    }
+
+    /* ---- LAYOUT ---- */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 24px 0;
+    }
+
+    /* ---- RUN CARD ---- */
+    .run-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .run-card-left {}
+    .run-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .run-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .run-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 4px;
+    }
+    .run-share-url {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+    .run-copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-2);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+      transition: color 0.1s, background 0.1s;
+      vertical-align: middle;
+    }
+    .run-copy-btn:hover { color: var(--accent); background: rgba(0,194,255,0.08); }
+
+    /* ---- BADGES ---- */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .badge-ok      { background: rgba(0,229,160,0.12);  color: var(--green);  border: 1px solid rgba(0,229,160,0.25); }
+    .badge-error   { background: rgba(255,77,106,0.12); color: var(--red);    border: 1px solid rgba(255,77,106,0.25); }
+    .badge-running { background: rgba(0,194,255,0.12);  color: var(--accent); border: 1px solid rgba(0,194,255,0.25); }
+
+    /* ---- VIEWER LAYOUT ---- */
+    .viewer-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ---- WATERFALL PANE ---- */
+    .waterfall-pane {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .ruler {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 12px 5px calc(168px + 12px);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-2);
+      background: var(--bg-3);
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.02em;
+    }
+
+    .span-row {
+      display: flex;
+      align-items: center;
+      height: 38px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .span-row:last-child { border-bottom: none; }
+    .span-row:hover { background: rgba(255,255,255,0.02); }
+
+    .span-label {
+      width: 168px;
+      flex-shrink: 0;
+      padding: 0 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-right: 1px solid var(--border);
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .span-track {
+      flex: 1;
+      position: relative;
+      height: 100%;
+    }
+
+    .span-bar {
+      position: absolute;
+      top: 8px;
+      height: calc(100% - 16px);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: filter 0.12s, transform 0.1s, outline 0.1s;
+      min-width: 4px;
+    }
+    .span-bar:hover { filter: brightness(1.25); transform: scaleY(1.1); }
+    .span-bar.active {
+      filter: brightness(1.3);
+      outline: 2px solid rgba(255,255,255,0.25);
+      outline-offset: 2px;
+    }
+
+    /* Span kind colours + glow */
+    .kind-llm    { background: var(--accent); box-shadow: 0 0 10px rgba(0,194,255,0.35); }
+    .kind-tool   { background: var(--orange); box-shadow: 0 0 10px rgba(255,159,64,0.35); }
+    .kind-custom { background: var(--green);  box-shadow: 0 0 10px rgba(0,229,160,0.35); }
+    .kind-agent  { background: var(--purple); box-shadow: 0 0 10px rgba(167,139,250,0.35); }
+    .kind-error  { background: var(--red);    box-shadow: 0 0 10px rgba(255,77,106,0.35); }
+
+    /* ---- DETAIL PANEL ---- */
+    .detail-pane {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 180px;
+      position: sticky;
+      top: 68px;
+    }
+    .detail-hint { color: var(--text-2); font-size: 12px; }
+
+    /* Detail content — rendered by JS */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .kind-dot { font-size: 9px; }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 5px 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .detail-grid dt {
+      color: var(--text-2);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      align-self: start;
+      padding-top: 1px;
+    }
+    .detail-grid dd {
+      font-family: 'DM Mono', monospace;
+      overflow-wrap: break-word;
+      font-size: 12px;
+    }
+    .detail-section { margin-top: 10px; }
+    .detail-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-2);
+      margin-bottom: 5px;
+    }
+    .detail-json {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      max-height: 200px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .detail-json::-webkit-scrollbar { width: 4px; }
+    .detail-json::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+    .redacted { color: var(--orange); }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 60px;
+      border-top: 1px solid var(--border);
+      padding: 40px 32px 48px;
+    }
+    .footer-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-brand { flex: 1; min-width: 200px; }
+    .footer-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .footer-logo .accent { color: var(--accent); }
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.4;
+    }
+    .footer-tagline a {
+      color: var(--text-2);
+      text-decoration: none;
+    }
+    .footer-tagline a:hover { color: var(--text); }
+    .footer-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border: 1px solid rgba(0,229,160,0.35);
+      background: rgba(0,229,160,0.07);
+      color: var(--green);
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+    .footer-cta:hover {
+      background: rgba(0,229,160,0.14);
+      border-color: rgba(0,229,160,0.6);
+    }
+
+    /* ---- EMPTY WATERFALL ---- */
+    .empty {
+      padding: 32px;
+      color: var(--text-2);
+      font-size: 13px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Topbar ─────────────────────────────────────────── -->
+  <header class="topbar">
+    <a class="topbar-logo" href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">
+      glass<span class="accent">pipe</span>
+    </a>
+    <span class="topbar-sub">flight recorder</span>
+    <a class="topbar-cta"
+       href="https://github.com/glasspipe/glasspipe"
+       target="_blank" rel="noopener">
+      Trace your own →
+    </a>
+  </header>
+
+  <div class="container">
+
+    <!-- ── Run summary card ───────────────────────────────── -->
+    <div class="run-card">
+      <div class="run-card-left">
+        <div class="run-card-header">
+          <h1 class="run-name">{{ run.name }}</h1>
+          {% if run.status == 'ok' %}
+            <span class="badge badge-ok">ok</span>
+          {% elif run.status == 'error' %}
+            <span class="badge badge-error">error</span>
+          {% else %}
+            <span class="badge badge-running">running</span>
+          {% endif %}
+        </div>
+        <div class="run-meta">
+          <span class="mono">{{ run_duration_ms }}ms</span>
+          <span class="sep">·</span>
+          <span>{{ spans|length }} span{{ 's' if spans|length != 1 else '' }}</span>
+          <span class="sep">·</span>
+          <span>shared {{ shared_ago }}</span>
+          {% if run.error_message %}
+            <span class="sep">·</span>
+            <span style="color: var(--red); font-family: 'DM Mono', monospace; font-size: 12px;">
+              {{ run.error_message }}
+            </span>
+          {% endif %}
+        </div>
+        <div>
+          <span class="run-share-url mono">glasspipe.dev/t/{{ run.id[:6] if run.id else '' }}</span>
+          <button class="run-copy-btn mono"
+                  onclick="navigator.clipboard.writeText(window.location.href).then(()=>{this.textContent='copied';setTimeout(()=>this.textContent='copy',2000)})">
+            copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Waterfall + detail panel ──────────────────────── -->
+    <div class="viewer-layout">
+
+      <div class="waterfall-pane">
+        <div class="ruler">
+          <span>0</span>
+          <span>{{ (run_duration_ms * 0.25)|round|int }}ms</span>
+          <span>{{ (run_duration_ms * 0.5)|round|int }}ms</span>
+          <span>{{ (run_duration_ms * 0.75)|round|int }}ms</span>
+          <span>{{ run_duration_ms }}ms</span>
+        </div>
+
+        {% for sp in spans %}
+        <div class="span-row">
+          <div class="span-label mono" title="{{ sp.name }}">{{ sp.name }}</div>
+          <div class="span-track">
+            <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }}"
+                 style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+                 data-span-id="{{ sp.id }}"
+                 title="{{ sp.name }} · {{ sp.duration_ms }}ms">
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <p class="empty">No spans recorded for this run.</p>
+        {% endfor %}
+      </div>
+
+      <div id="detail-panel" class="detail-pane">
+        <p class="detail-hint">← Click a span to inspect it</p>
+      </div>
+
+    </div>
+
+  </div><!-- /container -->
+
+  <!-- ── Footer CTA ────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">glass<span class="accent">pipe</span></div>
+        <p class="footer-tagline">
+          The flight recorder for AI agents.<br>
+          <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">
+            github.com/glasspipe/glasspipe
+          </a>
+        </p>
+      </div>
+      <a class="footer-cta"
+         href="https://github.com/glasspipe/glasspipe"
+         target="_blank" rel="noopener">
+        Install free →
+      </a>
+    </div>
+  </footer>
+
+  <!-- ── Span data + click interaction ─────────────────── -->
+  <script>
+    const SPANS = {{ spans_json | safe }};
+    let activeSpanId = null;
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatJson(obj) {
+      if (obj === null || obj === undefined) {
+        return '<span style="color:var(--text-3)">null</span>';
+      }
+      let raw = JSON.stringify(obj, null, 2);
+      // HTML-escape
+      raw = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // Highlight [REDACTED] in orange — trust signal that secrets were stripped
+      raw = raw.replace(
+        /&quot;\[REDACTED\]&quot;/g,
+        '<span class="redacted">&quot;[REDACTED]&quot;</span>'
+      );
+      return raw;
+    }
+
+    function kindClass(kind, status) {
+      return status === 'error' ? 'kind-error' : 'kind-' + kind;
+    }
+
+    function renderDetail(sp) {
+      const kc = kindClass(sp.kind, sp.status);
+      const statusCls = 'badge-' + (sp.status || 'ok');
+
+      let html = `
+        <div class="detail-header">
+          <span class="kind-dot ${kc}" style="font-size:10px">●</span>
+          <span class="mono">${esc(sp.name)}</span>
+          <span class="badge ${statusCls}">${esc(sp.status || 'ok')}</span>
+        </div>
+        <dl class="detail-grid">
+          <dt>kind</dt>
+          <dd class="mono">${esc(sp.kind)}</dd>
+          <dt>duration</dt>
+          <dd class="mono">${sp.duration_ms}ms</dd>`;
+
+      if (sp.metadata) {
+        const m = sp.metadata;
+        if (m.model)
+          html += `<dt>model</dt><dd class="mono">${esc(m.model)}</dd>`;
+        if (m.prompt_tokens != null)
+          html += `<dt>tokens</dt><dd class="mono">${m.prompt_tokens} in / ${m.completion_tokens} out</dd>`;
+        if (m.cost_usd != null)
+          html += `<dt>cost</dt><dd class="mono">$${Number(m.cost_usd).toFixed(6)}</dd>`;
+        if (m.latency_ms != null)
+          html += `<dt>latency</dt><dd class="mono">${m.latency_ms}ms</dd>`;
+      }
+
+      html += '</dl>';
+
+      if (sp.input !== null && sp.input !== undefined) {
+        html += `
+          <div class="detail-section">
+            <div class="detail-section-label">input</div>
+            <pre class="detail-json">${formatJson(sp.input)}</pre>
+          </div>`;
+      }
+      if (sp.output !== null && sp.output !== undefined) {
+        html += `
+          <div class="detail-section">
+            <div class="detail-section-label">output</div>
+            <pre class="detail-json">${formatJson(sp.output)}</pre>
+          </div>`;
+      }
+
+      return html;
+    }
+
+    document.querySelectorAll('.span-bar').forEach(bar => {
+      bar.addEventListener('click', function () {
+        const id = this.dataset.spanId;
+        const panel = document.getElementById('detail-panel');
+
+        // Deactivate previous bar
+        document.querySelectorAll('.span-bar.active')
+          .forEach(b => b.classList.remove('active'));
+
+        if (activeSpanId === id) {
+          // Toggle off
+          activeSpanId = null;
+          panel.innerHTML = '<p class="detail-hint">← Click a span to inspect it</p>';
+          return;
+        }
+
+        activeSpanId = id;
+        this.classList.add('active');
+        panel.innerHTML = renderDetail(SPANS[id]);
+      });
+    });
+  </script>
+
+</body>
+</html>
