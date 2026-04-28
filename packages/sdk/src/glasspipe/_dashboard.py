@@ -135,9 +135,17 @@ def span_detail(span_id):
         if sp is None:
             abort(404)
 
-        input_data = json.loads(sp.input_json) if sp.input_json else None
-        output_data = json.loads(sp.output_json) if sp.output_json else None
-        metadata = json.loads(sp.metadata_json) if sp.metadata_json else None
+        def _safe_parse(s):
+            if not s:
+                return None
+            try:
+                return json.loads(s)
+            except Exception:
+                return s  # return raw string rather than 500
+
+        input_data = _safe_parse(sp.input_json)
+        output_data = _safe_parse(sp.output_json)
+        metadata = _safe_parse(sp.metadata_json)
 
     return render_template(
         "span_detail.html",

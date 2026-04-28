@@ -443,7 +443,7 @@
           {% endif %}
         </div>
         <div>
-          <span class="run-share-url mono">glasspipe.dev/t/{{ run.id[:6] if run.id else '' }}</span>
+          <span class="run-share-url mono">{{ share_url }}</span>
           <button class="run-copy-btn mono"
                   onclick="navigator.clipboard.writeText(window.location.href).then(()=>{this.textContent='copied';setTimeout(()=>this.textContent='copy',2000)})">
             copy
