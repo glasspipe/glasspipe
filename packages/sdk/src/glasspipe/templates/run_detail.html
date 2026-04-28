@@ -13,6 +13,10 @@
     {% else %}
       <span class="badge badge-running">running</span>
     {% endif %}
+    <button class="btn-share"
+            hx-get="/share/preview/{{ run.id }}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML">Share</button>
   </div>
   <div class="run-meta">
     <span class="mono dimmed">{{ run.id }}</span>
@@ -65,5 +69,7 @@
   </div>
 
 </div>
+
+<div id="modal-container"></div>
 
 {% endblock %}

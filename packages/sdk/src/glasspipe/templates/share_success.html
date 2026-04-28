@@ -1,0 +1,35 @@
+<div class="modal-overlay">
+  <div class="modal-card modal-card--success">
+
+    <div class="modal-header">
+      <div class="modal-title-row">
+        <h2>Your trace is live</h2>
+        <button class="modal-close"
+                hx-get="/share/cancel"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                aria-label="Close">✕</button>
+      </div>
+      <p class="dimmed modal-subtitle">
+        Anyone with this link can view the trace. No account required.
+      </p>
+    </div>
+
+    <div class="share-url-box mono">{{ url }}</div>
+
+    <div class="modal-actions modal-actions--success">
+      <button class="btn-copy"
+              onclick="navigator.clipboard.writeText('{{ url }}').then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy link', 2000); })">
+        Copy link
+      </button>
+      <a href="{{ url }}" target="_blank" rel="noopener" class="btn-view">
+        View trace →
+      </a>
+      <button class="btn-cancel"
+              hx-get="/share/cancel"
+              hx-target="#modal-container"
+              hx-swap="innerHTML">Close</button>
+    </div>
+
+  </div>
+</div>

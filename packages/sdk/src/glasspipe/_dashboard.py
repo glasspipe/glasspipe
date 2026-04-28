@@ -1,9 +1,10 @@
-"""GlassPipe local dashboard — Flask app (3 routes)."""
+"""GlassPipe local dashboard — Flask app."""
 import json
 from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, abort, render_template
+from markupsafe import Markup, escape
 from sqlalchemy import func, select
 
 from glasspipe.storage import Run, Span, get_session, init_db
@@ -23,6 +24,25 @@ def _utcnow() -> datetime:
 
 def _ms(delta) -> float:
     return delta.total_seconds() * 1000
+
+
+# ---------------------------------------------------------------------------
+# Jinja filters
+# ---------------------------------------------------------------------------
+
+@app.template_filter("redacted_json")
+def redacted_json_filter(obj) -> Markup:
+    """Render a (post-redact) Python object as indented JSON with [REDACTED]
+    values highlighted in orange. Safe for use inside <pre> tags."""
+    if obj is None:
+        return Markup('<span class="dimmed">null</span>')
+    raw = json.dumps(obj, indent=2)
+    safe = str(escape(raw))
+    safe = safe.replace(
+        '"[REDACTED]"',
+        '<span class="redacted">&quot;[REDACTED]&quot;</span>',
+    )
+    return Markup(safe)
 
 
 # ---------------------------------------------------------------------------
@@ -126,3 +146,54 @@ def span_detail(span_id):
         output_data=output_data,
         metadata=metadata,
     )
+
+
+@app.get("/share/preview/<run_id>")
+def share_preview(run_id):
+    from glasspipe.share import redact
+
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None:
+            abort(404)
+
+        spans = session.execute(
+            select(Span).where(Span.run_id == run_id).order_by(Span.started_at)
+        ).scalars().all()
+
+        now = _utcnow()
+        run_end = run.ended_at or now
+        run_duration_ms = round(_ms(run_end - run.started_at))
+
+        span_previews = []
+        for sp in spans:
+            sp_end = sp.ended_at or now
+            span_previews.append({
+                "name": sp.name,
+                "kind": sp.kind,
+                "status": sp.status,
+                "duration_ms": round(_ms(sp_end - sp.started_at), 1),
+                "input": redact(json.loads(sp.input_json)) if sp.input_json else None,
+                "output": redact(json.loads(sp.output_json)) if sp.output_json else None,
+            })
+
+    return render_template(
+        "share_preview.html",
+        run=run,
+        run_duration_ms=run_duration_ms,
+        span_count=len(span_previews),
+        spans=span_previews,
+    )
+
+
+@app.get("/share/cancel")
+def share_cancel():
+    return ""
+
+
+@app.post("/share/confirm/<run_id>")
+def share_confirm(run_id):
+    from glasspipe.share import upload_run
+
+    url = upload_run(run_id)
+    return render_template("share_success.html", url=url)

@@ -1,0 +1,87 @@
+<div class="modal-overlay">
+  <div class="modal-card">
+
+    <!-- Pinned header -->
+    <div class="modal-header">
+      <div class="modal-title-row">
+        <h2>Review before sharing</h2>
+        <button class="modal-close"
+                hx-get="/share/cancel"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
+                aria-label="Cancel">✕</button>
+      </div>
+      <p class="dimmed modal-subtitle">
+        Secrets detected below are auto-redacted.
+        Confirm what will be public.
+      </p>
+
+      <div class="preview-run-summary">
+        <span class="mono">{{ run.name }}</span>
+        <span class="sep dimmed">·</span>
+        <span class="dimmed">{{ run_duration_ms }}ms</span>
+        <span class="sep dimmed">·</span>
+        <span class="dimmed">{{ span_count }} span{{ 's' if span_count != 1 else '' }}</span>
+        <span class="sep dimmed">·</span>
+        {% if run.status == 'ok' %}
+          <span class="badge badge-ok">ok</span>
+        {% elif run.status == 'error' %}
+          <span class="badge badge-error">error</span>
+        {% else %}
+          <span class="badge badge-running">running</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Scrollable span list -->
+    <div class="preview-spans-scroll">
+      {% for sp in spans %}
+      <div class="preview-span">
+        <div class="preview-span-header">
+          <span class="mono preview-span-name">{{ sp.name }}</span>
+          <span class="badge badge-kind kind-{{ 'error' if sp.status == 'error' else sp.kind }}">
+            {{ sp.kind }}
+          </span>
+          <span class="mono dimmed">{{ sp.duration_ms }}ms</span>
+          {% if sp.status == 'error' %}
+            <span class="badge badge-error">error</span>
+          {% endif %}
+        </div>
+
+        {% if sp.input is not none %}
+        <div class="preview-json-block">
+          <div class="preview-json-label">input</div>
+          <pre class="preview-json">{{ sp.input | redacted_json }}</pre>
+        </div>
+        {% endif %}
+
+        {% if sp.output is not none %}
+        <div class="preview-json-block">
+          <div class="preview-json-label">output</div>
+          <pre class="preview-json">{{ sp.output | redacted_json }}</pre>
+        </div>
+        {% endif %}
+
+        {% if sp.input is none and sp.output is none %}
+        <p class="dimmed preview-no-data">no input/output recorded</p>
+        {% endif %}
+      </div>
+      {% else %}
+      <p class="dimmed empty">No spans recorded for this run.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Pinned action row -->
+    <div class="modal-actions">
+      <button class="btn-cancel"
+              hx-get="/share/cancel"
+              hx-target="#modal-container"
+              hx-swap="innerHTML">Cancel</button>
+      <button class="btn-confirm"
+              hx-post="/share/confirm/{{ run.id }}"
+              hx-target="#modal-container"
+              hx-swap="innerHTML">Share publicly →</button>
+    </div>
+
+  </div>
+</div>

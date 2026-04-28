@@ -1,10 +1,34 @@
 """Client for the hosted share service. Mocked until Railway wiring session."""
 import random
+import re
 import string
 
 from sqlalchemy import select
 
 from glasspipe.storage import Run, Span, get_session
+
+# ---------------------------------------------------------------------------
+# Redaction
+# ---------------------------------------------------------------------------
+
+_KEY_RE = re.compile(r"(key|secret|password|token|auth)", re.IGNORECASE)
+_VAL_RE = re.compile(r"^(sk-|Bearer |eyJ|AKIA|AIza)")
+
+
+def redact(value, _key=None):
+    """Recursively redact secrets from dicts/lists/strings.
+
+    Triggers on key names matching common secret field names, or on string
+    values that look like API keys or auth tokens.
+    """
+    if isinstance(value, dict):
+        return {k: redact(v, _key=k) for k, v in value.items()}
+    if isinstance(value, list):
+        return [redact(item) for item in value]
+    if isinstance(value, str) and value:
+        if (_key and _KEY_RE.search(str(_key))) or _VAL_RE.match(value):
+            return "[REDACTED]"
+    return value
 
 
 def _short_id(length: int = 6) -> str:

@@ -339,3 +339,237 @@ body::before {
 .detail-json::-webkit-scrollbar { width: 4px; }
 .detail-json::-webkit-scrollbar-track { background: transparent; }
 .detail-json::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+/* ---- SHARE BUTTON ---- */
+.btn-share {
+  padding: 4px 14px;
+  border: 1px solid rgba(0,194,255,0.35);
+  background: rgba(0,194,255,0.07);
+  color: var(--accent);
+  border-radius: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  letter-spacing: 0.02em;
+}
+.btn-share:hover {
+  background: rgba(0,194,255,0.15);
+  border-color: rgba(0,194,255,0.65);
+}
+
+/* ---- MODAL OVERLAY ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,11,16,0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* ---- MODAL CARD — flex column with pinned top/bottom ---- */
+.modal-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  width: 620px;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;   /* card itself does not scroll */
+}
+
+/* Pinned header (run summary + title) */
+.modal-header {
+  flex-shrink: 0;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.modal-title-row h2 { font-size: 17px; font-weight: 500; }
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.1s, background 0.1s;
+}
+.modal-close:hover { color: var(--text); background: var(--bg-3); }
+
+.modal-subtitle { font-size: 12px; margin-bottom: 12px; }
+
+.preview-run-summary {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+/* Scrollable span list — min-height:0 lets flex shrink it */
+.preview-spans-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+.preview-spans-scroll::-webkit-scrollbar { width: 4px; }
+.preview-spans-scroll::-webkit-scrollbar-track { background: transparent; }
+.preview-spans-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+.preview-span {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.preview-span:last-child { border-bottom: none; }
+
+.preview-span-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.preview-span-name { font-size: 13px; }
+
+.badge-kind {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+/* reuse kind colours for badges */
+.badge-kind.kind-llm    { background: rgba(0,194,255,0.12);  color: var(--accent); }
+.badge-kind.kind-tool   { background: rgba(255,159,64,0.12); color: var(--orange); }
+.badge-kind.kind-custom { background: rgba(0,229,160,0.12);  color: var(--green);  }
+.badge-kind.kind-agent  { background: rgba(167,139,250,0.12);color: var(--purple); }
+.badge-kind.kind-error  { background: rgba(255,77,106,0.12); color: var(--red);    }
+
+.preview-json-block { margin-top: 6px; }
+
+.preview-json-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.preview-json {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+.preview-json::-webkit-scrollbar { width: 4px; }
+.preview-json::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+.preview-no-data { font-size: 12px; margin-top: 4px; }
+
+/* Pinned action row */
+.modal-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+}
+.modal-actions--success { justify-content: flex-start; }
+
+/* Action buttons */
+.btn-cancel {
+  padding: 7px 16px;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text-2);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.btn-cancel:hover { color: var(--text); border-color: var(--text-2); }
+
+.btn-confirm {
+  padding: 7px 18px;
+  border: none;
+  background: var(--accent);
+  color: #080b10;
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.btn-confirm:hover { opacity: 0.88; }
+
+/* ---- SHARE SUCCESS ---- */
+.modal-card--success { max-width: 500px; }
+
+.share-url-box {
+  margin: 8px 24px 0;
+  padding: 12px 16px;
+  background: var(--bg-3);
+  border: 1px solid rgba(0,194,255,0.3);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 13px;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.btn-copy {
+  padding: 7px 16px;
+  border: 1px solid rgba(0,194,255,0.35);
+  background: rgba(0,194,255,0.08);
+  color: var(--accent);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.btn-copy:hover { background: rgba(0,194,255,0.16); }
+
+.btn-view {
+  padding: 7px 16px;
+  border: 1px solid rgba(0,229,160,0.35);
+  background: rgba(0,229,160,0.08);
+  color: var(--green);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.btn-view:hover { background: rgba(0,229,160,0.16); }
+
+/* ---- REDACTED values — orange ---- */
+.redacted { color: var(--orange); font-style: normal; }
