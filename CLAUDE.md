@@ -21,10 +21,10 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ## Current state
 
-- **Last commit:** `29a402f` — feat(sdk): auto-instrument OpenAI and Anthropic SDKs
+- **Last commit:** `548f170` — feat(dashboard): waterfall timeline UI with HTMX span detail panel
 - **Test suite:** 12/12 green
-- **What works:** @trace, span(), SQLite storage, auto-instrumentation for OpenAI + Anthropic
-- **Next session:** Dashboard — waterfall timeline UI (packages/dashboard/)
+- **What works:** @trace, span(), SQLite storage, auto-instrumentation, local dashboard at localhost:3000
+- **Next session:** Share service — click Share → mandatory redaction review → public URL at glasspipe.dev/t/\<id\>
 
 ---
 
