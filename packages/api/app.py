@@ -1,9 +1,11 @@
 """Hosted GlassPipe share API — runs on Railway, serves glasspipe.dev/t/<id>."""
 import json
+import logging
 import os
 import random
 import secrets
 import string
+import time
 from datetime import datetime, timedelta
 
 from flask import Flask, abort, jsonify, render_template, request
@@ -12,10 +14,13 @@ from sqlalchemy.orm import Session
 
 from models import Base, SharedTrace
 
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+_log = logging.getLogger(__name__)
+
 app = Flask(__name__)
 
 # ---------------------------------------------------------------------------
-# Database
+# Config from environment
 # ---------------------------------------------------------------------------
 
 _DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///glasspipe_shares.db")
@@ -23,8 +28,16 @@ _DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///glasspipe_shares.db")
 if _DATABASE_URL.startswith("postgres://"):
     _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+_BASE_URL     = os.environ.get("GLASSPIPE_BASE_URL", "https://glasspipe.dev")
+_MAX_BYTES    = int(float(os.environ.get("GLASSPIPE_MAX_PAYLOAD_MB", "5")) * 1024 * 1024)
+_TTL_DAYS     = int(os.environ.get("GLASSPIPE_TRACE_TTL_DAYS", "30"))
+
 _engine = create_engine(_DATABASE_URL)
 
+
+# ---------------------------------------------------------------------------
+# Database
+# ---------------------------------------------------------------------------
 
 def _init_db() -> None:
     Base.metadata.create_all(_engine)
@@ -32,6 +45,22 @@ def _init_db() -> None:
 
 def _get_session() -> Session:
     return Session(_engine)
+
+
+# ---------------------------------------------------------------------------
+# Request logging middleware
+# ---------------------------------------------------------------------------
+
+@app.before_request
+def _before():
+    request._t0 = time.monotonic()
+
+
+@app.after_request
+def _after(response):
+    ms = round((time.monotonic() - request._t0) * 1000, 1)
+    _log.info("%s %s %s %.1fms", request.method, request.path, response.status_code, ms)
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +108,11 @@ def _age_string(dt: datetime) -> str:
 # Routes
 # ---------------------------------------------------------------------------
 
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok", "timestamp": _utcnow().isoformat()})
+
+
 @app.route("/")
 def index():
     return jsonify({"service": "glasspipe-api", "status": "ok"})
@@ -88,6 +122,12 @@ def index():
 def share():
     """Receive a redacted trace payload, store it, return a public URL."""
     _init_db()
+
+    # Reject oversized payloads before parsing JSON
+    if request.content_length and request.content_length > _MAX_BYTES:
+        mb = _MAX_BYTES // (1024 * 1024)
+        return jsonify({"error": f"Payload too large (max {mb}MB)"}), 413
+
     body = request.get_json(silent=True)
     if not body or "run" not in body:
         return jsonify({"error": "invalid payload — expected {run, spans}"}), 400
@@ -101,7 +141,7 @@ def share():
             id=share_id,
             payload=body,
             created_at=now,
-            expires_at=now + timedelta(days=30),
+            expires_at=now + timedelta(days=_TTL_DAYS),
             delete_token=token,
             view_count=0,
         ))
@@ -109,7 +149,7 @@ def share():
 
     return jsonify({
         "id": share_id,
-        "url": f"https://glasspipe.dev/t/{share_id}",
+        "url": f"{_BASE_URL}/t/{share_id}",
         "delete_token": token,
     }), 201
 
@@ -160,8 +200,6 @@ def view_trace(trace_id):
         width_pct = max(sp_dur / run_duration_ms * 100, 0.5)
         width_pct = min(width_pct, 100.0 - start_pct)
 
-        # input/output/metadata may be stored as parsed dicts OR raw JSON strings
-        # depending on SDK version — handle both
         def _coerce(v):
             if v is None:
                 return None
@@ -185,7 +223,6 @@ def view_trace(trace_id):
             "metadata": _coerce(sp.get("metadata") or sp.get("metadata_json")),
         })
 
-    # Keyed by id for JS lookup
     spans_by_id = {sp["id"]: sp for sp in span_data}
 
     return render_template(
@@ -194,11 +231,12 @@ def view_trace(trace_id):
         spans=span_data,
         spans_json=json.dumps(spans_by_id),
         run_duration_ms=round(run_duration_ms),
-        share_url=f"glasspipe.dev/t/{trace_id}",
+        share_url=f"{_BASE_URL}/t/{trace_id}",
         shared_ago=_age_string(trace.created_at),
     )
 
 
 if __name__ == "__main__":
     _init_db()
-    app.run(host="127.0.0.1", port=5051, debug=True, use_reloader=False)
+    port = int(os.environ.get("PORT", 5051))
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
