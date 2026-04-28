@@ -1,0 +1,36 @@
+# DEPLOYMENT STEPS
+# ─────────────────────────────────────────────────────────────────────────────
+# Prerequisites: railway CLI installed (npm install -g @railway/cli)
+#                railway login
+#
+# First deploy:
+#   1. cd packages/api
+#   2. railway init          → "Empty project", name it "glasspipe-api"
+#   3. railway add --database postgres
+#                            → provisions Postgres, sets DATABASE_URL automatically
+#   4. railway up            → deploys; watch for "Deployment successful"
+#   5. railway domain        → generates https://<name>.up.railway.app
+#   6. railway variables set GLASSPIPE_BASE_URL=https://<name>.up.railway.app
+#   7. Update GLASSPIPE_SHARE_API default in packages/sdk/src/glasspipe/share.py
+#      to https://<name>.up.railway.app/v1/share  → commit + push
+#   8. railway up            → redeploy with updated SDK default
+#   9. railway logs --tail   → confirm /health logs, no errors
+#
+# Re-deploy after code changes:
+#   railway up
+#
+# Check logs:
+#   railway logs --tail
+#
+# Set / update env vars:
+#   railway variables set KEY=VALUE
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
