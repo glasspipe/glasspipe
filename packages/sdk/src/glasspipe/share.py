@@ -73,7 +73,7 @@ def upload_run(run_id: str) -> str:
     """
     api_url = os.environ.get(
         "GLASSPIPE_SHARE_API",
-        "https://glasspipe-app-production.up.railway.app/v1/share",
+        "https://glasspipe.dev/v1/share",
     )
 
     payload = _build_payload(run_id)
