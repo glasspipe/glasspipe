@@ -21,10 +21,11 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ## Current state
 
-- **Last commit:** `e4c63f1` — chore(deploy): point SDK at live Railway API by default
-- **Test suite:** 12/12 green
-- **What works:** full stack live — SDK, local dashboard, share flow, public viewer at glasspipe-app-production.up.railway.app
-- **Next session:** Session 9 — examples and README quickstart
+- **Last action:** published glasspipe v0.1.0 to PyPI
+- **pip install glasspipe** is now live at pypi.org/project/glasspipe/0.1.0/
+- **Test suite:** 25/25 green
+- **What works:** full stack live — SDK, local dashboard, share flow, public viewer, landing page with interactive demo, PyPI package
+- **Next session:** demo video + launch prep
 
 ---
 
