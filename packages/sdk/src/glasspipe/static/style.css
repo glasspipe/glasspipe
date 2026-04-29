@@ -145,6 +145,51 @@ body::before {
 .run-row:hover { background: var(--bg-3); }
 .run-row:last-child td { border-bottom: none; }
 
+.th-check { width: 32px; }
+.td-check { text-align: center; }
+.run-check {
+  cursor: pointer;
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+}
+
+.compare-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.compare-bar.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(20px);
+}
+.compare-bar-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--accent);
+  color: #080b10;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,194,255,0.3);
+  transition: opacity 0.12s;
+}
+.compare-bar-btn:hover { opacity: 0.9; }
+.compare-bar-btn.disabled {
+  background: var(--bg-3);
+  color: var(--text-2);
+  box-shadow: none;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .empty {
   color: var(--text-2);
   text-align: center;

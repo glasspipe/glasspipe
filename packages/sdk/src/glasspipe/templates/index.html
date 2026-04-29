@@ -10,6 +10,7 @@
 <table class="run-table">
   <thead>
     <tr>
+      <th class="th-check"></th>
       <th>Run ID</th>
       <th>Function</th>
       <th>Started</th>
@@ -19,18 +20,22 @@
     </tr>
   </thead>
   <tbody
+    id="run-tbody"
     hx-get="/"
     hx-trigger="every 5s"
-    hx-select="tbody"
+    hx-select="#run-tbody"
     hx-swap="outerHTML">
     {% for run in runs %}
-    <tr class="run-row" onclick="window.location='/run/{{ run.id }}'">
-      <td class="mono dimmed">{{ run.id[:8] }}…</td>
-      <td class="mono">{{ run.name }}</td>
-      <td class="dimmed">{{ run.started_at.strftime('%H:%M:%S') }}</td>
-      <td class="mono">{{ run.duration_ms }}ms</td>
-      <td class="dimmed">{{ run.span_count }}</td>
-      <td>
+    <tr class="run-row">
+      <td class="td-check" onclick="event.stopPropagation()">
+        <input type="checkbox" class="run-check" data-id="{{ run.id }}">
+      </td>
+      <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
+      <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}</td>
+      <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
+      <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
+      <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
+      <td onclick="window.location='/run/{{ run.id }}'">
         {% if run.status == 'ok' %}
           <span class="badge badge-ok">ok</span>
         {% elif run.status == 'error' %}
@@ -42,12 +47,56 @@
     </tr>
     {% else %}
     <tr>
-      <td colspan="6" class="empty">
+      <td colspan="7" class="empty">
         No runs yet — decorate a function with <span class="mono accent">@trace</span> and run it.
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<div id="compare-bar" class="compare-bar hidden">
+  <a id="compare-link" class="compare-bar-btn" href="#">Compare selected →</a>
+</div>
+
+<script>
+(function() {
+  function updateCompareBar() {
+    var checked = document.querySelectorAll('.run-check:checked');
+    var bar = document.getElementById('compare-bar');
+    var link = document.getElementById('compare-link');
+
+    if (checked.length === 2) {
+      bar.classList.remove('hidden');
+      var ids = [checked[0].dataset.id, checked[1].dataset.id];
+      link.href = '/compare?a=' + ids[0] + '&b=' + ids[1];
+      link.textContent = 'Compare selected →';
+      link.classList.remove('disabled');
+    } else {
+      bar.classList.remove('hidden');
+      link.href = '#';
+      link.classList.add('disabled');
+      if (checked.length === 0) {
+        bar.classList.add('hidden');
+      } else if (checked.length === 1) {
+        link.textContent = 'Select 1 more run';
+      } else {
+        link.textContent = 'Pick exactly 2 to compare';
+      }
+    }
+  }
+
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('run-check')) {
+      updateCompareBar();
+    }
+  });
+
+  // Re-bind after HTMX swaps the tbody
+  document.body.addEventListener('htmx:afterSwap', function() {
+    updateCompareBar();
+  });
+})();
+</script>
 
 {% endblock %}
