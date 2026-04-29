@@ -394,6 +394,50 @@ body::before {
 
 
 /* ================================================================
+   REAL TRACES
+================================================================ */
+.trace-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.trace-card {
+  display: block;
+  padding: 24px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.trace-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-3);
+}
+.trace-card-kind {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+.trace-card-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.trace-card-desc {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+
+/* ================================================================
    DEMO SECTION
 ================================================================ */
 .demo-section { padding-top: 0; }
@@ -857,6 +901,7 @@ footer {
   .compare-note { grid-template-columns: 1fr; }
   .demo-layout { grid-template-columns: 1fr; }
   .detail-pane { position: static; }
+  .trace-cards { grid-template-columns: 1fr; }
   .hero { padding: 100px 20px 60px; }
   .container { padding: 0 20px; }
   .topbar { padding: 0 16px; }
