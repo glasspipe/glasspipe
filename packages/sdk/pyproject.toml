@@ -4,12 +4,25 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glasspipe"
-version = "0.0.0"
-description = "The flight recorder for your AI agents."
-readme = "../../README.md"
+version = "0.1.0"
+description = "The flight recorder for AI agents. Trace, visualize, and share your agent runs in 60 seconds."
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "Jonathan" }]
+authors = [{name = "Jonathan", email = "jonathan@glasspipe.dev"}]
+keywords = ["ai", "agents", "observability", "tracing", "llm", "openai", "anthropic", "debugging"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "sqlalchemy>=2.0",
     "nanoid",
@@ -24,5 +37,21 @@ dashboard = ["flask>=3.0"]
 [project.scripts]
 glasspipe = "glasspipe.cli:cli"
 
+[project.urls]
+Homepage = "https://glasspipe.dev"
+Documentation = "https://github.com/glasspipe/glasspipe"
+Repository = "https://github.com/glasspipe/glasspipe"
+Issues = "https://github.com/glasspipe/glasspipe/issues"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/glasspipe"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/glasspipe/**/*.py",
+    "src/glasspipe/templates/**/*",
+    "src/glasspipe/static/**/*",
+    "README.md",
+    "LICENSE",
+    "MANIFEST.in",
+]
