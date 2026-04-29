@@ -573,3 +573,117 @@ body::before {
 
 /* ---- REDACTED values — orange ---- */
 .redacted { color: var(--orange); font-style: normal; }
+
+/* ================================================================
+   COMPARE VIEW
+   ================================================================ */
+
+.compare-error {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-2);
+  font-size: 15px;
+}
+.compare-error .back { display: block; margin-top: 16px; }
+
+.compare-header { margin-bottom: 20px; }
+
+.compare-summaries {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.compare-summary {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.compare-summary-a { border-left: 3px solid var(--red); }
+.compare-summary-b { border-left: 3px solid var(--green); }
+.compare-summary-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+.compare-summary-a .compare-summary-label { color: var(--red); }
+.compare-summary-b .compare-summary-label { color: var(--green); }
+.compare-summary-name {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.compare-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.compare-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.compare-stat { font-family: 'DM Mono', monospace; font-weight: 500; }
+.compare-stat-a { color: var(--red); }
+.compare-stat-b { color: var(--green); }
+.compare-stat-both { color: var(--text-2); }
+.compare-stat-identical { color: var(--text-2); font-style: italic; }
+.compare-delta { font-family: 'DM Mono', monospace; font-size: 12px; }
+.compare-delta-fast { color: var(--green); }
+.compare-delta-slow { color: var(--red); }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.compare-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* ---- Diff tint classes — additive layer on top of kind colors ---- */
+.diff-only_in_a {
+  border-left: 3px solid var(--red) !important;
+  box-shadow: inset 4px 0 0 rgba(255,77,106,0.15),
+              0 0 8px rgba(255,77,106,0.2);
+}
+.diff-only_in_b {
+  border-left: 3px solid var(--green) !important;
+  box-shadow: inset 4px 0 0 rgba(0,229,160,0.15),
+              0 0 8px rgba(0,229,160,0.2);
+}
+.diff-in_both {
+  /* No tint — kind color only */
+}
+
+/* ---- Tree depth indentation in compare view ---- */
+.compare-span-depth-1 .span-label { padding-left: 24px; }
+.compare-span-depth-2 .span-label { padding-left: 36px; }
+.compare-span-depth-3 .span-label { padding-left: 48px; }
+.compare-span-depth-4 .span-label { padding-left: 60px; }
+
+/* ---- Mobile: stack compare columns ---- */
+@media (max-width: 900px) {
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-detail-grid { grid-template-columns: 1fr; }
+  .compare-summaries { grid-template-columns: 1fr; }
+}

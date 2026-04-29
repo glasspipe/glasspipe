@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Compare{% endblock %}
+{% block content %}
+
+{% if error %}
+<div class="compare-error">
+  <p>{{ error }}</p>
+  <a href="/" class="back">← Back to runs</a>
+</div>
+{% else %}
+
+<div class="compare-header">
+  <a href="/" class="back">← All runs</a>
+  <h1>Compare runs</h1>
+</div>
+
+{# ── Run summaries side by side ── #}
+<div class="compare-summaries">
+  <div class="compare-summary compare-summary-a">
+    <div class="compare-summary-label">Run A</div>
+    <div class="compare-summary-name mono">{{ run_a.name }}</div>
+    <div class="compare-summary-meta">
+      <span class="mono">{{ result.duration_a_ms|round|int }}ms</span>
+      <span class="sep dimmed">·</span>
+      <span class="dimmed">{{ run_a.started_at.strftime('%H:%M:%S') }}</span>
+      {% if run_a.status == 'ok' %}
+        <span class="badge badge-ok">ok</span>
+      {% elif run_a.status == 'error' %}
+        <span class="badge badge-error">error</span>
+      {% else %}
+        <span class="badge badge-running">running</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="compare-summary compare-summary-b">
+    <div class="compare-summary-label">Run B</div>
+    <div class="compare-summary-name mono">{{ run_b.name }}</div>
+    <div class="compare-summary-meta">
+      <span class="mono">{{ result.duration_b_ms|round|int }}ms</span>
+      <span class="sep dimmed">·</span>
+      <span class="dimmed">{{ run_b.started_at.strftime('%H:%M:%S') }}</span>
+      {% if run_b.status == 'ok' %}
+        <span class="badge badge-ok">ok</span>
+      {% elif run_b.status == 'error' %}
+        <span class="badge badge-error">error</span>
+      {% else %}
+        <span class="badge badge-running">running</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── Stats strip ── #}
+<div class="compare-stats">
+  {% if result.only_in_a == 0 and result.only_in_b == 0 %}
+    <span class="compare-stat-identical">0 changes — these runs are structurally identical</span>
+  {% else %}
+    {% if result.only_in_a > 0 %}
+      <span class="compare-stat compare-stat-a">-{{ result.only_in_a }} span{{ 's' if result.only_in_a != 1 else '' }}</span>
+    {% endif %}
+    {% if result.only_in_b > 0 %}
+      <span class="compare-stat compare-stat-b">+{{ result.only_in_b }} span{{ 's' if result.only_in_b != 1 else '' }}</span>
+    {% endif %}
+    <span class="compare-stat compare-stat-both">{{ result.in_both }} unchanged</span>
+  {% endif %}
+
+  <span class="sep dimmed">·</span>
+
+  <span class="dimmed">A <span class="mono">{{ result.duration_a_ms|round|int }}ms</span></span>
+  <span class="sep dimmed">→</span>
+  <span class="dimmed">B <span class="mono">{{ result.duration_b_ms|round|int }}ms</span></span>
+
+  {% if dur_delta_pct is not none %}
+    {% if dur_delta_pct > 0 %}
+      <span class="compare-delta compare-delta-slow">(+{{ dur_delta_pct }}%)</span>
+    {% elif dur_delta_pct < 0 %}
+      <span class="compare-delta compare-delta-fast">({{ dur_delta_pct }}%)</span>
+    {% else %}
+      <span class="compare-delta">(0%)</span>
+    {% endif %}
+  {% endif %}
+
+  {% if result.cost_a_usd is not none and result.cost_b_usd is not none %}
+    <span class="sep dimmed">·</span>
+    <span class="dimmed">cost A <span class="mono">${{ "%.4f"|format(result.cost_a_usd) }}</span> → B <span class="mono">${{ "%.4f"|format(result.cost_b_usd) }}</span></span>
+  {% endif %}
+
+  {% if result.tokens_a is not none and result.tokens_b is not none %}
+    <span class="sep dimmed">·</span>
+    <span class="dimmed">tokens {{ result.tokens_a }} → {{ result.tokens_b }}</span>
+  {% endif %}
+</div>
+
+{# ── Two waterfalls side by side ── #}
+<div class="compare-grid">
+
+  {# ── Run A waterfall ── #}
+  <div class="waterfall-pane">
+    <div class="ruler">
+      <span>0</span>
+      <span>{{ (max_duration_ms * 0.25)|round|int }}ms</span>
+      <span>{{ (max_duration_ms * 0.5)|round|int }}ms</span>
+      <span>{{ (max_duration_ms * 0.75)|round|int }}ms</span>
+      <span>{{ max_duration_ms }}ms</span>
+    </div>
+
+    {% for sp in waterfall_a %}
+    <div class="span-row compare-span-depth-{{ sp.depth }}">
+      <div class="span-label mono" title="{{ sp.name }}">{{ sp.name }}</div>
+      <div class="span-track">
+        <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }} diff-{{ sp.diff_status }}"
+             style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+             hx-get="/span/{{ sp.id }}"
+             hx-target="#detail-panel-a"
+             hx-swap="innerHTML"
+             title="{{ sp.name }} · {{ sp.duration_ms }}ms · {{ sp.diff_status|replace('_',' ') }}">
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty">No spans in run A.</p>
+    {% endfor %}
+  </div>
+
+  {# ── Run B waterfall ── #}
+  <div class="waterfall-pane">
+    <div class="ruler">
+      <span>0</span>
+      <span>{{ (max_duration_ms * 0.25)|round|int }}ms</span>
+      <span>{{ (max_duration_ms * 0.5)|round|int }}ms</span>
+      <span>{{ (max_duration_ms * 0.75)|round|int }}ms</span>
+      <span>{{ max_duration_ms }}ms</span>
+    </div>
+
+    {% for sp in waterfall_b %}
+    <div class="span-row compare-span-depth-{{ sp.depth }}">
+      <div class="span-label mono" title="{{ sp.name }}">{{ sp.name }}</div>
+      <div class="span-track">
+        <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }} diff-{{ sp.diff_status }}"
+             style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+             hx-get="/span/{{ sp.id }}"
+             hx-target="#detail-panel-b"
+             hx-swap="innerHTML"
+             title="{{ sp.name }} · {{ sp.duration_ms }}ms · {{ sp.diff_status|replace('_',' ') }}">
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty">No spans in run B.</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+{# ── Detail panels side by side ── #}
+<div class="compare-detail-grid">
+  <div id="detail-panel-a" class="detail-pane">
+    <p class="detail-hint dimmed">← Click a span in A to inspect</p>
+  </div>
+  <div id="detail-panel-b" class="detail-pane">
+    <p class="detail-hint dimmed">← Click a span in B to inspect</p>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
