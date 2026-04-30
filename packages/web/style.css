@@ -255,7 +255,7 @@ body::before {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.55;
-  color: var(--text);
+  color: var(--text-2);
   max-width: 560px;
   margin-bottom: 32px;
 }
@@ -448,12 +448,16 @@ body::before {
   margin-bottom: 16px;
   color: var(--text);
 }
+.section-title em, .hero h1 em {
+  font-style: italic;
+  color: var(--c-action);
+}
 .section-sub {
   font-family: var(--font-body);
   font-size: 16px;
   font-weight: 500;
   line-height: 1.55;
-  color: var(--text);
+  color: var(--text-2);
   max-width: 560px;
   margin: 0 0 60px;
 }
@@ -461,7 +465,8 @@ body::before {
   margin-top: 40px;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  color: var(--text-2);
+  font-style: italic;
+  color: var(--c-action);
 }
 
 
