@@ -1,45 +1,4 @@
-:root {
-  /* ── Surfaces ─────────────────────────────────────────── */
-  --bg:        #07090f;
-  --bg-2:      #0d1220;
-  --bg-3:      #151d2c;
-  --bg-4:      #1e2a3a;
-  --border:    #2d3d52;
-  --border-2:  #3d5268;
-
-  /* ── Text ─────────────────────────────────────────────── */
-  --text:      #e6edf5;
-  --text-2:    #97a8be;
-  --text-3:    #6b7f96;
-
-  /* ── Three-color signal system ────────────────────────── */
-  --c-action:  #00c2ff;
-  --c-label:   #ff9f40;
-  --c-status:  #00e5a0;
-  --c-action-dim:  rgba(0,194,255,0.10);
-  --c-label-dim:   rgba(255,159,64,0.10);
-  --c-status-dim:  rgba(0,229,160,0.10);
-
-  /* ── Errors ───────────────────────────────────────────── */
-  --c-error:   #ff6b82;
-
-  /* ── Typography ───────────────────────────────────────── */
-  --font-mono: 'JetBrains Mono', 'DM Mono', ui-monospace, SFMono-Regular,
-               Menlo, Consolas, monospace;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-
-  /* ── Geometry ─────────────────────────────────────────── */
-  --r:         2px;
-  --r-card:    4px;
-  --gutter:    32px;
-
-  /* ── Type scale ───────────────────────────────────────── */
-  --fs-xs:     11px;
-  --fs-sm:     13px;
-  --fs-md:     15px;
-  --fs-lg:     18px;
-  --fs-xl:     clamp(22px, 3.5vw, 36px);
-}
+@import url('styles/tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -93,8 +52,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,194,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,194,255,0.05) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
   z-index: 0;
@@ -146,7 +105,7 @@ body::before {
   top: 0;
   z-index: 100;
   height: 48px;
-  background: rgba(7,9,15,0.92);
+  background: var(--topbar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -481,7 +440,7 @@ body::before {
   border-radius: var(--r-card);
   padding: 28px;
 }
-.problem-card.bad { border-color: rgba(255,77,106,0.18); }
+.problem-card.bad { border-color: rgba(255,107,130,0.18); }
 .problem-card.good { border-color: rgba(0,229,160,0.18); }
 
 .problem-card-head {

@@ -1,17 +1,42 @@
-:root {
-  --bg:       #080b10;
-  --bg-2:     #0d1117;
-  --bg-3:     #131920;
-  --border:   #1e2a38;
-  --border-2: #263545;
-  --text:     #e2eaf4;
-  --text-2:   #7a95b0;
-  --accent:   #00c2ff;
-  --green:    #00e5a0;
-  --orange:   #ff9f40;
-  --red:      #ff4d6a;
-  --purple:   #a78bfa;
-}
+/* ──────────────────────────────────────────────────────────────
+   DASHBOARD CSS — GlassPipe
+   Tokens: @import from tokens.css
+   
+   DESIGN DECISIONS (no landing-page precedent):
+   
+   1. Span bar kind colors: LLM=cyan(--c-action), Tool=amber(--c-label),
+      Custom=green(--c-status), Agent=purple(--c-agent), Error=red(--c-error).
+      These map to the signal system but Agent is a 4th kind.
+   
+   2. Span bar glow: Each kind gets a matching box-shadow glow
+      via --glow-* tokens. The landing page has no timeline component.
+   
+   3. Span-row hover: rgba(255,255,255,0.02) — subtle row highlight.
+      Not tokenized; it's a one-off interaction state.
+   
+   4. JSON viewer (detail-json, preview-json): Dark bg-3 surface with
+      monospace code, max-height with scroll. Landing page has no code viewer.
+   
+   5. Redacted value highlighting: Orange(--c-label) for [REDACTED] text.
+      Security signal — different semantic from amber=labels.
+   
+   6. Modal overlay backdrop: rgba(8,11,16,0.82) — not tokenized because
+      it's a one-off composite surface with blur.
+   
+   7. Modal card: Flex column with pinned header/scroll body/pinned actions.
+      No landing page equivalent.
+   
+   8. Compare view diff tints: Additive box-shadow layer on top of kind colors.
+      Red tint for only-in-A, green tint for only-in-B.
+   
+   9. Run table: Full-width table with hover rows. Landing page uses card
+      grids instead, but tables are the right component for run lists.
+   
+   10. Live badge pulse animation: Kept for dashboard (shows HTMX polling).
+       Landing page status strip has no animation.
+   ────────────────────────────────────────────────────────────── */
+
+@import url('tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -20,7 +45,7 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -32,19 +57,19 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,194,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,194,255,0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
   z-index: 0;
 }
 
 /* ---- UTILITIES ---- */
-.mono   { font-family: 'DM Mono', monospace; }
+.mono   { font-family: var(--font-mono); }
 .dimmed { color: var(--text-2); }
-.accent { color: var(--accent); }
+.accent { color: var(--c-action); }
 .sep    { margin: 0 4px; }
-.error-msg { color: var(--red); font-size: 12px; font-family: 'DM Mono', monospace; }
+.error-msg { color: var(--c-error); font-size: 12px; font-family: var(--font-mono); }
 
 /* ---- TOPBAR ---- */
 .topbar {
@@ -52,7 +77,7 @@ body::before {
   z-index: 10;
   height: 48px;
   border-bottom: 1px solid var(--border);
-  background: rgba(13,17,23,0.85);
+  background: var(--topbar-bg);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -63,10 +88,10 @@ body::before {
 .logo {
   text-decoration: none;
   color: var(--text);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .topbar-sub { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -84,21 +109,21 @@ body::before {
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-family: 'DM Mono', monospace;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.badge-ok      { background: rgba(0,229,160,0.12);  color: var(--green);  border: 1px solid rgba(0,229,160,0.25); }
-.badge-error   { background: rgba(255,77,106,0.12); color: var(--red);    border: 1px solid rgba(255,77,106,0.25); }
-.badge-running { background: rgba(0,194,255,0.12);  color: var(--accent); border: 1px solid rgba(0,194,255,0.25); animation: pulse 1.4s ease-in-out infinite; }
+.badge-ok      { background: var(--c-status-dim);  color: var(--c-status);  border: 1px solid var(--c-status-border); }
+.badge-error   { background: var(--c-error-dim); color: var(--c-error);   border: 1px solid var(--c-error-border); }
+.badge-running { background: var(--c-action-dim);  color: var(--c-action);  border: 1px solid var(--c-action-border); animation: pulse 1.4s ease-in-out infinite; }
 
 .live-badge {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--green);
+  color: var(--c-status);
   letter-spacing: 0.06em;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -119,14 +144,14 @@ body::before {
   border-collapse: collapse;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   overflow: hidden;
 }
 
 .run-table th {
   text-align: left;
   padding: 10px 16px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -149,7 +174,7 @@ body::before {
 .td-check { text-align: center; }
 .run-check {
   cursor: pointer;
-  accent-color: var(--accent);
+  accent-color: var(--c-action);
   width: 14px;
   height: 14px;
 }
@@ -170,12 +195,12 @@ body::before {
 .compare-bar-btn {
   display: inline-block;
   padding: 10px 24px;
-  background: var(--accent);
-  color: #080b10;
-  border-radius: 8px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
+  background: var(--c-action);
+  color: var(--bg);
+  border-radius: var(--r-card);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   box-shadow: 0 4px 24px rgba(0,194,255,0.3);
@@ -204,7 +229,7 @@ body::before {
   color: var(--text-2);
   text-decoration: none;
   font-size: 12px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   transition: color 0.1s;
 }
 .back:hover { color: var(--text); }
@@ -239,7 +264,7 @@ body::before {
 .waterfall-pane {
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   overflow: hidden;
 }
 
@@ -247,7 +272,7 @@ body::before {
   display: flex;
   justify-content: space-between;
   padding: 5px 12px 5px calc(168px + 12px);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-2);
   background: var(--bg-3);
@@ -290,7 +315,7 @@ body::before {
   position: absolute;
   top: 8px;
   height: calc(100% - 16px);
-  border-radius: 3px;
+  border-radius: var(--r-bar);
   cursor: pointer;
   transition: filter 0.12s, transform 0.1s;
   min-width: 4px;
@@ -301,11 +326,11 @@ body::before {
 }
 
 /* Span kind colours */
-.kind-llm    { background: var(--accent); box-shadow: 0 0 8px rgba(0,194,255,0.3); }
-.kind-tool   { background: var(--orange); box-shadow: 0 0 8px rgba(255,159,64,0.3); }
-.kind-custom { background: var(--green);  box-shadow: 0 0 8px rgba(0,229,160,0.3); }
-.kind-agent  { background: var(--purple); box-shadow: 0 0 8px rgba(167,139,250,0.3); }
-.kind-error  { background: var(--red);    box-shadow: 0 0 8px rgba(255,77,106,0.3); }
+.kind-llm    { background: var(--c-action); box-shadow: var(--glow-action); }
+.kind-tool   { background: var(--c-label);  box-shadow: var(--glow-label); }
+.kind-custom { background: var(--c-status); box-shadow: var(--glow-status); }
+.kind-agent  { background: var(--c-agent);  box-shadow: var(--glow-agent); }
+.kind-error  { background: var(--c-error);  box-shadow: var(--glow-error); }
 
 /* kind-dot used in span_detail */
 .kind-dot { font-size: 9px; }
@@ -314,7 +339,7 @@ body::before {
 .detail-pane {
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 16px;
   min-height: 180px;
   position: sticky;
@@ -343,13 +368,13 @@ body::before {
 }
 .detail-grid dt {
   color: var(--text-2);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   align-self: start;
   padding-top: 1px;
 }
 .detail-grid dd {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   overflow-wrap: break-word;
   font-size: 12px;
 }
@@ -357,7 +382,7 @@ body::before {
 .detail-section { margin-top: 12px; }
 
 .detail-section-label {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -368,9 +393,9 @@ body::before {
 .detail-json {
   background: var(--bg-3);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r);
   padding: 10px 12px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text);
   white-space: pre-wrap;
@@ -387,21 +412,20 @@ body::before {
 
 /* ---- SHARE BUTTON ---- */
 .btn-share {
-  padding: 4px 14px;
-  border: 1px solid rgba(0,194,255,0.35);
-  background: rgba(0,194,255,0.07);
-  color: var(--accent);
-  border-radius: 5px;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 5px 14px;
+  background: var(--c-action);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
-  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
 }
 .btn-share:hover {
-  background: rgba(0,194,255,0.15);
-  border-color: rgba(0,194,255,0.65);
+  background: #1ad0ff;
 }
 
 /* ---- MODAL OVERLAY ---- */
@@ -420,12 +444,12 @@ body::before {
 .modal-card {
   background: var(--bg-2);
   border: 1px solid var(--border-2);
-  border-radius: 10px;
+  border-radius: var(--r-card);
   width: 620px;
   max-height: 82vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;   /* card itself does not scroll */
+  overflow: hidden;
 }
 
 /* Pinned header (run summary + title) */
@@ -450,7 +474,7 @@ body::before {
   cursor: pointer;
   font-size: 16px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--r);
   transition: color 0.1s, background 0.1s;
 }
 .modal-close:hover { color: var(--text); background: var(--bg-3); }
@@ -491,24 +515,24 @@ body::before {
 .preview-span-name { font-size: 13px; }
 
 .badge-kind {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: var(--r);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 /* reuse kind colours for badges */
-.badge-kind.kind-llm    { background: rgba(0,194,255,0.12);  color: var(--accent); }
-.badge-kind.kind-tool   { background: rgba(255,159,64,0.12); color: var(--orange); }
-.badge-kind.kind-custom { background: rgba(0,229,160,0.12);  color: var(--green);  }
-.badge-kind.kind-agent  { background: rgba(167,139,250,0.12);color: var(--purple); }
-.badge-kind.kind-error  { background: rgba(255,77,106,0.12); color: var(--red);    }
+.badge-kind.kind-llm    { background: var(--c-action-dim); color: var(--c-action); border: 1px solid var(--c-action-border); }
+.badge-kind.kind-tool   { background: var(--c-label-dim);  color: var(--c-label);  border: 1px solid var(--c-label-border); }
+.badge-kind.kind-custom { background: var(--c-status-dim); color: var(--c-status); border: 1px solid var(--c-status-border); }
+.badge-kind.kind-agent  { background: var(--c-agent-dim);  color: var(--c-agent);  border: 1px solid var(--c-agent-border); }
+.badge-kind.kind-error  { background: var(--c-error-dim);  color: var(--c-error);  border: 1px solid var(--c-error-border); }
 
 .preview-json-block { margin-top: 6px; }
 
 .preview-json-label {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -519,9 +543,9 @@ body::before {
 .preview-json {
   background: var(--bg-3);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r);
   padding: 8px 10px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text);
   white-space: pre-wrap;
@@ -553,8 +577,8 @@ body::before {
   border: 1px solid var(--border-2);
   background: transparent;
   color: var(--text-2);
-  border-radius: 6px;
-  font-family: 'DM Mono', monospace;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
   font-size: 12px;
   cursor: pointer;
   transition: color 0.12s, border-color 0.12s;
@@ -564,10 +588,10 @@ body::before {
 .btn-confirm {
   padding: 7px 18px;
   border: none;
-  background: var(--accent);
-  color: #080b10;
-  border-radius: 6px;
-  font-family: 'DM Mono', monospace;
+  background: var(--c-action);
+  color: var(--bg);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -581,10 +605,10 @@ body::before {
 .share-url-box {
   margin: 8px 24px 0;
   padding: 12px 16px;
-  background: var(--bg-3);
-  border: 1px solid rgba(0,194,255,0.3);
-  border-radius: 6px;
-  color: var(--accent);
+  background: var(--c-action-dim);
+  border: 1px solid var(--c-action-border);
+  border-radius: var(--r);
+  color: var(--c-action);
   font-size: 13px;
   word-break: break-all;
   line-height: 1.5;
@@ -592,32 +616,49 @@ body::before {
 
 .btn-copy {
   padding: 7px 16px;
-  border: 1px solid rgba(0,194,255,0.35);
-  background: rgba(0,194,255,0.08);
-  color: var(--accent);
-  border-radius: 6px;
-  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--c-action-border);
+  background: var(--c-action-dim);
+  color: var(--c-action);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
   font-size: 12px;
   cursor: pointer;
   transition: background 0.12s;
 }
-.btn-copy:hover { background: rgba(0,194,255,0.16); }
+.btn-copy:hover { background: rgba(0,194,255,0.18); }
 
 .btn-view {
   padding: 7px 16px;
-  border: 1px solid rgba(0,229,160,0.35);
-  background: rgba(0,229,160,0.08);
-  color: var(--green);
-  border-radius: 6px;
-  font-family: 'DM Mono', monospace;
+  border: 1px solid var(--c-status-border);
+  background: var(--c-status-dim);
+  color: var(--c-status);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
   font-size: 12px;
   text-decoration: none;
   transition: background 0.12s;
 }
-.btn-view:hover { background: rgba(0,229,160,0.16); }
+.btn-view:hover { background: rgba(0,229,160,0.18); }
 
-/* ---- REDACTED values — orange ---- */
-.redacted { color: var(--orange); font-style: normal; }
+/* ---- REDACTED values ---- */
+.redacted { color: var(--c-label); font-style: normal; }
+
+/* ---- BRACKET LABELS ---- */
+.bracket-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  margin-bottom: 8px;
+}
+.bracket-label .code {
+  color: var(--c-label);
+  text-transform: uppercase;
+}
+.bracket-label .label-text {
+  color: var(--text-2);
+  text-transform: none;
+}
 
 /* ================================================================
    COMPARE VIEW
@@ -642,21 +683,21 @@ body::before {
 .compare-summary {
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-card);
   padding: 14px 18px;
 }
-.compare-summary-a { border-left: 3px solid var(--red); }
-.compare-summary-b { border-left: 3px solid var(--green); }
+.compare-summary-a { border-left: 3px solid var(--c-error); }
+.compare-summary-b { border-left: 3px solid var(--c-status); }
 .compare-summary-label {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-2);
   margin-bottom: 4px;
 }
-.compare-summary-a .compare-summary-label { color: var(--red); }
-.compare-summary-b .compare-summary-label { color: var(--green); }
+.compare-summary-a .compare-summary-label { color: var(--c-error); }
+.compare-summary-b .compare-summary-label { color: var(--c-status); }
 .compare-summary-name {
   font-size: 16px;
   font-weight: 500;
@@ -678,18 +719,18 @@ body::before {
   padding: 10px 16px;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-card);
   margin-bottom: 16px;
   font-size: 12px;
 }
-.compare-stat { font-family: 'DM Mono', monospace; font-weight: 500; }
-.compare-stat-a { color: var(--red); }
-.compare-stat-b { color: var(--green); }
+.compare-stat { font-family: var(--font-mono); font-weight: 500; }
+.compare-stat-a { color: var(--c-error); }
+.compare-stat-b { color: var(--c-status); }
 .compare-stat-both { color: var(--text-2); }
 .compare-stat-identical { color: var(--text-2); font-style: italic; }
-.compare-delta { font-family: 'DM Mono', monospace; font-size: 12px; }
-.compare-delta-fast { color: var(--green); }
-.compare-delta-slow { color: var(--red); }
+.compare-delta { font-family: var(--font-mono); font-size: 12px; }
+.compare-delta-fast { color: var(--c-status); }
+.compare-delta-slow { color: var(--c-error); }
 
 .compare-grid {
   display: grid;
@@ -707,12 +748,12 @@ body::before {
 
 /* ---- Diff tint classes — additive layer on top of kind colors ---- */
 .diff-only_in_a {
-  border-left: 3px solid var(--red) !important;
-  box-shadow: inset 4px 0 0 rgba(255,77,106,0.15),
-              0 0 8px rgba(255,77,106,0.2);
+  border-left: 3px solid var(--c-error) !important;
+  box-shadow: inset 4px 0 0 rgba(255,107,130,0.15),
+              0 0 8px rgba(255,107,130,0.2);
 }
 .diff-only_in_b {
-  border-left: 3px solid var(--green) !important;
+  border-left: 3px solid var(--c-status) !important;
   box-shadow: inset 4px 0 0 rgba(0,229,160,0.15),
               0 0 8px rgba(0,229,160,0.2);
 }
