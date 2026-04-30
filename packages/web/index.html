@@ -24,38 +24,43 @@
 <!-- ── Hero ─────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-glow"></div>
-  <div class="hero-content">
+  <div class="hero-inner">
+    <div class="hero-left">
 
-    <div class="bracket-label"><span class="code">[ SYS-001 ]</span> <span class="label-text">/ open source &middot; MIT</span></div>
+      <div class="bracket-label"><span class="code">[ SYS-001 ]</span> <span class="label-text">/ open source &middot; MIT</span></div>
 
-    <h1>See what your AI agent<br>actually did.</h1>
+      <h1>See what your AI agent<br>actually did.</h1>
 
-    <p class="sub">GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token &mdash; captured and turned into a beautiful, shareable timeline.</p>
+      <p class="sub">GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token &mdash; captured and turned into a beautiful, shareable timeline.</p>
 
-    <div class="terminal" id="hero-terminal" aria-label="GlassPipe demo terminal">
-      <div class="terminal-bar">
-        <span class="terminal-bar-path">~/agent</span>
-        <span class="terminal-bar-meta">BUILD #047</span>
+      <div class="hero-actions">
+        <div class="install-block">
+          <span class="prompt">$</span>
+          <span class="cmd">pip install glasspipe</span>
+          <button class="copy-btn" onclick="copyInstall(this)">copy</button>
+        </div>
+        <a href="#demo" class="btn-primary">&rarr; Demo</a>
+        <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
       </div>
-      <pre class="terminal-body" id="terminal-body" aria-live="polite"></pre>
-      <button class="terminal-replay" id="terminal-replay" type="button">[ REPLAY ]</button>
-    </div>
 
-    <div class="hero-actions">
-      <div class="install-block">
-        <span class="prompt">$</span>
-        <span class="cmd">pip install glasspipe</span>
-        <button class="copy-btn" onclick="copyInstall(this)">copy</button>
+      <p class="hero-footnote">free &middot; open source &middot; no account ever</p>
+
+    </div>
+    <div class="hero-right">
+
+      <div class="terminal" id="hero-terminal" aria-label="GlassPipe demo terminal">
+        <div class="terminal-bar">
+          <span class="terminal-bar-path">~/agent</span>
+          <span class="terminal-bar-meta">BUILD #047</span>
+        </div>
+        <pre class="terminal-body" id="terminal-body" aria-live="polite"></pre>
+        <button class="terminal-replay" id="terminal-replay" type="button">[ REPLAY ]</button>
       </div>
-      <a href="#demo" class="btn-primary">&rarr; Demo</a>
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
-      </a>
+
     </div>
-
-    <p class="hero-footnote">free &middot; open source &middot; no account ever</p>
-
   </div>
 </section>
 
@@ -126,12 +131,41 @@
     <p class="section-sub">Click any span bar below to inspect it. This is exactly what you see in your own dashboard.</p>
 
     <div class="demo-embed-wrap">
-      <iframe
-        src="https://glasspipe.dev/t/DEMO01/embed"
-        loading="lazy"
-        allow="clipboard-write"
-        style="width:100%;height:520px;background:var(--bg-2);"
-      ></iframe>
+      <div style="
+        padding: 40px var(--gutter);
+        background: var(--bg-2);
+        text-align: center;
+      ">
+        <div class="bracket-label" style="text-align:left;margin-bottom:32px"><span class="code">[ TRC-DEMO ]</span> <span class="label-text">/ waterfall timeline</span></div>
+        <div style="text-align:left;max-width:640px;margin:0 auto">
+          <div style="margin-bottom:18px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
+            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">AGENT</span>
+            <div style="flex:1;height:20px;background:var(--c-action-dim);border:1px solid rgba(0,194,255,0.15);border-radius:2px;width:85%"></div>
+            <span class="mono" style="font-size:10px;color:var(--text-3)">2.3s</span>
+          </div>
+          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
+            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">LLM</span>
+            <div style="flex:1;height:14px;background:var(--c-label-dim);border:1px solid rgba(255,159,64,0.15);border-radius:2px;width:35%"></div>
+            <span class="mono" style="font-size:10px;color:var(--text-3)">412ms</span>
+          </div>
+          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
+            <span class="mono" style="font-size:10px;color:var(--c-status);letter-spacing:0.06em">TOOL</span>
+            <div style="flex:1;height:14px;background:var(--c-status-dim);border:1px solid rgba(0,229,160,0.15);border-radius:2px;width:48%"></div>
+            <span class="mono" style="font-size:10px;color:var(--text-3)">562ms</span>
+          </div>
+          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
+            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">LLM</span>
+            <div style="flex:1;height:14px;background:var(--c-label-dim);border:1px solid rgba(255,159,64,0.15);border-radius:2px;width:55%"></div>
+            <span class="mono" style="font-size:10px;color:var(--text-3)">655ms</span>
+          </div>
+          <div style="margin-top:20px;font-family:var(--font-mono);font-size:12px;color:var(--text-3)">
+            <span style="color:var(--c-status)">&#10003;</span> ok &middot; $0.012
+          </div>
+        </div>
+        <div style="margin-top:28px;font-family:var(--font-mono);font-size:11px;color:var(--text-3)">
+          Interactive demo coming soon &mdash; <a href="#get-started" style="color:var(--c-action);text-decoration:none">install now</a> to try locally
+        </div>
+      </div>
     </div>
 
     <p class="section-caption" style="margin-top:32px">This is exactly what you'll see in your own dashboard.</p>
@@ -140,7 +174,7 @@
 
 
 <!-- ── How it works ──────────────────────────────────────────── -->
-<section class="section" id="how" style="padding-top:0">
+<section class="section" id="how">
   <div class="container">
     <div class="bracket-label"><span class="code">[ OPS-003 ]</span> <span class="label-text">/ how it works</span></div>
     <h2 class="section-title">Three steps. Sixty seconds.</h2>
@@ -181,7 +215,7 @@
 
 
 <!-- ── Real Traces ──────────────────────────────────────────── -->
-<section class="section" id="traces" style="padding-top:0">
+<section class="section" id="traces">
   <div class="container">
     <div class="bracket-label"><span class="code">[ TRC-LIVE ]</span> <span class="label-text">/ shared runs</span></div>
     <h2 class="section-title">See a real trace.</h2>

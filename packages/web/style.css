@@ -1,15 +1,15 @@
 :root {
   /* ── Surfaces ─────────────────────────────────────────── */
-  --bg:        #07090d;
-  --bg-2:      #0c1117;
-  --bg-3:      #11171f;
+  --bg:        #07090f;
+  --bg-2:      #0b0f18;
+  --bg-3:      #0f1520;
   --bg-4:      #161e28;
-  --border:    #1c2632;
-  --border-2:  #2a3744;
+  --border:    #243040;
+  --border-2:  #33475c;
 
   /* ── Text ─────────────────────────────────────────────── */
   --text:      #e6edf5;
-  --text-2:    #8696a8;
+  --text-2:    #97a8be;
   --text-3:    #4a5b70;
 
   /* ── Three-color signal system ────────────────────────── */
@@ -52,8 +52,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,194,255,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,194,255,0.018) 1px, transparent 1px);
+    linear-gradient(rgba(0,194,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,194,255,0.03) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
   z-index: 0;
@@ -78,7 +78,7 @@ body::before {
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: none;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 .bracket-label .code {
   color: var(--c-label);
@@ -176,25 +176,30 @@ body::before {
   width: 700px;
   height: 500px;
   background: radial-gradient(ellipse at center,
-    rgba(0,194,255,0.06) 0%,
-    rgba(0,229,160,0.03) 40%,
+    rgba(0,194,255,0.10) 0%,
+    rgba(0,229,160,0.04) 50%,
     transparent 70%);
   filter: blur(60px);
   pointer-events: none;
 }
-.hero-content {
-  max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  max-width: 1120px;
+  margin: 0 auto;
   padding: 0 var(--gutter);
-  border-left: 1px solid var(--border-2);
-  padding-left: var(--gutter);
-  position: relative;
 }
+.hero-left {
+  border-left: 1px solid var(--border-2);
+  padding-left: 32px;
+}
+.hero-right {}
 
 .hero h1 {
   font-family: var(--font-mono);
-  font-size: clamp(36px, 6vw, 56px);
+  font-size: clamp(28px, 4vw, 48px);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -202,10 +207,12 @@ body::before {
   color: var(--text);
 }
 .hero .sub {
-  font-size: clamp(15px, 1.8vw, 18px);
-  color: var(--text-2);
-  max-width: 580px;
-  line-height: 1.65;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 560px;
   margin-bottom: 32px;
 }
 .hero-actions {
@@ -235,8 +242,7 @@ body::before {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
-  margin: 32px 0;
-  max-width: 640px;
+  margin: 0;
   overflow: hidden;
 }
 .terminal-bar {
@@ -377,13 +383,13 @@ body::before {
    SECTIONS (shared)
    ================================================================ */
 .section {
-  padding: 100px 0;
+  padding: 72px 0;
   position: relative;
   z-index: 1;
 }
 .section-title {
   font-family: var(--font-mono);
-  font-size: clamp(36px, 5vw, 60px);
+  font-size: clamp(28px, 4vw, 48px);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -391,11 +397,13 @@ body::before {
   color: var(--text);
 }
 .section-sub {
-  color: var(--text-2);
-  font-size: 17px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text);
   max-width: 560px;
   margin: 0 0 60px;
-  line-height: 1.6;
 }
 .section-caption {
   margin-top: 40px;
@@ -491,10 +499,8 @@ body::before {
 /* ================================================================
    DEMO SECTION
    ================================================================ */
-.demo-section { padding-top: 0; }
 
 .demo-embed-wrap {
-  max-width: 960px;
   margin: 0 auto;
   border-radius: var(--r-card);
   overflow: hidden;
@@ -509,7 +515,6 @@ body::before {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  max-width: 700px;
 }
 .trace-card {
   display: block;
@@ -551,16 +556,17 @@ body::before {
 .steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
+  gap: 0;
+  border: 1px solid var(--border-2);
   border-radius: var(--r-card);
   overflow: hidden;
 }
 .step {
   background: var(--bg-2);
   padding: 36px 32px;
+  border-right: 1px solid var(--border-2);
 }
+.step:last-child { border-right: none; }
 .step-prefix {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -679,13 +685,13 @@ body::before {
    GET STARTED
    ================================================================ */
 .get-started-section {
-  padding: 100px 0;
+  padding: 72px 0;
   position: relative;
   z-index: 1;
 }
 .get-started-section h2 {
   font-family: var(--font-mono);
-  font-size: clamp(36px, 6vw, 56px);
+  font-size: clamp(28px, 4vw, 48px);
   font-weight: 600;
   line-height: 1.1;
   margin-bottom: 20px;
@@ -811,16 +817,20 @@ footer {
    MOBILE
    ================================================================ */
 @media (max-width: 768px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hero-right { order: 2; }
   .problem-split { grid-template-columns: 1fr; }
   .vs { padding: 8px 0; }
   .steps { grid-template-columns: 1fr; }
+  .step { border-right: none; border-bottom: 1px solid var(--border-2); }
+  .step:last-child { border-bottom: none; }
   .compare-table th,
   .compare-table td { padding: 10px 12px; font-size: 12px; }
   .compare-note { grid-template-columns: 1fr; }
   .trace-cards { grid-template-columns: 1fr; }
   .hero { padding: 80px 0 60px; }
   .container { padding: 0 20px; }
-  .hero-content { padding-left: 24px; }
+  .hero-left { padding-left: 24px; }
   .topbar { padding: 0 16px; }
   .topbar-build { display: none; }
   .topbar-link { display: none; }
@@ -829,7 +839,7 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .hero-content { padding-left: 18px; border-left-width: 0; }
+  .hero-left { padding-left: 18px; border-left-width: 0; }
   .hero h1 { font-size: 28px; }
   .section-title { font-size: 28px; }
   .install-block { width: 100%; }
