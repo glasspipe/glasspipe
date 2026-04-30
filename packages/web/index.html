@@ -20,21 +20,19 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<a href="#problem" class="skip-link">Skip to content</a>
+<a href="#main-content" class="skip-link">Skip to content</a>
 
 <!-- ── Topbar ──────────────────────────────────────────────── -->
 <header class="topbar">
   <a href="https://glasspipe.dev" class="topbar-logo">glass<span>pipe</span></a>
-  <span class="topbar-sub">flight recorder</span>
-  <span class="topbar-build"><a href="https://github.com/glasspipe/glasspipe/commit/abb0a52" style="color:inherit;text-decoration:none">abb0a52</a></span>
   <nav aria-label="Main">
     <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="topbar-link">GitHub</a>
-    <a href="#get-started" class="topbar-cta">Install &rarr;</a>
+    <a href="#get-started" class="topbar-cta">Install</a>
   </nav>
 </header>
 
 <!-- ── Main Content ────────────────────────────────────────── -->
-<main>
+<main id="main-content">
 
 <!-- ── Hero ─────────────────────────────────────────────────── -->
 <section class="hero">
@@ -129,7 +127,7 @@
         </div>
         <div class="finding-card success">
           <span class="finding-label ok">[ RESULT ]</span>
-          Fixed in <strong class="finding-result">15 minutes</strong>. New cost per run: <strong style="color:var(--c-status)">$0.31</strong> <span class="finding-delta">(&minus;90%)</span>
+          Fixed in <strong class="finding-result">15 minutes</strong>. New cost per run: <strong class="text-status">$0.31</strong> <span class="finding-delta">(&minus;90%)</span>
         </div>
       </div>
     </div>
@@ -148,7 +146,7 @@
         <div class="stat-label">[ AVG ] / cost after fix</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">&minus;90%</div>
+        <div class="stat-number positive">&minus;90%</div>
         <div class="stat-label">[ DELTA ] / typical reduction</div>
       </div>
       <div class="stat-item">
@@ -191,11 +189,11 @@
             <span class="demo-bar-dur">655ms</span>
           </div>
           <div class="demo-bar-status">
-            <span style="color:var(--c-status)">&#10003;</span> ok &middot; $0.012
+            <span class="text-status">&#10003;</span> ok &middot; $0.012
           </div>
         </div>
         <div class="demo-placeholder-cta">
-          <a href="#get-started" style="color:var(--c-action);text-decoration:none">Install GlassPipe</a> to explore traces like this in your own dashboard
+          <a href="#get-started" class="link-action">Install GlassPipe</a> to explore traces like this in your own dashboard
         </div>
       </div>
     </div>
@@ -215,7 +213,7 @@
         <div class="step-prefix">[ 01 ]</div>
         <div class="step-title">Install</div>
         <div class="step-desc">One command. No accounts, no API keys, no configuration.</div>
-        <div class="step-code"><span style="color:var(--text-3)">$ </span>pip install glasspipe</div>
+        <div class="step-code"><span class="text-dim">$ </span>pip install glasspipe</div>
       </div>
       <div class="step">
         <div class="step-prefix">[ 02 ]</div>
@@ -234,9 +232,9 @@
         <div class="step-title">See &amp; Share</div>
         <div class="step-desc">Open the dashboard. Explore the timeline. Share a link in one click.</div>
         <div class="step-code">
-          <span style="color:var(--text-3)">$ </span>glasspipe dashboard<br>
-          <span style="color:var(--c-status)">&check; </span><span style="color:var(--text-3)">localhost:3000</span><br><br>
-          <span style="color:var(--text-3)"># share: glasspipe.dev/t/a1f9c2</span>
+          <span class="text-dim">$ </span>glasspipe dashboard<br>
+          <span class="text-status">&check; </span><span class="text-dim">localhost:3000</span><br><br>
+          <span class="text-dim"># share: glasspipe.dev/t/a1f9c2</span>
         </div>
       </div>
     </div>
@@ -351,25 +349,28 @@
 
 <!-- ── Status Strip ───────────────────────────────────────────── -->
 <div class="status-strip">
-  <span class="status-item"><span class="status-dot"></span> ONLINE</span>
+  <span class="status-item"><span class="status-dot"></span> OPEN SOURCE</span>
   <span class="status-sep">&middot;</span>
   <span class="status-item">v0.1.0</span>
   <span class="status-sep">&middot;</span>
-  <span class="status-item"><a href="https://github.com/glasspipe/glasspipe/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">MIT</a></span>
-  <span class="status-sep">&middot;</span>
-  <span class="status-item"><a href="https://pypi.org/project/glasspipe/" target="_blank" rel="noopener" style="color:var(--c-action);text-decoration:none">PyPI</a></span>
+  <span class="status-item"><a href="https://pypi.org/project/glasspipe/" target="_blank" rel="noopener" class="link-action">PyPI</a></span>
 </div>
 
 
 <!-- ── Footer ────────────────────────────────────────────────── -->
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo">glass<span>pipe</span>.dev</div>
-    <div class="footer-links">
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/glasspipe/glasspipe#readme" target="_blank" rel="noopener">Docs</a>
+    <div class="footer-row">
+      <div class="footer-logo">glass<span>pipe</span>.dev</div>
+      <div class="footer-links">
+        <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/glasspipe/glasspipe#readme" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <span class="footer-build"><a href="https://github.com/glasspipe/glasspipe/commit/abb0a52">abb0a52</a></span>
     </div>
-    <div class="footer-by">Built by <a href="https://www.linkedin.com/in/yonatan-michelson" target="_blank" rel="noopener">Jonathan</a> &middot; MIT licensed &middot; Open source</div>
+    <div class="footer-row">
+      <div class="footer-by">Built by <a href="https://www.linkedin.com/in/yonatan-michelson" target="_blank" rel="noopener">Jonathan</a> &middot; MIT licensed &middot; Open source</div>
+    </div>
   </div>
 </footer>
 
