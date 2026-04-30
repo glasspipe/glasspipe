@@ -3,23 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07090f">
   <title>GlassPipe — The flight recorder for your AI agents</title>
   <meta name="description" content="GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
+  <meta property="og:title" content="GlassPipe — The flight recorder for your AI agents">
+  <meta property="og:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click. No account required.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://glasspipe.dev">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="GlassPipe — The flight recorder for your AI agents">
+  <meta name="twitter:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<a href="#problem" class="skip-link">Skip to content</a>
 
 <!-- ── Topbar ──────────────────────────────────────────────── -->
 <header class="topbar">
   <a href="https://glasspipe.dev" class="topbar-logo">glass<span>pipe</span></a>
   <span class="topbar-sub">flight recorder</span>
-  <span class="topbar-build">BUILD #047</span>
-  <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="topbar-link">GitHub</a>
-  <a href="#get-started" class="topbar-cta">Install &rarr;</a>
+  <span class="topbar-build"><a href="https://github.com/glasspipe/glasspipe/commit/abb0a52" style="color:inherit;text-decoration:none">abb0a52</a></span>
+  <nav aria-label="Main">
+    <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="topbar-link">GitHub</a>
+    <a href="#get-started" class="topbar-cta">Install &rarr;</a>
+  </nav>
 </header>
+
+<!-- ── Main Content ────────────────────────────────────────── -->
+<main>
 
 <!-- ── Hero ─────────────────────────────────────────────────── -->
 <section class="hero">
@@ -41,7 +56,7 @@
         </div>
         <a href="#demo" class="btn-primary">&rarr; Demo</a>
         <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </a>
       </div>
@@ -49,14 +64,15 @@
       <p class="hero-footnote">free &middot; open source &middot; no account ever</p>
 
     </div>
-    <div class="hero-right">
+    <div>
 
       <div class="terminal" id="hero-terminal" aria-label="GlassPipe demo terminal">
         <div class="terminal-bar">
           <span class="terminal-bar-path">~/agent</span>
-          <span class="terminal-bar-meta">BUILD #047</span>
+          <span class="terminal-bar-meta">abb0a52</span>
         </div>
-        <pre class="terminal-body" id="terminal-body" aria-live="polite"></pre>
+        <pre class="terminal-body" id="terminal-body"></pre>
+        <span class="sr-only" id="terminal-summary" aria-live="polite"></span>
         <button class="terminal-replay" id="terminal-replay" type="button">[ REPLAY ]</button>
       </div>
 
@@ -100,20 +116,20 @@
 
       <div class="problem-card good">
         <div class="problem-card-head"><span>&check;</span> With GlassPipe</div>
-        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:14px;">
+        <div class="problem-intro">
           A full visual timeline instantly reveals:
         </div>
         <div class="finding-card warn">
           <span class="finding-label warn">[ DETECTED ]</span>
-          <code class="mono" style="font-size:11px;color:var(--c-label)">summarize_article</code> called 3&times; with <em>identical input</em>. Wasted: $0.42
+          <code class="mono finding-code">summarize_article</code> called 3&times; with <em>identical input</em>. Wasted: $0.42
         </div>
         <div class="finding-card warn">
           <span class="finding-label warn">[ DETECTED ]</span>
-          <code class="mono" style="font-size:11px;color:var(--c-label)">verify_report</code> looping 6&times; with no exit condition. Wasted: $1.48
+          <code class="mono finding-code">verify_report</code> looping 6&times; with no exit condition. Wasted: $1.48
         </div>
         <div class="finding-card success">
           <span class="finding-label ok">[ RESULT ]</span>
-          Fixed in <strong style="color:var(--text)">15 minutes</strong>. New cost per run: <strong style="color:var(--c-status)">$0.31</strong> <span style="color:var(--text-3)">(&minus;90%)</span>
+          Fixed in <strong class="finding-result">15 minutes</strong>. New cost per run: <strong style="color:var(--c-status)">$0.31</strong> <span class="finding-delta">(&minus;90%)</span>
         </div>
       </div>
     </div>
@@ -127,43 +143,39 @@
 <section class="section demo-section" id="demo">
   <div class="container">
     <div class="bracket-label"><span class="code">[ TRC-DEMO ]</span> <span class="label-text">/ live trace</span></div>
-    <h2 class="section-title">Try it now &mdash; no install required.</h2>
-    <p class="section-sub">Click any span bar below to inspect it. This is exactly what you see in your own dashboard.</p>
+    <h2 class="section-title">What your dashboard looks like.</h2>
+    <p class="section-sub">Every run becomes a visual timeline you can explore, inspect, and share.</p>
 
     <div class="demo-embed-wrap">
-      <div style="
-        padding: 40px var(--gutter);
-        background: var(--bg-2);
-        text-align: center;
-      ">
-        <div class="bracket-label" style="text-align:left;margin-bottom:32px"><span class="code">[ TRC-DEMO ]</span> <span class="label-text">/ waterfall timeline</span></div>
-        <div style="text-align:left;max-width:640px;margin:0 auto">
-          <div style="margin-bottom:18px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
-            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">AGENT</span>
-            <div style="flex:1;height:20px;background:var(--c-action-dim);border:1px solid rgba(0,194,255,0.15);border-radius:2px;width:85%"></div>
-            <span class="mono" style="font-size:10px;color:var(--text-3)">2.3s</span>
+      <div class="demo-placeholder">
+        <div class="bracket-label demo-bracket"><span class="code">[ TRC-DEMO ]</span> <span class="label-text">/ waterfall timeline</span></div>
+        <div class="demo-bars">
+          <div class="demo-bar">
+            <span class="demo-bar-label demo-bar-label--agent">AGENT</span>
+            <div class="demo-bar-track demo-bar-track--agent"></div>
+            <span class="demo-bar-dur">2.3s</span>
           </div>
-          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
-            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">LLM</span>
-            <div style="flex:1;height:14px;background:var(--c-label-dim);border:1px solid rgba(255,159,64,0.15);border-radius:2px;width:35%"></div>
-            <span class="mono" style="font-size:10px;color:var(--text-3)">412ms</span>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
+            <div class="demo-bar-track demo-bar-track--llm"></div>
+            <span class="demo-bar-dur">412ms</span>
           </div>
-          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
-            <span class="mono" style="font-size:10px;color:var(--c-status);letter-spacing:0.06em">TOOL</span>
-            <div style="flex:1;height:14px;background:var(--c-status-dim);border:1px solid rgba(0,229,160,0.15);border-radius:2px;width:48%"></div>
-            <span class="mono" style="font-size:10px;color:var(--text-3)">562ms</span>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--tool">TOOL</span>
+            <div class="demo-bar-track demo-bar-track--tool"></div>
+            <span class="demo-bar-dur">562ms</span>
           </div>
-          <div style="margin-left:24px;margin-bottom:10px;padding:10px 14px;background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:12px">
-            <span class="mono" style="font-size:10px;color:var(--c-label);letter-spacing:0.06em">LLM</span>
-            <div style="flex:1;height:14px;background:var(--c-label-dim);border:1px solid rgba(255,159,64,0.15);border-radius:2px;width:55%"></div>
-            <span class="mono" style="font-size:10px;color:var(--text-3)">655ms</span>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
+            <div class="demo-bar-track demo-bar-track--llm" style="width:55%"></div>
+            <span class="demo-bar-dur">655ms</span>
           </div>
-          <div style="margin-top:20px;font-family:var(--font-mono);font-size:12px;color:var(--text-3)">
+          <div class="demo-bar-status">
             <span style="color:var(--c-status)">&#10003;</span> ok &middot; $0.012
           </div>
         </div>
-        <div style="margin-top:28px;font-family:var(--font-mono);font-size:11px;color:var(--text-3)">
-          Interactive demo coming soon &mdash; <a href="#get-started" style="color:var(--c-action);text-decoration:none">install now</a> to try locally
+        <div class="demo-placeholder-cta">
+          <a href="#get-started" style="color:var(--c-action);text-decoration:none">Install GlassPipe</a> to explore traces like this in your own dashboard
         </div>
       </div>
     </div>
@@ -253,18 +265,6 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Enterprise observability with team workspaces, SSO, SOC2</td>
-            <td><span class="pill other">[ LANGFUSE ] / [ LANGSMITH ]</span></td>
-          </tr>
-          <tr>
-            <td>Production monitoring with alerting and full async support</td>
-            <td><span class="pill other">[ LANGFUSE ] / [ HELICONE ]</span></td>
-          </tr>
-          <tr>
-            <td>Open-source self-hosted observability platform</td>
-            <td><span class="pill other">[ ARIZE PHOENIX ] / [ LANGFUSE ]</span></td>
-          </tr>
           <tr class="highlight">
             <td><strong>Install in 60s, see a trace, share a debugging link &mdash; no account ever</strong></td>
             <td><span class="pill gp">[ GLASSPIPE ]</span></td>
@@ -276,6 +276,10 @@
           <tr class="highlight">
             <td><strong>Share a debugging session like a CodeSandbox link</strong></td>
             <td><span class="pill gp">[ GLASSPIPE ]</span></td>
+          </tr>
+          <tr>
+            <td>Enterprise observability, SSO, SOC2, alerting, async, team workspaces</td>
+            <td><span class="pill other">[ LANGFUSE ] / [ LANGSMITH ]</span></td>
           </tr>
         </tbody>
       </table>
@@ -303,18 +307,6 @@
     <div class="bracket-label"><span class="code">[ RUN-000 ]</span> <span class="label-text">/ install</span></div>
     <h2>Start tracing in sixty seconds.</h2>
 
-    <div class="hero-actions" style="margin-top:32px">
-      <div class="install-block" style="background:var(--bg-3)">
-        <span class="prompt">$</span>
-        <span class="cmd">pip install glasspipe</span>
-        <button class="copy-btn" onclick="copyInstall(this)">copy</button>
-      </div>
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        View on GitHub
-      </a>
-    </div>
-
     <div class="quickstart-block">
       <div class="quickstart-header">60-second quickstart</div>
       <div class="quickstart-body">
@@ -336,17 +328,18 @@
 </section>
 
 
+</main>
+
+
 <!-- ── Status Strip ───────────────────────────────────────────── -->
 <div class="status-strip">
   <span class="status-item"><span class="status-dot"></span> ONLINE</span>
-  <span class="status-sep">·</span>
-  <span class="status-item">BUILD #047</span>
-  <span class="status-sep">·</span>
-  <span class="status-item">v1.0</span>
-  <span class="status-sep">·</span>
-  <span class="status-item">MIT</span>
-  <span class="status-sep">·</span>
-  <span class="status-item">UPTIME 99.9%</span>
+  <span class="status-sep">&middot;</span>
+  <span class="status-item">v0.1.0</span>
+  <span class="status-sep">&middot;</span>
+  <span class="status-item"><a href="https://github.com/glasspipe/glasspipe/blob/main/LICENSE" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">MIT</a></span>
+  <span class="status-sep">&middot;</span>
+  <span class="status-item"><a href="https://pypi.org/project/glasspipe/" target="_blank" rel="noopener" style="color:var(--c-action);text-decoration:none">PyPI</a></span>
 </div>
 
 
@@ -367,10 +360,18 @@
 <script>
 function copyInstall(btn) {
   var text = 'pip install glasspipe';
+  var summary = document.getElementById('terminal-summary');
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(function () {
       btn.textContent = 'copied';
-      setTimeout(function () { btn.textContent = 'copy'; }, 2000);
+      btn.classList.add('copied');
+      btn.setAttribute('aria-label', 'Copied!');
+      if (summary) summary.textContent = 'Install command copied';
+      setTimeout(function () {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+        btn.setAttribute('aria-label', 'Copy install command');
+      }, 2000);
     });
   } else {
     var ta = document.createElement('textarea');
@@ -380,7 +381,14 @@ function copyInstall(btn) {
     document.execCommand('copy');
     document.body.removeChild(ta);
     btn.textContent = 'copied';
-    setTimeout(function () { btn.textContent = 'copy'; }, 2000);
+    btn.classList.add('copied');
+    btn.setAttribute('aria-label', 'Copied!');
+    if (summary) summary.textContent = 'Install command copied';
+    setTimeout(function () {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+      btn.setAttribute('aria-label', 'Copy install command');
+    }, 2000);
   }
 }
 </script>
@@ -449,6 +457,7 @@ function copyInstall(btn) {
     token++;
     var t = token;
     body.innerHTML = '';
+    await sleep(1500);
 
     if (reduce) {
       seq.forEach(function(item){
