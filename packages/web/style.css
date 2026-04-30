@@ -100,7 +100,7 @@ body::before {
 }
 
 .container {
-  max-width: 1120px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 var(--gutter);
   position: relative;
@@ -206,7 +206,6 @@ body::before {
    HERO — left-aligned with vertical guide line
    ================================================================ */
 .hero {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -232,7 +231,7 @@ body::before {
   grid-template-columns: 6fr 5fr;
   gap: 60px;
   align-items: center;
-  max-width: 1120px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 var(--gutter);
 }
@@ -965,7 +964,7 @@ footer {
   z-index: 1;
 }
 .footer-inner {
-  max-width: 1120px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 var(--gutter);
   display: flex;
