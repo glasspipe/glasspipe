@@ -36,9 +36,9 @@
   /* ── Type scale ───────────────────────────────────────── */
   --fs-xs:     11px;
   --fs-sm:     13px;
-  --fs-md:     16px;
-  --fs-lg:     20px;
-  --fs-xl:     clamp(24px, 3.5vw, 40px);
+  --fs-md:     15px;
+  --fs-lg:     18px;
+  --fs-xl:     clamp(22px, 3.5vw, 36px);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,7 +100,7 @@ body::before {
 }
 
 .container {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 var(--gutter);
   position: relative;
@@ -231,7 +231,7 @@ body::before {
   grid-template-columns: 6fr 5fr;
   gap: 60px;
   align-items: center;
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 var(--gutter);
 }
@@ -964,7 +964,7 @@ footer {
   z-index: 1;
 }
 .footer-inner {
-  max-width: 960px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 0 var(--gutter);
   display: flex;
