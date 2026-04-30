@@ -448,9 +448,10 @@ body::before {
   margin-bottom: 16px;
   color: var(--text);
 }
-.section-title em, .hero h1 em {
-  font-style: italic;
-  color: var(--c-action);
+.section-title .accent-resolved, .hero h1 .accent-resolved {
+  font-weight: 600;
+  font-style: normal;
+  color: var(--c-status);
 }
 .section-sub {
   font-family: var(--font-body);
@@ -465,8 +466,7 @@ body::before {
   margin-top: 40px;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  font-style: italic;
-  color: var(--c-action);
+  color: var(--text-2);
 }
 
 
