@@ -447,10 +447,15 @@ body::before {
   margin-bottom: 16px;
   color: var(--text);
 }
-.section-title .accent-resolved, .hero h1 .accent-resolved {
+.section-title .accent-resolved, .hero h1 .accent-resolved, .section-caption .accent-resolved {
   font-weight: 600;
   font-style: normal;
   color: var(--c-status);
+}
+.section-title .accent-action, .hero h1 .accent-action {
+  font-weight: 600;
+  font-style: normal;
+  color: var(--c-action);
 }
 .section-sub {
   font-family: var(--font-body);
@@ -619,7 +624,6 @@ body::before {
   background: var(--bg-2);
   text-align: center;
 }
-.demo-bracket { text-align: left; margin-bottom: 32px; }
 .demo-bars {
   text-align: left;
   max-width: 640px;
@@ -879,7 +883,7 @@ body::before {
 }
 
 .quickstart-block {
-  max-width: 520px;
+  max-width: 640px;
   margin: 40px 0 0;
   background: var(--bg-2);
   border: 1px solid var(--border);
