@@ -166,35 +166,51 @@
     <p class="section-sub">Every run becomes a visual timeline you can explore, inspect, and share.</p>
 
     <div class="demo-embed-wrap">
-      <div class="demo-placeholder">
-        <div class="demo-bars">
-          <div class="demo-bar">
-            <span class="demo-bar-label demo-bar-label--agent">AGENT</span>
-            <div class="demo-bar-track demo-bar-track--agent"></div>
-            <span class="demo-bar-dur">2.3s</span>
+      <div class="demo-waterfall">
+
+        <div class="demo-waterfall-timeline">
+          <div class="waterfall-pane demo-pane">
+            <div class="ruler">
+              <span>0</span><span>575ms</span><span>1.15s</span><span>1.73s</span><span>2.3s</span>
+            </div>
+            <div class="span-row" data-span="agent">
+              <div class="span-label">research_agent</div>
+              <div class="span-track">
+                <div class="span-bar kind-agent" style="left:0%;width:85%"></div>
+              </div>
+            </div>
+            <div class="span-row" data-span="plan">
+              <div class="span-label">&nbsp;&nbsp;plan</div>
+              <div class="span-track">
+                <div class="span-bar kind-llm" style="left:2%;width:18%"></div>
+              </div>
+            </div>
+            <div class="span-row" data-span="search">
+              <div class="span-label">&nbsp;&nbsp;web_search</div>
+              <div class="span-track">
+                <div class="span-bar kind-tool" style="left:22%;width:24%"></div>
+              </div>
+            </div>
+            <div class="span-row" data-span="synthesize">
+              <div class="span-label">&nbsp;&nbsp;synthesize</div>
+              <div class="span-track">
+                <div class="span-bar kind-llm" style="left:48%;width:34%"></div>
+              </div>
+            </div>
           </div>
-          <div class="demo-bar demo-bar--child">
-            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
-            <div class="demo-bar-track demo-bar-track--llm"></div>
-            <span class="demo-bar-dur">412ms</span>
+
+          <div id="demo-detail" class="detail-pane demo-detail">
+            <p class="detail-hint">Click a span to inspect it</p>
           </div>
-          <div class="demo-bar demo-bar--child">
-            <span class="demo-bar-label demo-bar-label--tool">TOOL</span>
-            <div class="demo-bar-track demo-bar-track--tool"></div>
-            <span class="demo-bar-dur">562ms</span>
-          </div>
-          <div class="demo-bar demo-bar--child">
-            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
-            <div class="demo-bar-track demo-bar-track--llm" style="width:55%"></div>
-            <span class="demo-bar-dur">655ms</span>
-          </div>
-          <div class="demo-bar-status">
-            <span class="text-status">&#10003;</span> ok &middot; $0.012
-          </div>
+        </div>
+
+        <div class="demo-status-bar">
+          <span class="text-status">&#10003;</span> ok &middot; 2.3s &middot; $0.012 &middot; 4 spans
         </div>
         <div class="demo-placeholder-cta">
           <a href="#get-started" class="link-action">Install GlassPipe</a> to explore traces like this in your own dashboard
         </div>
+
       </div>
     </div>
   </div>
@@ -576,6 +592,122 @@ function copyInstall(btn) {
     }, { threshold: 0.8 });
 
     io.observe(label);
+  });
+})();
+</script>
+
+<!-- ── Demo waterfall interactivity ──────────────────────── -->
+<script>
+(function(){
+  var panel = document.getElementById('demo-detail');
+  if (!panel) return;
+
+  var spans = {
+    agent: {
+      name: 'research_agent',
+      kind: 'agent',
+      kindLabel: 'AGENT',
+      id: 'xK9m2qaP4nRb',
+      duration: '2.3s',
+      input: { "topic": "AI agent observability", "max_steps": 3 },
+      output: { "result": "GlassPipe is an open-source Python SDK...", "steps_used": 3, "cost_usd": 0.012 }
+    },
+    plan: {
+      name: 'plan',
+      kind: 'llm',
+      kindLabel: 'LLM',
+      id: 'bT3v8jNq1wXc',
+      duration: '412ms',
+      model: 'gpt-4o-mini',
+      input: { "messages": [{ "role": "user", "content": "Plan research on: AI agent observability" }] },
+      output: { "content": "1. Define observability\n2. Survey tools\n3. Compare approaches", "tokens": { "prompt": 28, "completion": 42 } }
+    },
+    search: {
+      name: 'web_search',
+      kind: 'tool',
+      kindLabel: 'TOOL',
+      id: 'pL5w7yRz2kFm',
+      duration: '562ms',
+      input: { "query": "AI agent observability tools 2026", "limit": 5 },
+      output: { "results": ["Langfuse", "LangSmith", "Helicone", "GlassPipe", "Arize Phoenix"], "count": 5 }
+    },
+    synthesize: {
+      name: 'synthesize',
+      kind: 'llm',
+      kindLabel: 'LLM',
+      id: 'qA8n4sHd9jYe',
+      duration: '655ms',
+      model: 'gpt-4o-mini',
+      input: { "messages": [{ "role": "user", "content": "Synthesize findings into summary" }] },
+      output: { "content": "Most tools require accounts. GlassPipe is the only zero-config option.", "tokens": { "prompt": 95, "completion": 38 }, "cost_usd": 0.004 }
+    }
+  };
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderDetail(key) {
+    var sp = spans[key];
+    if (!sp) return '<p class="detail-hint">Span not found</p>';
+
+    var kindCls = 'kind-' + sp.kind;
+    var html = '<div class="detail-header">' +
+      '<span class="kind-dot ' + kindCls + '" style="font-size:10px">&#9679;</span>' +
+      '<span style="font-family:var(--font-mono)">' + esc(sp.name) + '</span>' +
+      '<span class="badge-kind ' + kindCls + '">' + sp.kindLabel + '</span>' +
+      '</div>';
+
+    html += '<dl class="detail-grid">';
+    html += '<dt>kind</dt><dd style="font-family:var(--font-mono)">' + esc(sp.kind) + '</dd>';
+    html += '<dt>span id</dt><dd style="font-family:var(--font-mono);color:var(--text-2)">' + esc(sp.id) + '</dd>';
+    html += '<dt>duration</dt><dd style="font-family:var(--font-mono)">' + esc(sp.duration) + '</dd>';
+    if (sp.model) html += '<dt>model</dt><dd style="font-family:var(--font-mono)">' + esc(sp.model) + '</dd>';
+
+    html += '</dl>';
+
+    if (sp.input !== null) {
+      html += '<div class="detail-section">' +
+        '<div class="detail-section-label">input</div>' +
+        '<pre class="detail-json">' + esc(JSON.stringify(sp.input, null, 2)) + '</pre>' +
+        '</div>';
+    }
+    if (sp.output !== null) {
+      html += '<div class="detail-section">' +
+        '<div class="detail-section-label">output</div>' +
+        '<pre class="detail-json">' + esc(JSON.stringify(sp.output, null, 2)) + '</pre>' +
+        '</div>';
+    }
+
+    html += '<button class="detail-close" onclick="demoDeselect()">&larr; back to overview</button>';
+
+    return html;
+  }
+
+  var activeKey = null;
+
+  window.demoDeselect = function() {
+    activeKey = null;
+    document.querySelectorAll('#demo .span-bar.active').forEach(function(b) { b.classList.remove('active'); });
+    panel.innerHTML = '<p class="detail-hint">Click a span to inspect it</p>';
+  };
+
+  document.querySelectorAll('#demo .span-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+      var key = this.dataset.span;
+      var bar = this.querySelector('.span-bar');
+
+      document.querySelectorAll('#demo .span-bar.active').forEach(function(b) { b.classList.remove('active'); });
+
+      if (activeKey === key) {
+        window.demoDeselect();
+        return;
+      }
+
+      activeKey = key;
+      bar.classList.add('active');
+      panel.innerHTML = renderDetail(key);
+    });
   });
 })();
 </script>
