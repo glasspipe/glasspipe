@@ -3,49 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07090f">
   <title>GlassPipe — The flight recorder for your AI agents</title>
   <meta name="description" content="GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
+  <meta property="og:title" content="GlassPipe — The flight recorder for your AI agents">
+  <meta property="og:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click. No account required.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://glasspipe.dev">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="GlassPipe — The flight recorder for your AI agents">
+  <meta name="twitter:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
 
 <!-- ── Topbar ──────────────────────────────────────────────── -->
 <header class="topbar">
-  <a href="https://glasspipe.dev" class="topbar-logo">glass<span class="accent">pipe</span></a>
-  <span class="topbar-sub">flight recorder</span>
-  <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="topbar-link">GitHub</a>
-  <a href="#get-started" class="topbar-cta">Install &rarr;</a>
+  <a href="https://glasspipe.dev" class="topbar-logo">glass<span>pipe</span></a>
+  <nav aria-label="Main">
+    <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="topbar-link">GitHub</a>
+    <a href="#get-started" class="topbar-cta">Install</a>
+  </nav>
 </header>
+
+<!-- ── Main Content ────────────────────────────────────────── -->
+<main id="main-content">
 
 <!-- ── Hero ─────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-glow"></div>
-  <div class="container" style="display:flex;flex-direction:column;align-items:center">
+  <div class="hero-inner">
+    <div class="hero-left">
 
-    <div class="tag fade-up delay-1"><span class="dot"></span>Open source &middot; Free &middot; MIT</div>
+      <div class="bracket-label"><span class="code">[ SYS-001 ]</span> <span class="label-text">/ open source &middot; MIT</span></div>
 
-    <h1 class="fade-up delay-2">See what your AI agent<br>actually did.</h1>
+      <h1>See what your AI agent<br><span class="accent-action">actually did.</span></h1>
 
-    <p class="sub fade-up delay-3">GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token &mdash; captured and turned into a beautiful, shareable timeline.</p>
+      <p class="sub">GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token &mdash; captured and turned into a beautiful, shareable timeline.</p>
 
-    <div class="hero-actions fade-up delay-4">
-      <div class="install-block">
-        <span class="prompt">$</span>
-        <span class="cmd">pip install glasspipe</span>
-        <button class="copy-btn" onclick="copyInstall(this)">copy</button>
+      <div class="hero-actions">
+        <div class="install-block">
+          <span class="prompt">$</span>
+          <span class="cmd">pip install glasspipe</span>
+          <button class="copy-btn" onclick="copyInstall(this)">copy</button>
+        </div>
+        <a href="#get-started" class="btn-primary">&rarr; Get started</a>
+        <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
+          <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
       </div>
-      <a href="#demo" class="btn-primary">Try the live demo &rarr;</a>
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
-      </a>
+
+      <p class="hero-footnote">free &middot; open source &middot; no account ever</p>
+
     </div>
+    <div>
 
-    <p class="hero-footnote fade-up delay-4">Free &middot; Open source &middot; No account ever</p>
+      <div class="terminal" id="hero-terminal" aria-label="GlassPipe demo terminal">
+        <div class="terminal-bar">
+          <span class="terminal-bar-path">~/agent</span>
+          <span class="terminal-bar-meta">abb0a52</span>
+        </div>
+        <pre class="terminal-body" id="terminal-body"></pre>
+        <span class="sr-only" id="terminal-summary" aria-live="polite"></span>
+        <button class="terminal-replay" id="terminal-replay" type="button">[ REPLAY ]</button>
+      </div>
 
+    </div>
   </div>
 </section>
 
@@ -53,8 +82,8 @@
 <!-- ── Problem ──────────────────────────────────────────────── -->
 <section class="section" id="problem">
   <div class="container">
-    <div class="section-tag"><div class="tag">// The problem</div></div>
-    <h2 class="section-title">Your agent is a black box.<br><em style="font-style:italic;color:var(--text-2)">Until now.</em></h2>
+    <div class="bracket-label"><span class="code">[ ERR-042 ]</span> <span class="label-text">/ the problem</span></div>
+    <h2 class="section-title">Your agent is a black box.<br><span class="accent-resolved">Until now.</span></h2>
     <p class="section-sub">Before GlassPipe, debugging a broken agent meant reading logs that look like this.</p>
 
     <div class="problem-split">
@@ -81,29 +110,50 @@
         </div>
       </div>
 
-      <div class="vs">VS</div>
+      <div class="vs">[ VS ]</div>
 
       <div class="problem-card good">
         <div class="problem-card-head"><span>&check;</span> With GlassPipe</div>
-        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:14px;">
+        <div class="problem-intro">
           A full visual timeline instantly reveals:
         </div>
         <div class="finding-card warn">
-          <span class="finding-label warn">DETECTED</span>
-          <code class="mono" style="font-size:11px;color:var(--orange)">summarize_article</code> called 3&times; with <em>identical input</em>. Wasted: $0.42
+          <span class="finding-label warn">[ DETECTED ]</span>
+          <code class="mono finding-code">summarize_article</code> called 3&times; with <em>identical input</em>. Wasted: $0.42
         </div>
         <div class="finding-card warn">
-          <span class="finding-label warn">DETECTED</span>
-          <code class="mono" style="font-size:11px;color:var(--orange)">verify_report</code> looping 6&times; with no exit condition. Wasted: $1.48
+          <span class="finding-label warn">[ DETECTED ]</span>
+          <code class="mono finding-code">verify_report</code> looping 6&times; with no exit condition. Wasted: $1.48
         </div>
         <div class="finding-card success">
-          <span class="finding-label ok">RESULT</span>
-          Fixed in <strong style="color:var(--text)">15 minutes</strong>. New cost per run: <strong style="color:var(--green)">$0.31</strong> <span style="color:var(--text-3)">(&minus;90%)</span>
+          <span class="finding-label ok">[ RESULT ]</span>
+          Fixed in <strong class="finding-result">15 minutes</strong>. New cost per run: <strong class="text-status">$0.31</strong> <span class="finding-delta">(&minus;90%)</span>
         </div>
       </div>
     </div>
 
-    <p class="section-caption">Your agent went from black box to glass pipe.</p>
+    <p class="section-caption">Your agent went from black box to <span class="accent-resolved">glass pipe.</span></p>
+  </div>
+</section>
+
+
+<!-- ── Stat Block ─────────────────────────────────────────────── -->
+<section class="section stat-block-section">
+  <div class="container">
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-number">$0.31</div>
+        <div class="stat-label">[ AVG ] / cost after fix</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number positive">&minus;90%</div>
+        <div class="stat-label">[ DELTA ] / typical reduction</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">15min</div>
+        <div class="stat-label">[ OPS ] / time to first insight</div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -111,40 +161,62 @@
 <!-- ── Interactive Demo ──────────────────────────────────────── -->
 <section class="section demo-section" id="demo">
   <div class="container">
-    <div class="section-tag"><div class="tag">// Live demo</div></div>
-    <h2 class="section-title">Try it now &mdash;<br><em style="font-style:italic;color:var(--accent)">no install required.</em></h2>
-    <p class="section-sub">Click any span bar below to inspect it. This is exactly what you see in your own dashboard.</p>
+    <div class="bracket-label"><span class="code">[ TRC-DEMO ]</span> <span class="label-text">/ live trace</span></div>
+    <h2 class="section-title">What your dashboard looks like.</h2>
+    <p class="section-sub">Every run becomes a visual timeline you can explore, inspect, and share.</p>
 
     <div class="demo-embed-wrap">
-      <iframe
-        src="https://glasspipe.dev/t/DEMO01/embed"
-        loading="lazy"
-        allow="clipboard-write"
-        style="border:1px solid var(--border);width:100%;height:520px;border-radius:8px;background:var(--bg-2);"
-      ></iframe>
+      <div class="demo-placeholder">
+        <div class="demo-bars">
+          <div class="demo-bar">
+            <span class="demo-bar-label demo-bar-label--agent">AGENT</span>
+            <div class="demo-bar-track demo-bar-track--agent"></div>
+            <span class="demo-bar-dur">2.3s</span>
+          </div>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
+            <div class="demo-bar-track demo-bar-track--llm"></div>
+            <span class="demo-bar-dur">412ms</span>
+          </div>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--tool">TOOL</span>
+            <div class="demo-bar-track demo-bar-track--tool"></div>
+            <span class="demo-bar-dur">562ms</span>
+          </div>
+          <div class="demo-bar demo-bar--child">
+            <span class="demo-bar-label demo-bar-label--llm">LLM</span>
+            <div class="demo-bar-track demo-bar-track--llm" style="width:55%"></div>
+            <span class="demo-bar-dur">655ms</span>
+          </div>
+          <div class="demo-bar-status">
+            <span class="text-status">&#10003;</span> ok &middot; $0.012
+          </div>
+        </div>
+        <div class="demo-placeholder-cta">
+          <a href="#get-started" class="link-action">Install GlassPipe</a> to explore traces like this in your own dashboard
+        </div>
+      </div>
     </div>
-
-    <p class="section-caption" style="margin-top:32px">This is exactly what you'll see in your own dashboard.</p>
   </div>
 </section>
 
 
 <!-- ── How it works ──────────────────────────────────────────── -->
-<section class="section" id="how" style="padding-top:0">
+<section class="section" id="how">
   <div class="container">
-    <div class="section-tag"><div class="tag">// How it works</div></div>
-    <h2 class="section-title">Three steps.<br><em style="font-style:italic;color:var(--accent)">Sixty seconds.</em></h2>
+    <div class="bracket-label"><span class="code">[ OPS-003 ]</span> <span class="label-text">/ how it works</span></div>
+    <h2 class="section-title">Three steps. <span class="accent-action">Sixty seconds.</span></h2>
     <p class="section-sub">No accounts. No configuration. No environment variables. Just one line.</p>
 
     <div class="steps">
       <div class="step">
-        <div class="step-num">1</div>
+        <div class="step-prefix">[ 01 ]</div>
         <div class="step-title">Install</div>
         <div class="step-desc">One command. No accounts, no API keys, no configuration.</div>
-        <div class="step-code"><span style="color:var(--text-3)">$ </span>pip install glasspipe</div>
+        <div class="step-code"><span class="text-dim">$ </span>pip install glasspipe</div>
       </div>
       <div class="step">
-        <div class="step-num">2</div>
+        <div class="step-prefix">[ 02 ]</div>
         <div class="step-title">Decorate</div>
         <div class="step-desc">Add one line above your agent function. Your code is completely untouched.</div>
         <div class="step-code">
@@ -156,13 +228,13 @@
         </div>
       </div>
       <div class="step">
-        <div class="step-num">3</div>
+        <div class="step-prefix">[ 03 ]</div>
         <div class="step-title">See &amp; Share</div>
         <div class="step-desc">Open the dashboard. Explore the timeline. Share a link in one click.</div>
         <div class="step-code">
-          <span style="color:var(--text-3)">$ </span>glasspipe dashboard<br>
-          <span style="color:var(--green)">&check; </span><span style="color:var(--text-3)">localhost:3000</span><br><br>
-          <span style="color:var(--text-3)"># share: glasspipe.dev/t/a1f9c2</span>
+          <span class="text-dim">$ </span>glasspipe dashboard<br>
+          <span class="text-status">&check; </span><span class="text-dim">localhost:3000</span><br><br>
+          <span class="text-dim"># share: glasspipe.dev/t/a1f9c2</span>
         </div>
       </div>
     </div>
@@ -171,20 +243,20 @@
 
 
 <!-- ── Real Traces ──────────────────────────────────────────── -->
-<section class="section" id="traces" style="padding-top:0">
+<section class="section" id="traces">
   <div class="container">
-    <div class="section-tag"><div class="tag">// Real traces</div></div>
+    <div class="bracket-label"><span class="code">[ TRC-LIVE ]</span> <span class="label-text">/ shared runs</span></div>
     <h2 class="section-title">See a real trace.</h2>
     <p class="section-sub">Click either card to explore a live, shared agent run.</p>
 
     <div class="trace-cards">
       <a href="https://glasspipe-app-production.up.railway.app/t/WETXcP" target="_blank" rel="noopener" class="trace-card">
-        <div class="trace-card-kind">agent</div>
+        <div class="trace-card-kind">[ AGENT ]</div>
         <div class="trace-card-name">Research Agent</div>
         <div class="trace-card-desc">3 steps: plan, search, synthesize</div>
       </a>
       <a href="https://glasspipe-app-production.up.railway.app/t/clgkjW" target="_blank" rel="noopener" class="trace-card">
-        <div class="trace-card-kind">agent</div>
+        <div class="trace-card-kind">[ AGENT ]</div>
         <div class="trace-card-name">Customer Support Agent</div>
         <div class="trace-card-desc">4 steps: classify, fetch, draft, review</div>
       </a>
@@ -196,8 +268,8 @@
 <!-- ── Honest Comparison ─────────────────────────────────────── -->
 <section class="section" id="compare">
   <div class="container">
-    <div class="section-tag"><div class="tag">// Honest comparison</div></div>
-    <h2 class="section-title">Right tool,<br><em style="font-style:italic;color:var(--text-2)">right context.</em></h2>
+    <div class="bracket-label"><span class="code">[ DOC-018 ]</span> <span class="label-text">/ honest comparison</span></div>
+    <h2 class="section-title">Right tool, right context.</h2>
     <p class="section-sub">GlassPipe isn't for everyone. Here's the honest picture &mdash; use what fits you.</p>
 
     <div class="compare-wrap">
@@ -209,29 +281,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Enterprise observability with team workspaces, SSO, SOC2</td>
-            <td><span class="pill other">Langfuse or LangSmith</span></td>
-          </tr>
-          <tr>
-            <td>Production monitoring with alerting and full async support</td>
-            <td><span class="pill other">Langfuse or Helicone</span></td>
-          </tr>
-          <tr>
-            <td>Open-source self-hosted observability platform</td>
-            <td><span class="pill other">Arize Phoenix or Langfuse</span></td>
-          </tr>
           <tr class="highlight">
             <td><strong>Install in 60s, see a trace, share a debugging link &mdash; no account ever</strong></td>
-            <td><span class="pill gp">GlassPipe</span></td>
+            <td><span class="pill gp">[ GLASSPIPE ]</span></td>
           </tr>
           <tr class="highlight">
             <td><strong>Student learning how AI agents work internally</strong></td>
-            <td><span class="pill gp">GlassPipe</span></td>
+            <td><span class="pill gp">[ GLASSPIPE ]</span></td>
           </tr>
           <tr class="highlight">
             <td><strong>Share a debugging session like a CodeSandbox link</strong></td>
-            <td><span class="pill gp">GlassPipe</span></td>
+            <td><span class="pill gp">[ GLASSPIPE ]</span></td>
+          </tr>
+          <tr>
+            <td>Enterprise observability, SSO, SOC2, alerting, async, team workspaces</td>
+            <td><span class="pill other">[ LANGFUSE ] / [ LANGSMITH ]</span></td>
           </tr>
         </tbody>
       </table>
@@ -239,11 +303,11 @@
 
     <div class="compare-note">
       <div class="compare-note-block gp-note">
-        <h4>Use GlassPipe if...</h4>
+        <h4>[ USE GLASSPIPE IF ]</h4>
         You want the fastest path from a broken agent to a shareable trace link. You're an indie dev, a student, or anyone who bounces at &ldquo;create an account.&rdquo;
       </div>
       <div class="compare-note-block other-note">
-        <h4>Use Langfuse or LangSmith if...</h4>
+        <h4>[ USE LANGFUSE OR LANGSMITH IF ]</h4>
         You need enterprise features, production monitoring, team workspaces, alerting, async support, or SOC2 compliance. They're built for that.
       </div>
     </div>
@@ -256,19 +320,8 @@
 <!-- ── Get Started ───────────────────────────────────────────── -->
 <section class="get-started-section" id="get-started">
   <div class="container">
-    <h2>Start tracing in<br><em>sixty seconds.</em></h2>
-
-    <div class="hero-actions" style="margin-top:32px">
-      <div class="install-block" style="background:var(--bg-3)">
-        <span class="prompt">$</span>
-        <span class="cmd">pip install glasspipe</span>
-        <button class="copy-btn" onclick="copyInstall(this)">copy</button>
-      </div>
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener" class="btn-ghost">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        View on GitHub
-      </a>
-    </div>
+    <div class="bracket-label"><span class="code">[ RUN-000 ]</span> <span class="label-text">/ install</span></div>
+    <h2>Start tracing in sixty seconds.</h2>
 
     <div class="quickstart-block">
       <div class="quickstart-header">60-second quickstart</div>
@@ -291,15 +344,33 @@
 </section>
 
 
+</main>
+
+
+<!-- ── Status Strip ───────────────────────────────────────────── -->
+<div class="status-strip">
+  <span class="status-item"><span class="status-dot"></span> OPEN SOURCE</span>
+  <span class="status-sep">&middot;</span>
+  <span class="status-item">v0.1.0</span>
+  <span class="status-sep">&middot;</span>
+  <span class="status-item"><a href="https://pypi.org/project/glasspipe/" target="_blank" rel="noopener" class="link-action">PyPI</a></span>
+</div>
+
+
 <!-- ── Footer ────────────────────────────────────────────────── -->
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo">glass<span>pipe</span>.dev</div>
-    <div class="footer-links">
-      <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/glasspipe/glasspipe#readme" target="_blank" rel="noopener">Docs</a>
+    <div class="footer-row">
+      <div class="footer-logo">glass<span>pipe</span>.dev</div>
+      <div class="footer-links">
+        <a href="https://github.com/glasspipe/glasspipe" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/glasspipe/glasspipe#readme" target="_blank" rel="noopener">Docs</a>
+      </div>
+      <span class="footer-build"><a href="https://github.com/glasspipe/glasspipe/commit/abb0a52">abb0a52</a></span>
     </div>
-    <div class="footer-by">Built by <a href="https://www.linkedin.com/in/yonatan-michelson" target="_blank" rel="noopener">Jonathan</a> &middot; MIT licensed &middot; Open source</div>
+    <div class="footer-row">
+      <div class="footer-by">Built by <a href="https://www.linkedin.com/in/yonatan-michelson" target="_blank" rel="noopener">Jonathan</a> &middot; MIT licensed &middot; Open source</div>
+    </div>
   </div>
 </footer>
 
@@ -308,10 +379,18 @@
 <script>
 function copyInstall(btn) {
   var text = 'pip install glasspipe';
+  var summary = document.getElementById('terminal-summary');
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(function () {
       btn.textContent = 'copied';
-      setTimeout(function () { btn.textContent = 'copy'; }, 2000);
+      btn.classList.add('copied');
+      btn.setAttribute('aria-label', 'Copied!');
+      if (summary) summary.textContent = 'Install command copied';
+      setTimeout(function () {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+        btn.setAttribute('aria-label', 'Copy install command');
+      }, 2000);
     });
   } else {
     var ta = document.createElement('textarea');
@@ -321,9 +400,184 @@ function copyInstall(btn) {
     document.execCommand('copy');
     document.body.removeChild(ta);
     btn.textContent = 'copied';
-    setTimeout(function () { btn.textContent = 'copy'; }, 2000);
+    btn.classList.add('copied');
+    btn.setAttribute('aria-label', 'Copied!');
+    if (summary) summary.textContent = 'Install command copied';
+    setTimeout(function () {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+      btn.setAttribute('aria-label', 'Copy install command');
+    }, 2000);
   }
 }
+</script>
+
+<!-- ── Hero terminal animation ──────────────────────────────── -->
+<script>
+(function(){
+  var body = document.getElementById('terminal-body');
+  var replay = document.getElementById('terminal-replay');
+  var root = document.getElementById('hero-terminal');
+  if (!body || !root) return;
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var seq = [
+    { t: 'cmd',  s: '$ pip install glasspipe' },
+    { t: 'wait', ms: 450 },
+    { t: 'out',  s: '  Installing... done', cls: 'out-dim' },
+    { t: 'wait', ms: 600 },
+    { t: 'out',  s: '' },
+    { t: 'cmd',  s: '$ python my_agent.py' },
+    { t: 'wait', ms: 350 },
+    { t: 'out',  s: '  \u25CF tracing research_agent...', cls: 'out-status' },
+    { t: 'wait', ms: 350 },
+    { t: 'out',  s: '  \u251C\u2500 openai.chat       412ms  $0.004', cls: 'out-dim' },
+    { t: 'wait', ms: 220 },
+    { t: 'out',  s: '  \u251C\u2500 tool: web_search  562ms', cls: 'out-dim' },
+    { t: 'wait', ms: 220 },
+    { t: 'out',  s: '  \u2514\u2500 openai.chat       655ms  $0.008', cls: 'out-dim' },
+    { t: 'wait', ms: 500 },
+    { t: 'out',  s: '' },
+    { t: 'out',  s: '  \u2713 done in 2.3s \u00B7 $0.012', cls: 'out-ok' },
+    { t: 'wait', ms: 250 },
+    { t: 'link', s: '  \u2192 glasspipe.dev/t/a1f9c2',
+      href: 'https://glasspipe-app-production.up.railway.app/t/WETXcP' }
+  ];
+
+  var token = 0;
+  function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  function makeLine(cls) {
+    var el = document.createElement('span');
+    el.className = 'tline' + (cls ? ' ' + cls : '');
+    body.appendChild(el);
+    return el;
+  }
+
+  async function typeInto(el, txt, t) {
+    for (var i = 0; i < txt.length; i++) {
+      if (t !== token) return;
+      el.textContent += txt[i];
+      await sleep(22 + Math.random() * 18);
+    }
+    el.appendChild(document.createTextNode('\n'));
+  }
+
+  function fadeIn(el) {
+    el.style.opacity = '0';
+    requestAnimationFrame(function(){
+      el.style.transition = 'opacity 200ms ease';
+      el.style.opacity = '1';
+    });
+  }
+
+  async function play() {
+    token++;
+    var t = token;
+    body.innerHTML = '';
+    await sleep(1500);
+
+    if (reduce) {
+      seq.forEach(function(item){
+        if (item.t === 'wait') return;
+        if (item.t === 'link') {
+          var a = document.createElement('a');
+          a.className = 'tline tline-link';
+          a.href = item.href;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = item.s + '\n';
+          body.appendChild(a);
+        } else {
+          var el = makeLine(item.cls);
+          el.textContent = item.s + '\n';
+        }
+      });
+      return;
+    }
+
+    for (var i = 0; i < seq.length; i++) {
+      if (t !== token) return;
+      var item = seq[i];
+      if (item.t === 'wait') {
+        await sleep(item.ms);
+      } else if (item.t === 'cmd') {
+        var el = makeLine('tline-cmd');
+        await typeInto(el, item.s, t);
+      } else if (item.t === 'out') {
+        var el2 = makeLine(item.cls || 'out-dim');
+        el2.textContent = item.s + '\n';
+        fadeIn(el2);
+      } else if (item.t === 'link') {
+        var a = document.createElement('a');
+        a.className = 'tline tline-link';
+        a.href = item.href;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = item.s + '\n';
+        body.appendChild(a);
+        fadeIn(a);
+      }
+    }
+
+    if (t === token) {
+      var cur = document.createElement('span');
+      cur.className = 'cursor';
+      body.appendChild(cur);
+    }
+  }
+
+  if (replay) replay.addEventListener('click', function(){ play(); });
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { play(); io.disconnect(); }
+      });
+    }, { threshold: 0.25 });
+    io.observe(root);
+  } else {
+    play();
+  }
+})();
+</script>
+
+<script>
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var labels = document.querySelectorAll('.bracket-label');
+
+  labels.forEach(function(label) {
+    var code = label.querySelector('.code');
+    if (!code) return;
+    var fullText = code.textContent;
+
+    if (reduce) return;
+
+    code.textContent = '';
+    code.style.visibility = 'hidden';
+
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+
+        code.style.visibility = 'visible';
+        var i = 0;
+        var interval = setInterval(function() {
+          code.textContent += fullText[i];
+          i++;
+          if (i >= fullText.length) clearInterval(interval);
+        }, 35);
+      });
+    }, { threshold: 0.8 });
+
+    io.observe(label);
+  });
+})();
 </script>
 
 </body>

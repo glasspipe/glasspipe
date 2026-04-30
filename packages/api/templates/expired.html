@@ -5,24 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trace expired — GlassPipe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root { --bg:#080b10; --bg-2:#0d1117; --border:#1e2a38; --text:#e2eaf4; --text-2:#7a95b0; --accent:#00c2ff; --green:#00e5a0; --orange:#ff9f40; }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
-    body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0,194,255,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(0,194,255,0.025) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; z-index:0; }
-    .topbar { position:relative; z-index:10; height:52px; background:rgba(8,11,16,0.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 32px; gap:10px; }
-    .topbar a { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; color:var(--text); text-decoration:none; }
-    .topbar a .accent { color:var(--accent); }
-    main { flex:1; display:flex; align-items:center; justify-content:center; padding:32px; position:relative; z-index:1; }
-    .error-card { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:48px; text-align:center; max-width:440px; }
-    .error-code { font-family:'DM Mono',monospace; font-size:64px; font-weight:500; color:var(--border); line-height:1; margin-bottom:20px; }
-    .error-title { font-size:20px; font-weight:500; margin-bottom:10px; }
-    .error-body { font-size:14px; color:var(--text-2); line-height:1.6; margin-bottom:28px; }
-    .note { font-family:'DM Mono',monospace; font-size:11px; color:var(--orange); margin-bottom:28px; padding:8px 12px; border:1px solid rgba(255,159,64,0.25); border-radius:4px; background:rgba(255,159,64,0.07); }
-    .cta { display:inline-block; padding:10px 24px; border:1px solid rgba(0,229,160,0.35); background:rgba(0,229,160,0.07); color:var(--green); border-radius:8px; font-family:'DM Mono',monospace; font-size:13px; font-weight:500; text-decoration:none; transition:background 0.12s; }
-    .cta:hover { background:rgba(0,229,160,0.14); }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/expired.css">
 </head>
 <body>
   <header class="topbar">

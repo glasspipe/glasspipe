@@ -1,0 +1,93 @@
+:root {
+  /* ──────────────────────────────────────────────────────────────
+     GLASSPIPE DESIGN TOKENS
+
+     Source of truth: packages/web/styles/tokens.css
+     Shared by: landing page, share viewer, local dashboard
+
+     COPIES exist at:
+       packages/api/static/tokens.css
+       packages/sdk/src/glasspipe/static/tokens.css
+     Keep all three in sync. Edit HERE, then copy.
+     ────────────────────────────────────────────────────────────── */
+
+  /* ── Surfaces ─────────────────────────────────────────────── */
+  --bg:           #07090f;
+  --bg-2:         #0d1220;
+  --bg-3:         #151d2c;
+  --bg-4:         #1e2a3a;
+  --border:       #2d3d52;
+  --border-2:     #3d5268;
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --text:         #e6edf5;
+  --text-2:       #97a8be;
+  --text-3:       #6b7f96;
+
+  /* ── Three-color signal system ──────────────────────────────
+     Cyan  = interactive actions (buttons, links, primary CTAs)
+     Amber = labels and identifiers (bracket tags, span kind labels)
+     Green = status and success states
+     Agent = reserved for agent-span-kind only (not in 3-color system)
+     ────────────────────────────────────────────────────────── */
+  --c-action:     #00c2ff;
+  --c-label:      #ff9f40;
+  --c-status:     #00e5a0;
+  --c-action-dim:    rgba(0,194,255,0.10);
+  --c-label-dim:     rgba(255,159,64,0.10);
+  --c-status-dim:    rgba(0,229,160,0.10);
+
+  /* ── Agent span kind (not part of 3-color system) ───────────
+     Kept because span-kind colors are a distinct visual
+     vocabulary: LLM=cyan, Tool=amber, Custom=green,
+     Agent=purple, Error=red. Purple has no bracket-label use.
+     ────────────────────────────────────────────────────────── */
+  --c-agent:         #a78bfa;
+  --c-agent-dim:     rgba(167,139,250,0.10);
+
+  /* ── Errors ───────────────────────────────────────────────── */
+  --c-error:         #ff6b82;
+  --c-error-dim:     rgba(255,107,130,0.10);
+
+  /* ── Badge / ghost-button border tints ─────────────────────
+     Used by share viewer and dashboard for status badges,
+     kind badges, and ghost-action button borders.
+     ────────────────────────────────────────────────────────── */
+  --c-action-border: rgba(0,194,255,0.25);
+  --c-label-border:  rgba(255,159,64,0.25);
+  --c-status-border: rgba(0,229,160,0.25);
+  --c-agent-border:  rgba(167,139,250,0.25);
+  --c-error-border:  rgba(255,107,130,0.25);
+
+  /* ── Span bar glows ────────────────────────────────────────
+     Box-shadow values for waterfall timeline span bars.
+     One per span kind. Used by share viewer and dashboard.
+     ────────────────────────────────────────────────────────── */
+  --glow-action: 0 0 8px rgba(0,194,255,0.3);
+  --glow-label:  0 0 8px rgba(255,159,64,0.3);
+  --glow-status: 0 0 8px rgba(0,229,160,0.3);
+  --glow-agent:  0 0 8px rgba(167,139,250,0.3);
+  --glow-error:  0 0 8px rgba(255,107,130,0.3);
+
+  /* ── Typography ───────────────────────────────────────────── */
+  --font-mono: 'JetBrains Mono', 'DM Mono', ui-monospace, SFMono-Regular,
+               Menlo, Consolas, monospace;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ── Geometry ─────────────────────────────────────────────── */
+  --r:            2px;       /* small elements: badges, inputs, inline code */
+  --r-card:       4px;       /* cards, panes, modals — MAXIMUM allowed */
+  --r-bar:        3px;       /* waterfall span bars */
+  --gutter:       32px;
+
+  /* ── Composite surfaces ───────────────────────────────────── */
+  --topbar-bg:    rgba(7,9,15,0.92);
+  --grid-color:   rgba(0,194,255,0.05);
+
+  /* ── Type scale ───────────────────────────────────────────── */
+  --fs-xs:        11px;
+  --fs-sm:        13px;
+  --fs-md:        15px;
+  --fs-lg:        18px;
+  --fs-xl:        clamp(22px, 3.5vw, 36px);
+}

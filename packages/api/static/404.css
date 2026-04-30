@@ -1,0 +1,101 @@
+@import url('tokens.css');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.topbar {
+  position: relative;
+  z-index: 10;
+  height: 52px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 10px;
+}
+.topbar a {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.04em;
+}
+.topbar a .accent { color: var(--c-action); }
+
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+  z-index: 1;
+}
+.error-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 48px;
+  text-align: center;
+  max-width: 440px;
+}
+.error-code {
+  font-family: var(--font-mono);
+  font-size: 64px;
+  font-weight: 500;
+  color: var(--border);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+.error-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.error-body {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cta {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--c-action);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--r-card);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.cta:hover {
+  background: #1ad0ff;
+}
