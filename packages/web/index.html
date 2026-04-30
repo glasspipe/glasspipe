@@ -166,17 +166,17 @@
     <p class="section-sub">Every run becomes a visual timeline you can explore, inspect, and share.</p>
 
     <div class="demo-embed-wrap">
+      <div class="demo-chrome">
+        <span class="chrome-dot chrome-dot--red"></span>
+        <span class="chrome-dot chrome-dot--yellow"></span>
+        <span class="chrome-dot chrome-dot--green"></span>
+        <span class="chrome-title">glasspipe dashboard</span>
+      </div>
       <div class="demo-waterfall">
 
         <div class="demo-waterfall-timeline">
-          <div class="demo-pane">
-            <div class="demo-chrome">
-              <span class="chrome-dot chrome-dot--red"></span>
-              <span class="chrome-dot chrome-dot--yellow"></span>
-              <span class="chrome-dot chrome-dot--green"></span>
-              <span class="chrome-title">glasspipe dashboard</span>
-            </div>
-            <div class="waterfall-pane-inner">
+          <div class="waterfall-pane">
+            <div class="ruler">
               <span>0</span><span>575ms</span><span>1.15s</span><span>1.73s</span><span>2.3s</span>
             </div>
             <div class="span-row" data-span="agent">
@@ -203,8 +203,8 @@
                 <div class="span-bar kind-llm" style="left:48%;width:34%"></div>
               </div>
             </div>
-            </div>
           </div>
+
           <div id="demo-detail" class="detail-pane demo-detail">
             <p class="detail-hint">Click a span to inspect it</p>
           </div>

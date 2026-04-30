@@ -747,6 +747,31 @@ body::before {
   border: 1px solid var(--border-2);
 }
 
+.demo-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--border);
+}
+.chrome-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.chrome-dot--red { background: #ff5f57; }
+.chrome-dot--yellow { background: #febc2e; }
+.chrome-dot--green { background: #28c840; }
+.chrome-title {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+
 .demo-waterfall {
   background: var(--bg-2);
   padding: 0;
@@ -760,11 +785,13 @@ body::before {
   padding: 16px var(--gutter);
 }
 
-.demo-pane {
+.demo-detail {
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
-  overflow: hidden;
+  padding: 14px;
+  min-height: 160px;
+  font-size: 13px;
 }
 .demo-chrome {
   display: flex;
