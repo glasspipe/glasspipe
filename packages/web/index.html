@@ -139,6 +139,27 @@
 </section>
 
 
+<!-- ── Stat Block ─────────────────────────────────────────────── -->
+<section class="section stat-block-section">
+  <div class="container">
+    <div class="stat-grid">
+      <div class="stat-item">
+        <div class="stat-number">$0.31</div>
+        <div class="stat-label">[ AVG ] / cost after fix</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">&minus;90%</div>
+        <div class="stat-label">[ DELTA ] / typical reduction</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">15min</div>
+        <div class="stat-label">[ OPS ] / time to first insight</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <!-- ── Interactive Demo ──────────────────────────────────────── -->
 <section class="section demo-section" id="demo">
   <div class="container">
@@ -519,6 +540,43 @@ function copyInstall(btn) {
   } else {
     play();
   }
+})();
+</script>
+
+<script>
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var labels = document.querySelectorAll('.bracket-label');
+
+  labels.forEach(function(label) {
+    var code = label.querySelector('.code');
+    if (!code) return;
+    var fullText = code.textContent;
+
+    if (reduce) return;
+
+    code.textContent = '';
+    code.style.visibility = 'hidden';
+
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+
+        code.style.visibility = 'visible';
+        var i = 0;
+        var interval = setInterval(function() {
+          code.textContent += fullText[i];
+          i++;
+          if (i >= fullText.length) clearInterval(interval);
+        }, 35);
+      });
+    }, { threshold: 0.8 });
+
+    io.observe(label);
+  });
 })();
 </script>
 
