@@ -28,6 +28,10 @@ _DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///glasspipe_shares.db")
 if _DATABASE_URL.startswith("postgres://"):
     _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Append sslmode to URL for Railway Postgres-SSL template
+if _DATABASE_URL.startswith("postgresql://"):
+    _DATABASE_URL += "?sslmode=disable"
+
 _BASE_URL     = os.environ.get("GLASSPIPE_BASE_URL", "https://glasspipe.dev")
 _MAX_BYTES    = int(float(os.environ.get("GLASSPIPE_MAX_PAYLOAD_MB", "5")) * 1024 * 1024)
 _TTL_DAYS     = int(os.environ.get("GLASSPIPE_TRACE_TTL_DAYS", "30"))
@@ -168,9 +172,19 @@ def get_trace(trace_id):
     return jsonify(trace.payload)
 
 
-@app.get("/t/<trace_id>")
-def view_trace(trace_id):
-    """Public viewer page."""
+def _coerce_json(v):
+    if v is None:
+        return None
+    if isinstance(v, str):
+        try:
+            return json.loads(v)
+        except Exception:
+            return v
+    return v
+
+
+def _render_trace(trace_id, embed=False):
+    """Shared logic for full-page and embed trace viewers."""
     with _get_session() as session:
         trace = session.get(SharedTrace, trace_id)
 
@@ -184,7 +198,6 @@ def view_trace(trace_id):
     run = payload["run"]
     raw_spans = payload.get("spans", [])
 
-    # Waterfall math — identical to local dashboard
     run_start = _parse_dt(run.get("started_at"))
     run_end   = _parse_dt(run.get("ended_at")) or _utcnow()
     run_duration_ms = max(_ms(run_end - run_start), 1.0)
@@ -200,16 +213,6 @@ def view_trace(trace_id):
         width_pct = max(sp_dur / run_duration_ms * 100, 0.5)
         width_pct = min(width_pct, 100.0 - start_pct)
 
-        def _coerce(v):
-            if v is None:
-                return None
-            if isinstance(v, str):
-                try:
-                    return json.loads(v)
-                except Exception:
-                    return v
-            return v
-
         span_data.append({
             "id": sp.get("id", ""),
             "name": sp.get("name", ""),
@@ -218,9 +221,9 @@ def view_trace(trace_id):
             "duration_ms": round(sp_dur, 1),
             "start_pct": round(start_pct, 3),
             "width_pct": round(width_pct, 3),
-            "input": _coerce(sp.get("input") or sp.get("input_json")),
-            "output": _coerce(sp.get("output") or sp.get("output_json")),
-            "metadata": _coerce(sp.get("metadata") or sp.get("metadata_json")),
+            "input": _coerce_json(sp.get("input") or sp.get("input_json")),
+            "output": _coerce_json(sp.get("output") or sp.get("output_json")),
+            "metadata": _coerce_json(sp.get("metadata") or sp.get("metadata_json")),
         })
 
     spans_by_id = {sp["id"]: sp for sp in span_data}
@@ -233,7 +236,20 @@ def view_trace(trace_id):
         run_duration_ms=round(run_duration_ms),
         share_url=f"{_BASE_URL}/t/{trace_id}",
         shared_ago=_age_string(trace.created_at),
+        embed=embed,
     )
+
+
+@app.get("/t/<trace_id>")
+def view_trace(trace_id):
+    """Public viewer page."""
+    return _render_trace(trace_id, embed=False)
+
+
+@app.get("/t/<trace_id>/embed")
+def view_trace_embed(trace_id):
+    """Embeddable viewer — chrome-less version for iframes."""
+    return _render_trace(trace_id, embed=True)
 
 
 if __name__ == "__main__":

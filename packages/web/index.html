@@ -115,13 +115,13 @@
     <h2 class="section-title">Try it now &mdash;<br><em style="font-style:italic;color:var(--accent)">no install required.</em></h2>
     <p class="section-sub">Click any span bar below to inspect it. This is exactly what you see in your own dashboard.</p>
 
-    <div id="demo-run-card" class="run-card"></div>
-
-    <div class="demo-layout">
-      <div class="waterfall-pane" id="demo-waterfall"></div>
-      <div id="demo-detail" class="detail-pane">
-        <p class="detail-hint">&larr; Click a span to inspect it</p>
-      </div>
+    <div class="demo-embed-wrap">
+      <iframe
+        src="https://glasspipe.dev/t/DEMO01/embed"
+        loading="lazy"
+        allow="clipboard-write"
+        style="border:1px solid var(--border);width:100%;height:520px;border-radius:8px;background:var(--bg-2);"
+      ></iframe>
     </div>
 
     <p class="section-caption" style="margin-top:32px">This is exactly what you'll see in your own dashboard.</p>
@@ -303,127 +303,6 @@
   </div>
 </footer>
 
-
-<!-- ── Inline trace data for demo ────────────────────────────── -->
-<script>
-window.GLASSPIPE_TRACE = {
-  "run": {
-    "name": "research_agent",
-    "status": "ok",
-    "duration_ms": 1200
-  },
-  "spans": {
-    "V1StGXR8Zx": {
-      "id": "V1StGXR8Zx",
-      "name": "plan",
-      "kind": "custom",
-      "status": "ok",
-      "duration_ms": 50.0,
-      "start_pct": 0.0,
-      "width_pct": 4.167,
-      "input": {
-        "topic": "AI agent observability"
-      },
-      "output": {
-        "plan": "I will research 'AI agent observability' by searching the web, summarizing key sources, and synthesizing a concise report."
-      },
-      "metadata": null
-    },
-    "Nv4bH7p2Km": {
-      "id": "Nv4bH7p2Km",
-      "name": "web_search",
-      "kind": "tool",
-      "status": "ok",
-      "duration_ms": 200.0,
-      "start_pct": 4.167,
-      "width_pct": 16.667,
-      "input": {
-        "query": "AI agent observability",
-        "num_results": 3
-      },
-      "output": {
-        "results": [
-          "AI agent observability is a rapidly evolving field focused on giving developers visibility into autonomous decision-making loops.",
-          "Recent advances include lightweight tracing libraries that capture LLM calls, tool usage, and token costs with minimal code changes.",
-          "Practitioners report that observability tools reduce debugging time by 60-80% and help catch redundant API calls early."
-        ],
-        "source": "simulated"
-      },
-      "metadata": null
-    },
-    "Rk9qW3mJt5": {
-      "id": "Rk9qW3mJt5",
-      "name": "openai.chat.completions",
-      "kind": "llm",
-      "status": "ok",
-      "duration_ms": 600.0,
-      "start_pct": 20.833,
-      "width_pct": 50.0,
-      "input": {
-        "model": "gpt-4o",
-        "messages": [
-          {"role": "system", "content": "You are a research assistant. Summarize the provided sources concisely."},
-          {"role": "user", "content": "Summarize these findings about AI agent observability: 1) It focuses on visibility into autonomous decision-making. 2) Lightweight tracing libraries capture LLM calls and token costs. 3) Debugging time reduced 60-80%."}
-        ]
-      },
-      "output": {
-        "content": "AI agent observability provides developers with real-time visibility into how autonomous agents make decisions. The field has produced lightweight tracing tools that capture every LLM call, tool invocation, and token expenditure with minimal code overhead. Practitioners consistently report 60-80% reductions in debugging time, primarily by catching redundant API calls and infinite loops early in development."
-      },
-      "metadata": {
-        "model": "gpt-4o",
-        "prompt_tokens": 145,
-        "completion_tokens": 312,
-        "cost_usd": 0.0023
-      }
-    },
-    "Bx6fL8nQp2": {
-      "id": "Bx6fL8nQp2",
-      "name": "extract_facts",
-      "kind": "custom",
-      "status": "ok",
-      "duration_ms": 100.0,
-      "start_pct": 70.833,
-      "width_pct": 8.333,
-      "input": {
-        "text": "AI agent observability provides developers with real-time visibility into how autonomous agents make decisions. The field has produced lightweight tracing tools that capture every LLM call, tool invocation, and token expenditure with minimal code overhead. Practitioners consistently report 60-80% reductions in debugging time, primarily by catching redundant API calls and infinite loops early in development."
-      },
-      "output": {
-        "facts": [
-          "Observability gives real-time visibility into agent decisions",
-          "Tracing tools capture LLM calls, tool invocations, and token costs",
-          "60-80% reduction in debugging time reported",
-          "Redundant API calls and loops caught early"
-        ]
-      },
-      "metadata": null
-    },
-    "Yw3hT5cKj9": {
-      "id": "Yw3hT5cKj9",
-      "name": "synthesize",
-      "kind": "custom",
-      "status": "ok",
-      "duration_ms": 250.0,
-      "start_pct": 79.167,
-      "width_pct": 20.833,
-      "input": {
-        "facts": [
-          "Observability gives real-time visibility into agent decisions",
-          "Tracing tools capture LLM calls, tool invocations, and token costs",
-          "60-80% reduction in debugging time reported",
-          "Redundant API calls and loops caught early"
-        ],
-        "style": "concise"
-      },
-      "output": {
-        "summary": "AI agent observability tools trace every LLM call and tool invocation, giving developers real-time visibility into agent behavior. Users report 60-80% faster debugging, mainly by catching redundant calls and loops early.",
-        "word_count": 30
-      },
-      "metadata": null
-    }
-  }
-};
-</script>
-<script src="demo.js"></script>
 
 <!-- ── Copy-to-clipboard helper ──────────────────────────────── -->
 <script>
