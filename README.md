@@ -122,102 +122,82 @@ You get a link like:
 https://glasspipe.dev/t/a1f9c2
 ```
 
-Anyone can open it. No account needed. Ever. Traces expire after 30 days. You get a delete token to remove it early.
+Anyone can open it. No account, ever. Traces expire after 30 days. You get a delete token to remove a trace early.
+
+**Privacy guarantees:**
+
+- Redaction happens on your machine, before upload. The server never sees the original data.
+- The pre-share preview cannot be bypassed.
+- Custom redaction patterns: set `GLASSPIPE_REDACT_PATTERNS` as a JSON dict in your environment.
+- Shared traces are public but unlisted — accessible only by direct link.
 
 ---
 
-## Example traces
+## `[ EXAMPLES ]` Examples
 
-- [Simple research agent](#) — 3 spans, plan → search → synthesize
-- [Customer support agent](#) — 4 spans, classify → fetch → draft → review
+Three working examples in the [`/examples`](examples/) folder:
 
-*(Replace these with real shared trace URLs after you run the examples)*
+```bash
+python examples/hello.py             # minimal — one span
+python examples/research_agent.py    # 3 spans: plan, search, synthesize
+python examples/customer_support.py  # 4 spans: classify, fetch, draft, review
+```
 
----
-
-## GlassPipe vs Langfuse vs LangSmith
-
-We're going to be honest with you. Pick the right tool.
-
-| | GlassPipe | Langfuse | LangSmith |
-|---|---|---|---|
-| Install time | ~60 seconds | ~20 minutes | ~20 minutes |
-| Account required | Never | Yes | Yes |
-| Share a trace publicly | One click | Several steps | Several steps |
-| Local dashboard | Yes | No | No |
-| Team workspaces | No | Yes | Yes |
-| Production monitoring | No | Yes | Yes |
-| Async support | No | Yes | Yes |
-| Price | Free, open source | Free tier + paid | Free tier + paid |
-
-**Use GlassPipe if:** you're an indie dev or student who wants to install in 60 seconds, see what your agent is doing, and share a trace link without making an account.
-
-**Use Langfuse or LangSmith if:** you need production monitoring, team features, async support, or enterprise observability.
-
-We're not trying to replace them. We're built for a different moment.
+All three run without a real API key.
 
 ---
 
-## Limitations — please read before installing
+## `[ COMPARE ]` GlassPipe vs Langfuse vs LangSmith
 
-GlassPipe v1 is intentionally minimal. It does **not**:
+Honest comparison. Pick the right tool for the job.
+
+|                           | GlassPipe      | Langfuse         | LangSmith        |
+| ------------------------- | -------------- | ---------------- | ---------------- |
+| Install time              | ~60 seconds    | ~20 minutes      | ~20 minutes      |
+| Account required          | Never          | Yes              | Yes              |
+| Public share in one click | Yes            | No               | No               |
+| Local dashboard           | Yes            | No               | No               |
+| Team workspaces           | No             | Yes              | Yes              |
+| Production monitoring     | No             | Yes              | Yes              |
+| Async support             | No             | Yes              | Yes              |
+| Price                     | Free, OSS      | Free tier + paid | Free tier + paid |
+
+---
+
+## `[ LIMITS ]` What v1 doesn't do
+
+We'd rather you know now than discover it ten minutes in. v1 is intentionally minimal. It does **not**:
 
 - Support async Python (sync only — coming in v1.5)
 - Capture streaming responses (final results only)
 - Auto-instrument LangChain (raw OpenAI and Anthropic SDKs only)
 - Support languages other than Python
-- Provide team accounts, alerts, or production monitoring
+- Provide team accounts, alerting, or production monitoring
 
-If you need those things today, use Langfuse, LangSmith, or Arize Phoenix — they're genuinely great tools. GlassPipe is for the 60-second install crowd.
-
----
-
-## Examples
-
-Three working examples in the `/examples` folder:
-
-```bash
-python examples/hello.py            # minimal — one span
-python examples/research_agent.py   # 3 spans — plan, search, synthesize
-python examples/customer_support.py # 4 spans — classify, fetch, draft, review
-```
-
-All examples run without a real API key.
+If you need any of these today, use Langfuse, LangSmith, or Arize Phoenix. They're genuinely great tools.
 
 ---
 
-## Privacy and security
+## `[ DEV ]` Built with
 
-- Redaction happens on your machine, before upload. The server never sees your original data.
-- The pre-share preview modal cannot be bypassed.
-- Add custom redaction patterns via `GLASSPIPE_REDACT_PATTERNS` environment variable.
-- Shared traces are public but unlisted — accessible only via direct link.
-- All shared traces expire after 30 days.
+Python 3.10+ · Flask · HTMX · SQLite · SQLAlchemy  
+Hosted share service: Railway + Postgres
 
 ---
 
-## Built with
+## `[ LIC ]` License
 
-- Python 3.10+
-- Flask + HTMX (local dashboard)
-- SQLite (local storage)
-- SQLAlchemy
-- Railway + Postgres (hosted share service)
+MIT. Free forever. See [LICENSE](LICENSE).
 
 ---
 
-## License
+## `[ CTRB ]` Contributing
 
-MIT. Free forever.
+Issues and PRs welcome. This is v1 — there's plenty to improve.
 
----
-
-## Contributing
-
-Issues and PRs welcome. This is a v1 — there's plenty to improve.
+- [Open an issue](https://github.com/glasspipe/glasspipe/issues)
+- [Start a discussion](https://github.com/glasspipe/glasspipe/discussions)
 
 ---
 
-*Built by Jonathan — [LinkedIn](#) · [glasspipe.dev](#)*
-
-*(Replace # links with your real LinkedIn URL and domain once live)*
+Built by [Yonatan Michelson](https://www.linkedin.com/in/yonatan-michelson) · [glasspipe.dev](https://glasspipe.dev)
