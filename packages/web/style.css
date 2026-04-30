@@ -38,7 +38,7 @@
   --fs-sm:     13px;
   --fs-md:     16px;
   --fs-lg:     20px;
-  --fs-xl:     clamp(28px, 4vw, 48px);
+  --fs-xl:     clamp(24px, 3.5vw, 40px);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -243,7 +243,7 @@ body::before {
 
 .hero h1 {
   font-family: var(--font-mono);
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: var(--fs-xl);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -441,7 +441,7 @@ body::before {
 }
 .section-title {
   font-family: var(--font-mono);
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: var(--fs-xl);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -828,7 +828,7 @@ body::before {
 }
 .get-started-section h2 {
   font-family: var(--font-mono);
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: var(--fs-xl);
   font-weight: 600;
   line-height: 1.1;
   margin-bottom: 20px;
