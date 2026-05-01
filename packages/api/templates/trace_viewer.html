@@ -31,7 +31,7 @@
     <!-- ── Run summary card ───────────────────────────────── -->
     <div class="run-card">
       <div class="run-card-left">
-        <div class="bracket-label"><span class="code">[ TRACE-{{ run.id[:6] }} ]</span> <span class="label-text">/ shared run</span></div>
+        <div class="bracket-label"><span class="code">[ TRACE-{{ run.get('id', share_id)[:6] }} ]</span> <span class="label-text">/ shared run</span></div>
         <div class="run-card-header">
           <h1 class="run-name">{{ run.name }}</h1>
           {% if run.status == 'ok' %}
