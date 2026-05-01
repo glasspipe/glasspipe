@@ -31,8 +31,7 @@ if _DATABASE_URL.startswith("postgres://"):
 # Append sslmode to URL for Railway Postgres-SSL template
 if _DATABASE_URL.startswith("postgresql://"):
     if "sslmode" not in _DATABASE_URL:
-        if ".railway.internal" not in _DATABASE_URL:
-            _DATABASE_URL += "?sslmode=require"
+        _DATABASE_URL += "?sslmode=require"
 
 _BASE_URL     = os.environ.get("GLASSPIPE_BASE_URL", "https://glasspipe.dev")
 _MAX_BYTES    = int(float(os.environ.get("GLASSPIPE_MAX_PAYLOAD_MB", "5")) * 1024 * 1024)
