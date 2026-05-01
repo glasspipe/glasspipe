@@ -82,7 +82,7 @@
 
   {% if result.cost_a_usd is not none and result.cost_b_usd is not none %}
     <span class="sep dimmed">·</span>
-    <span class="dimmed">cost A <span class="mono">${{ "%.4f"|format(result.cost_a_usd) }}</span> → B <span class="mono">${{ "%.4f"|format(result.cost_b_usd) }}</span></span>
+    <span class="dimmed">cost A <span class="mono">{{ result.cost_a_usd | format_cost }}</span> → B <span class="mono">{{ result.cost_b_usd | format_cost }}</span></span>
   {% endif %}
 
   {% if result.tokens_a is not none and result.tokens_b is not none %}

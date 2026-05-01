@@ -29,47 +29,119 @@
     <span class="error-msg">{{ run.error_message }}</span>
     {% endif %}
   </div>
+  <div class="run-summary mono dimmed">
+    {% if llm_count > 0 %}
+      {{ run_duration_ms }}ms  ·  {{ llm_count }} LLM call{{ 's' if llm_count != 1 }}  ·  {{ total_tokens }} token{{ 's' if total_tokens != 1 }}  ·  {{ total_cost_usd | format_cost }}
+    {% else %}
+      {{ run_duration_ms }}ms  ·  {{ span_count }} span{{ 's' if span_count != 1 }}  ·  no LLM calls
+    {% endif %}
+  </div>
 </div>
 
-<div class="waterfall-layout">
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="timeline">[ TIMELINE ]</button>
+  <button class="tab-btn" data-tab="cost">[ COST ]</button>
+</div>
 
-  <!-- Left: waterfall -->
-  <div class="waterfall-pane">
+<div id="tab-timeline" class="tab-content active">
+  <div class="waterfall-layout">
 
-    <div class="ruler">
-      <span>0</span>
-      <span>{{ (run_duration_ms * 0.25)|round|int }}ms</span>
-      <span>{{ (run_duration_ms * 0.5)|round|int }}ms</span>
-      <span>{{ (run_duration_ms * 0.75)|round|int }}ms</span>
-      <span>{{ run_duration_ms }}ms</span>
-    </div>
+    <!-- Left: waterfall -->
+    <div class="waterfall-pane">
 
-    {% for sp in spans %}
-    <div class="span-row">
-      <div class="span-label mono" title="{{ sp.name }}">{{ sp.name }}</div>
-      <div class="span-track">
-        <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }}"
-             style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
-             hx-get="/span/{{ sp.id }}"
-             hx-target="#detail-panel"
-             hx-swap="innerHTML"
-             title="{{ sp.name }} · {{ sp.duration_ms }}ms">
+      <div class="ruler">
+        <span>0</span>
+        <span>{{ (run_duration_ms * 0.25)|round|int }}ms</span>
+        <span>{{ (run_duration_ms * 0.5)|round|int }}ms</span>
+        <span>{{ (run_duration_ms * 0.75)|round|int }}ms</span>
+        <span>{{ run_duration_ms }}ms</span>
+      </div>
+
+      {% for sp in spans %}
+      <div class="span-row">
+        <div class="span-label mono" title="{{ sp.name }}">{{ sp.display_name }}</div>
+        <div class="span-track">
+          <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }}"
+               style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+               hx-get="/span/{{ sp.id }}"
+               hx-target="#detail-panel"
+               hx-swap="innerHTML"
+               title="{{ sp.name }} · {{ sp.duration_ms }}ms">
+          </div>
         </div>
       </div>
+      {% else %}
+      <p class="empty">No spans recorded yet.</p>
+      {% endfor %}
+
     </div>
-    {% else %}
-    <p class="empty">No spans recorded yet.</p>
-    {% endfor %}
+
+    <!-- Right: detail panel -->
+    <div id="detail-panel" class="detail-pane">
+      <p class="detail-hint dimmed">← Click a span to inspect it</p>
+    </div>
 
   </div>
+</div>
 
-  <!-- Right: detail panel -->
-  <div id="detail-panel" class="detail-pane">
-    <p class="detail-hint dimmed">← Click a span to inspect it</p>
+<div id="tab-cost" class="tab-content">
+  {% if cost_rows %}
+  <table class="cost-table">
+    <thead>
+      <tr>
+        <th>Span</th>
+        <th>Parent</th>
+        <th>Model</th>
+        <th>Tokens In</th>
+        <th>Tokens Out</th>
+        <th>Duration</th>
+        <th>Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in cost_rows %}
+      <tr>
+        <td class="mono" title="{{ row.name }}">{{ row.display_name }}</td>
+        <td class="mono dimmed">{{ row.parent_name or '—' }}</td>
+        <td class="mono">{{ row.model }}</td>
+        <td class="mono">{{ row.prompt_tokens }}</td>
+        <td class="mono">{{ row.completion_tokens }}</td>
+        <td class="mono">{{ row.duration_ms }}ms</td>
+        <td class="mono">{{ row.cost_usd | format_cost }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr class="cost-totals">
+        <td colspan="3" class="mono">Totals</td>
+        <td class="mono">{{ cost_rows|sum(attribute='prompt_tokens') }}</td>
+        <td class="mono">{{ cost_rows|sum(attribute='completion_tokens') }}</td>
+        <td class="mono"></td>
+        <td class="mono">{{ total_cost_usd | format_cost }}</td>
+      </tr>
+    </tfoot>
+  </table>
+  {% else %}
+  <div class="cost-empty">
+    <span class="bracket-label"><span class="code">[ INFO ]</span> <span class="label-text">No LLM calls detected in this trace.</span></span>
   </div>
-
+  {% endif %}
 </div>
 
 <div id="modal-container"></div>
+
+<script>
+(function() {
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+})();
+</script>
 
 {% endblock %}

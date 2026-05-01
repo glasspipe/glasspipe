@@ -11,13 +11,25 @@ _PRICING: dict[str, tuple[float, float]] = {
     "gpt-4o-mini":   (0.15,   0.60),
     "gpt-4-turbo":   (10.00, 30.00),
     "gpt-3.5-turbo": (0.50,   1.50),
+    "o3-mini":       (1.10,   4.40),
+    "o4-mini":       (1.10,   4.40),
+    "gpt-4.1":       (2.00,   8.00),
+    "gpt-4.1-mini":  (0.40,   1.60),
+    "gpt-4.1-nano":  (0.10,   0.40),
 }
+
+
+def _normalize_model(model: str) -> str:
+    if not model:
+        return model
+    base = model.split("-202")[0].split("-2024")[0].split("-2025")[0]
+    return base
 
 _original = None
 
 
 def _compute_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    inp, out = _PRICING.get(model, (0.0, 0.0))
+    inp, out = _PRICING.get(model, _PRICING.get(_normalize_model(model), (0.0, 0.0)))
     return (prompt_tokens * inp + completion_tokens * out) / 1_000_000
 
 

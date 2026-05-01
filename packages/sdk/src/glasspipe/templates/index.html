@@ -7,6 +7,7 @@
   <span class="live-badge">● live</span>
 </div>
 
+{% if runs %}
 <table class="run-table">
   <thead>
     <tr>
@@ -43,12 +44,6 @@
         {% else %}
           <span class="badge badge-running">running</span>
         {% endif %}
-      </td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="7" class="empty">
-        No runs yet — decorate a function with <span class="mono accent">@trace</span> and run it.
       </td>
     </tr>
     {% endfor %}
@@ -92,11 +87,25 @@
     }
   });
 
-  // Re-bind after HTMX swaps the tbody
   document.body.addEventListener('htmx:afterSwap', function() {
     updateCompareBar();
   });
 })();
 </script>
+
+{% else %}
+<div class="empty-state">
+  <div class="bracket-label" style="margin-bottom:16px"><span class="code">[ GET STARTED ]</span></div>
+  <p class="empty-state-msg">No traces yet. Add <span class="mono accent">@trace</span> to any function and run it — your first trace will appear here automatically.</p>
+  <pre class="empty-code">from glasspipe import trace
+
+@trace
+def my_agent(question):
+    return "your answer here"
+
+my_agent("hello")</pre>
+  <p class="empty-hint">Then run: <span class="mono">glasspipe dashboard</span></p>
+</div>
+{% endif %}
 
 {% endblock %}

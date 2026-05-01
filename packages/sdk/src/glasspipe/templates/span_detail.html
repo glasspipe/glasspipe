@@ -2,9 +2,13 @@
 
   <div class="detail-header">
     <span class="kind-dot {{ 'kind-error' if span.status == 'error' else 'kind-' + span.kind }}">●</span>
-    <span class="mono">{{ span.name }}</span>
+    <span class="mono" title="{{ span.name }}">{{ span.name | display_name(span.kind, metadata) }}</span>
     <span class="badge badge-{{ span.status }}">{{ span.status }}</span>
   </div>
+
+  {% if insight %}
+  <div class="span-insight">{{ insight }}</div>
+  {% endif %}
 
   <dl class="detail-grid">
     <dt>kind</dt>
@@ -35,7 +39,7 @@
 
       {% if metadata.cost_usd is not none %}
       <dt>cost</dt>
-      <dd class="mono">${{ "%.6f" | format(metadata.cost_usd) }}</dd>
+      <dd class="mono">{{ metadata.cost_usd | format_cost }}</dd>
       {% endif %}
 
       {% if metadata.latency_ms is not none %}

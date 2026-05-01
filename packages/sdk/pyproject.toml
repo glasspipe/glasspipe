@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glasspipe"
-version = "0.1.0"
+version = "0.1.2"
 description = "The flight recorder for AI agents. Trace, visualize, and share your agent runs in 60 seconds."
 readme = "README.md"
 license = {text = "MIT"}
@@ -28,11 +28,11 @@ dependencies = [
     "nanoid",
     "httpx",
     "click",
+    "flask>=3.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
-dashboard = ["flask>=3.0"]
 
 [project.scripts]
 glasspipe = "glasspipe.cli:cli"

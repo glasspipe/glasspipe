@@ -5,18 +5,29 @@ from glasspipe.trace import _current_run_id, _current_span_id, _new_id, _safe_wr
 from glasspipe import storage
 
 _PRICING: dict[str, tuple[float, float]] = {
-    "claude-opus-4-5":            (15.00, 75.00),
-    "claude-sonnet-4-5":          (3.00,  15.00),
-    "claude-haiku-4-5":           (0.80,   4.00),
-    "claude-3-5-sonnet-20241022": (3.00,  15.00),
-    "claude-3-5-haiku-20241022":  (0.80,   4.00),
+    "claude-opus-4-5":   (15.00, 75.00),
+    "claude-sonnet-4-5": (3.00,  15.00),
+    "claude-haiku-4-5":  (0.80,   4.00),
+    "claude-3-5-sonnet": (3.00,  15.00),
+    "claude-3-5-haiku":  (0.80,   4.00),
+    "claude-3-opus":     (15.00, 75.00),
+    "claude-3-haiku":    (0.25,   1.25),
 }
+
+
+def _normalize_model(model: str) -> str:
+    if not model:
+        return model
+    base = model.split("-202")[0].split("-2024")[0].split("-2025")[0]
+    if base.startswith("claude-3-5-"):
+        base = "claude-3-5-" + base.split("claude-3-5-")[1].split("-202")[0]
+    return base
 
 _original = None
 
 
 def _compute_cost(model: str, input_tokens: int, output_tokens: int) -> float:
-    inp, out = _PRICING.get(model, (0.0, 0.0))
+    inp, out = _PRICING.get(model, _PRICING.get(_normalize_model(model), (0.0, 0.0)))
     return (input_tokens * inp + output_tokens * out) / 1_000_000
 
 

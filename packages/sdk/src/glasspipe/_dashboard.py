@@ -33,6 +33,53 @@ def _ms(delta) -> float:
 # Jinja filters
 # ---------------------------------------------------------------------------
 
+@app.template_filter("format_cost")
+def format_cost_filter(value):
+    if not value or value == 0:
+        return "$0"
+    if value >= 1.0:
+        s = f"{value:.6f}".rstrip("0")
+        if s.endswith("."):
+            s += "00"
+        elif len(s.split(".", 1)[1]) < 2:
+            s += "0" * (2 - len(s.split(".", 1)[1]))
+        return "$" + s
+    cents = value * 100
+    if cents < 0.001:
+        return "< 0.001¢"
+    s = f"{cents:.6f}".rstrip("0").rstrip(".")
+    return s + "¢"
+
+
+def _display_name(name: str, kind: str, metadata: dict | None = None) -> str:
+    if kind == "llm":
+        model = None
+        if metadata:
+            model = metadata.get("model")
+        if "openai" in name:
+            provider = "OpenAI"
+        elif "anthropic" in name:
+            provider = "Anthropic"
+        else:
+            provider = None
+        parts = ["LLM Call"]
+        if provider:
+            parts.append(provider)
+        elif model:
+            parts.append(model)
+        return " · ".join(parts)
+    if kind == "tool":
+        return name.replace("_", " ").title()
+    return name
+
+
+@app.template_filter("display_name")
+def display_name_filter(name, kind=None, metadata=None):
+    if kind is None:
+        return name
+    return _display_name(name, kind, metadata)
+
+
 @app.template_filter("redacted_json")
 def redacted_json_filter(obj) -> Markup:
     """Render a (post-redact) Python object as indented JSON with [REDACTED]
@@ -88,6 +135,15 @@ def index():
     return render_template("index.html", runs=run_data)
 
 
+def _safe_parse_meta(s):
+    if not s:
+        return None
+    try:
+        return json.loads(s)
+    except Exception:
+        return None
+
+
 @app.route("/run/<run_id>")
 def run_detail(run_id):
     with get_session() as session:
@@ -105,6 +161,13 @@ def run_detail(run_id):
         run_end = run.ended_at or now
         run_duration_ms = max(_ms(run_end - run.started_at), 1.0)
 
+        span_name_by_id = {sp.id: sp.name for sp in spans}
+
+        llm_count = 0
+        total_tokens = 0
+        total_cost_usd = 0.0
+        cost_rows = []
+
         span_data = []
         for sp in spans:
             sp_end = sp.ended_at or now
@@ -115,21 +178,59 @@ def run_detail(run_id):
             width_pct = max(sp_dur / run_duration_ms * 100, 0.5)
             width_pct = min(width_pct, 100.0 - start_pct)
 
+            meta = _safe_parse_meta(sp.metadata_json)
+
             span_data.append({
                 "id": sp.id,
                 "name": sp.name,
+                "display_name": _display_name(sp.name, sp.kind, meta),
                 "kind": sp.kind,
                 "status": sp.status,
                 "duration_ms": round(sp_dur, 1),
                 "start_pct": round(start_pct, 3),
                 "width_pct": round(width_pct, 3),
+                "metadata": meta,
             })
+
+            if sp.kind == "llm":
+                llm_count += 1
+                prompt_tokens = 0
+                completion_tokens = 0
+                cost_usd = 0.0
+                model = None
+                if meta:
+                    model = meta.get("model")
+                    prompt_tokens = meta.get("prompt_tokens", 0) or 0
+                    completion_tokens = meta.get("completion_tokens", 0) or 0
+                    cost_usd = meta.get("cost_usd", 0.0) or 0.0
+                total_tokens += prompt_tokens + completion_tokens
+                total_cost_usd += cost_usd
+                parent_name = span_name_by_id.get(sp.parent_span_id, "")
+                cost_rows.append({
+                    "name": sp.name,
+                    "display_name": _display_name(sp.name, sp.kind, meta),
+                    "parent_name": parent_name,
+                    "model": model or "—",
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "duration_ms": round(sp_dur, 1),
+                    "cost_usd": cost_usd,
+                })
+
+        cost_rows.sort(key=lambda r: r["cost_usd"], reverse=True)
+
+        span_count = len(span_data)
 
     return render_template(
         "run_detail.html",
         run=run,
         spans=span_data,
         run_duration_ms=round(run_duration_ms),
+        llm_count=llm_count,
+        total_tokens=total_tokens,
+        total_cost_usd=total_cost_usd,
+        span_count=span_count,
+        cost_rows=cost_rows,
     )
 
 
@@ -227,11 +328,49 @@ def span_detail(span_id):
             try:
                 return json.loads(s)
             except Exception:
-                return s  # return raw string rather than 500
+                return s
 
         input_data = _safe_parse(sp.input_json)
         output_data = _safe_parse(sp.output_json)
         metadata = _safe_parse(sp.metadata_json)
+
+    def _fmt_dur(ms):
+        if ms < 1000:
+            return f"{round(ms)}ms"
+        return f"{round(ms / 1000, 1)}s"
+
+    duration_ms = 0.0
+    if sp.ended_at and sp.started_at:
+        duration_ms = (sp.ended_at - sp.started_at).total_seconds() * 1000
+
+    insight = None
+    if sp.status == "error":
+        insight = f"This step failed after {_fmt_dur(duration_ms)}. See the output below for the error details."
+    elif sp.kind == "llm" and metadata:
+        model = metadata.get("model", "LLM")
+        prompt_tokens = metadata.get("prompt_tokens") or 0
+        completion_tokens = metadata.get("completion_tokens") or 0
+        cost_usd = metadata.get("cost_usd") or 0
+        dur_str = _fmt_dur(duration_ms)
+
+        if duration_ms > 3000 and prompt_tokens > 100:
+            insight = f"{model} took {dur_str} — slower than usual. Large prompt ({prompt_tokens} tokens) may be the cause."
+        elif prompt_tokens > 0 or completion_tokens > 0:
+            cost_str = format_cost_filter(cost_usd)
+            insight = f"{model} took {dur_str} to process {prompt_tokens} tokens and generate {completion_tokens} tokens, costing {cost_str}."
+        else:
+            insight = f"{model} took {dur_str}."
+    elif sp.kind == "llm":
+        insight = f"LLM call took {_fmt_dur(duration_ms)}."
+    elif sp.kind in ("tool", "custom"):
+        dname = _display_name(sp.name, sp.kind, metadata)
+        insight = f"{dname} completed in {_fmt_dur(duration_ms)}."
+    elif sp.kind == "agent":
+        dname = _display_name(sp.name, sp.kind, metadata)
+        insight = f"{dname} ran for {_fmt_dur(duration_ms)}."
+    else:
+        dname = _display_name(sp.name, sp.kind, metadata)
+        insight = f"{dname} completed in {_fmt_dur(duration_ms)}."
 
     return render_template(
         "span_detail.html",
@@ -239,6 +378,7 @@ def span_detail(span_id):
         input_data=input_data,
         output_data=output_data,
         metadata=metadata,
+        insight=insight,
     )
 
 
