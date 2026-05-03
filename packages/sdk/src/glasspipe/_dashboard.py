@@ -101,6 +101,46 @@ def redacted_json_filter(obj) -> Markup:
 # Routes
 # ---------------------------------------------------------------------------
 
+def _build_run_data(runs, now=None):
+    if now is None:
+        now = _utcnow()
+    today = now.date()
+    yesterday = today - timedelta(days=1)
+    week_ago = today - timedelta(days=7)
+    run_ids = [r.id for r in runs]
+    counts: dict[str, int] = {}
+    if run_ids:
+        with get_session() as session:
+            rows = session.execute(
+                select(Span.run_id, func.count().label("n"))
+                .where(Span.run_id.in_(run_ids))
+                .group_by(Span.run_id)
+            ).all()
+            counts = {row.run_id: row.n for row in rows}
+    run_data = []
+    for run in runs:
+        end = run.ended_at or now
+        run_date = run.started_at.date()
+        if run_date == today:
+            date_label = "today"
+        elif run_date == yesterday:
+            date_label = "yesterday"
+        elif run_date >= week_ago:
+            date_label = "this week"
+        else:
+            date_label = run_date.strftime("%b %d, %Y")
+        run_data.append({
+            "id": run.id,
+            "name": run.name,
+            "started_at": run.started_at,
+            "duration_ms": round(_ms(end - run.started_at)),
+            "span_count": counts.get(run.id, 0),
+            "status": run.status,
+            "date_label": date_label,
+        })
+    return run_data
+
+
 @app.route("/")
 def index():
     init_db()
@@ -109,30 +149,7 @@ def index():
             select(Run).order_by(Run.started_at.desc()).limit(20)
         ).scalars().all()
 
-        run_ids = [r.id for r in runs]
-        counts: dict[str, int] = {}
-        if run_ids:
-            rows = session.execute(
-                select(Span.run_id, func.count().label("n"))
-                .where(Span.run_id.in_(run_ids))
-                .group_by(Span.run_id)
-            ).all()
-            counts = {row.run_id: row.n for row in rows}
-
-        now = _utcnow()
-        run_data = []
-        for run in runs:
-            end = run.ended_at or now
-            run_data.append({
-                "id": run.id,
-                "name": run.name,
-                "started_at": run.started_at,
-                "duration_ms": round(_ms(end - run.started_at)),
-                "span_count": counts.get(run.id, 0),
-                "status": run.status,
-            })
-
-    return render_template("index.html", runs=run_data)
+    return render_template("index.html", runs=_build_run_data(runs))
 
 
 def _safe_parse_meta(s):
@@ -459,29 +476,7 @@ def delete_run(run_id):
         ).scalars().all()
         if not remaining:
             return render_template("index.html", runs=[])
-
-        now = _utcnow()
-        run_data = []
-        remaining_ids = [r.id for r in remaining]
-        counts: dict[str, int] = {}
-        if remaining_ids:
-            rows = session.execute(
-                select(Span.run_id, func.count().label("n"))
-                .where(Span.run_id.in_(remaining_ids))
-                .group_by(Span.run_id)
-            ).all()
-            counts = {row.run_id: row.n for row in rows}
-        for r in remaining:
-            end = r.ended_at or now
-            run_data.append({
-                "id": r.id,
-                "name": r.name,
-                "started_at": r.started_at,
-                "duration_ms": round(_ms(end - r.started_at)),
-                "span_count": counts.get(r.id, 0),
-                "status": r.status,
-            })
-        return render_template("index.html", runs=run_data)
+        return render_template("index.html", runs=_build_run_data(remaining))
 
 
 @app.post("/runs/clear")

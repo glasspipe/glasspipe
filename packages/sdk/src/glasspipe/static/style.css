@@ -173,6 +173,14 @@ body::before {
 .btn-clear-all:hover { color: var(--c-error); border-color: var(--c-error); }
 .page-header h1 { font-size: 18px; font-weight: 500; }
 
+.date-group { margin-bottom: 20px; }
+.date-group:last-child { margin-bottom: 0; }
+.date-group-header {
+  padding: 6px 0;
+  margin-bottom: 6px;
+}
+.date-group-header .bracket-label { margin-bottom: 0; }
+
 .run-table {
   width: 100%;
   border-collapse: collapse;

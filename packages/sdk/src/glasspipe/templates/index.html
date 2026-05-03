@@ -10,61 +10,67 @@
     <button class="btn-clear-all"
             hx-post="/runs/clear"
             hx-confirm="Delete ALL runs? This cannot be undone."
-            hx-target="#run-tbody"
+            hx-target="#runs-container"
             hx-swap="outerHTML">clear all</button>
   </span>
 </div>
 
 {% if runs %}
-<table class="run-table">
-  <thead>
-    <tr>
-       <th class="th-check"></th>
-      <th>Run ID</th>
-      <th>Function</th>
-      <th>Started</th>
-      <th>Duration</th>
-      <th>Spans</th>
-      <th>Status</th>
-      <th class="th-delete"></th>
-    </tr>
-  </thead>
-  <tbody
-    id="run-tbody"
-    hx-get="/"
-    hx-trigger="every 5s"
-    hx-select="#run-tbody"
-    hx-swap="outerHTML">
-    {% for run in runs %}
-    <tr class="run-row">
-      <td class="td-check" onclick="event.stopPropagation()">
-        <input type="checkbox" class="run-check" data-id="{{ run.id }}">
-      </td>
-      <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
-      <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}</td>
-      <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
-      <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
-      <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
-      <td onclick="window.location='/run/{{ run.id }}'">
-        {% if run.status == 'ok' %}
-          <span class="badge badge-ok">ok</span>
-        {% elif run.status == 'error' %}
-          <span class="badge badge-error">error</span>
-        {% else %}
-          <span class="badge badge-running">running</span>
-        {% endif %}
-      </td>
-      <td class="td-delete" onclick="event.stopPropagation()">
-        <button class="btn-delete"
-                hx-delete="/runs/{{ run.id }}"
-                hx-confirm="Delete this run?"
-                hx-target="#run-tbody"
-                hx-swap="outerHTML">×</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div id="runs-container"
+     hx-get="/"
+     hx-trigger="every 5s"
+     hx-select="#runs-container"
+     hx-swap="outerHTML">
+{% for group in runs|groupby('date_label') %}
+<div class="date-group">
+  <div class="date-group-header"><span class="bracket-label"><span class="code">[ {{ group.grouper|upper }} ]</span></span></div>
+  <table class="run-table">
+    <thead>
+      <tr>
+         <th class="th-check"></th>
+        <th>Run ID</th>
+        <th>Function</th>
+        <th>Started</th>
+        <th>Duration</th>
+        <th>Spans</th>
+        <th>Status</th>
+        <th class="th-delete"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in group.list %}
+      <tr class="run-row">
+        <td class="td-check" onclick="event.stopPropagation()">
+          <input type="checkbox" class="run-check" data-id="{{ run.id }}">
+        </td>
+        <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
+        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}</td>
+        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
+        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
+        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
+        <td onclick="window.location='/run/{{ run.id }}'">
+          {% if run.status == 'ok' %}
+            <span class="badge badge-ok">ok</span>
+          {% elif run.status == 'error' %}
+            <span class="badge badge-error">error</span>
+          {% else %}
+            <span class="badge badge-running">running</span>
+          {% endif %}
+        </td>
+        <td class="td-delete" onclick="event.stopPropagation()">
+          <button class="btn-delete"
+                  hx-delete="/runs/{{ run.id }}"
+                  hx-confirm="Delete this run?"
+                  hx-target="#runs-container"
+                  hx-swap="outerHTML">×</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+</div>
 
 <div id="compare-bar" class="compare-bar hidden">
   <a id="compare-link" class="compare-bar-btn" href="#">Compare selected →</a>
@@ -119,6 +125,11 @@ function filterRuns(query) {
     var name = row.cells[2] ? row.cells[2].textContent.toLowerCase() : '';
     row.style.display = (!q || name.includes(q)) ? '' : 'none';
   });
+  if (q) {
+    document.querySelectorAll('.date-group-header').forEach(function(h) {
+      h.style.display = '';
+    });
+  }
 }
 </script>
 
