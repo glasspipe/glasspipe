@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07090f">
-  <title>GlassPipe — The flight recorder for your AI agents</title>
-  <meta name="description" content="GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
-  <meta property="og:title" content="GlassPipe — The flight recorder for your AI agents">
-  <meta property="og:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click. No account required.">
+  <title>GlassPipe: The flight recorder for your AI agents</title>
+  <meta name="description" content="One decorator captures every LLM call your agent makes. View the timeline locally, share it with one link.">
+  <meta property="og:title" content="GlassPipe: The flight recorder for your AI agents">
+  <meta property="og:description" content="One decorator captures every LLM call your agent makes. View the timeline locally, share it with one link. No account required.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://glasspipe.dev">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="GlassPipe — The flight recorder for your AI agents">
-  <meta name="twitter:description" content="Every LLM call, every tool, every wasted token — captured, visualized, and shareable in one click.">
+  <meta name="twitter:title" content="GlassPipe: The flight recorder for your AI agents">
+  <meta name="twitter:description" content="One decorator captures every LLM call your agent makes. View the timeline locally, share it with one link.">
   <link rel="icon" type="image/png" href="logo.PNG">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
 
       <h1>See what your AI agent<br><span class="accent-action">actually did.</span></h1>
 
-      <p class="sub">GlassPipe is the flight recorder for your AI agents. Every LLM call, every tool, every wasted token &mdash; captured and turned into a beautiful, shareable timeline.</p>
+      <p class="sub">One decorator captures every LLM call your agent makes. View the timeline locally, share it with one link.</p>
 
       <div class="hero-actions">
         <div class="install-block">
@@ -74,85 +74,6 @@
         <button class="terminal-replay" id="terminal-replay" type="button">[ REPLAY ]</button>
       </div>
 
-    </div>
-  </div>
-</section>
-
-
-<!-- ── Problem ──────────────────────────────────────────────── -->
-<section class="section" id="problem">
-  <div class="container">
-    <div class="bracket-label"><span class="code">[ ERR-042 ]</span> <span class="label-text">/ the problem</span></div>
-    <h2 class="section-title">Your agent is a black box.<br><span class="accent-resolved">Until now.</span></h2>
-    <p class="section-sub">Before GlassPipe, debugging a broken agent meant reading logs that look like this.</p>
-
-    <div class="problem-split">
-      <div class="problem-card bad">
-        <div class="problem-card-head"><span>&times;</span> Without GlassPipe</div>
-        <div class="problem-log">
-          <div class="hi">[2026-04-27 14:32:08] Starting agent...</div>
-          <div>Calling OpenAI API...</div>
-          <div>Got response. Processing...</div>
-          <div>Calling tool: search</div>
-          <div>Calling OpenAI API...</div>
-          <div>Got response. Processing...</div>
-          <div>Calling OpenAI API...</div>
-          <div>Got response. Processing...</div>
-          <div>Calling OpenAI API...</div>
-          <div class="warn">Response took 12.4s.</div>
-          <div>Calling OpenAI API...</div>
-          <div>Calling OpenAI API...</div>
-          <div class="err">[ERROR] Rate limit exceeded</div>
-          <div>Retrying...</div>
-          <div class="hi">[2026-04-27 14:32:55] Done. Cost: $3.21</div>
-          <br>
-          <div class="err">...why did this cost $3.21?</div>
-        </div>
-      </div>
-
-      <div class="vs">[ VS ]</div>
-
-      <div class="problem-card good">
-        <div class="problem-card-head"><span>&check;</span> With GlassPipe</div>
-        <div class="problem-intro">
-          A full visual timeline instantly reveals:
-        </div>
-        <div class="finding-card warn">
-          <span class="finding-label warn">[ DETECTED ]</span>
-          <code class="mono finding-code">summarize_article</code> called 3&times; with <em>identical input</em>. Wasted: $0.42
-        </div>
-        <div class="finding-card warn">
-          <span class="finding-label warn">[ DETECTED ]</span>
-          <code class="mono finding-code">verify_report</code> looping 6&times; with no exit condition. Wasted: $1.48
-        </div>
-        <div class="finding-card success">
-          <span class="finding-label ok">[ RESULT ]</span>
-          Fixed in <strong class="finding-result">15 minutes</strong>. New cost per run: <strong class="text-status">$0.31</strong> <span class="finding-delta">(&minus;90%)</span>
-        </div>
-      </div>
-    </div>
-
-    <p class="section-caption">Your agent went from black box to <span class="accent-resolved">glass pipe.</span></p>
-  </div>
-</section>
-
-
-<!-- ── Stat Block ─────────────────────────────────────────────── -->
-<section class="section stat-block-section">
-  <div class="container">
-    <div class="stat-grid">
-      <div class="stat-item">
-        <div class="stat-number">$0.31</div>
-        <div class="stat-label">[ AVG ] / cost after fix</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number positive">&minus;90%</div>
-        <div class="stat-label">[ DELTA ] / typical reduction</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">15min</div>
-        <div class="stat-label">[ OPS ] / time to first insight</div>
-      </div>
     </div>
   </div>
 </section>
@@ -226,21 +147,21 @@
 <!-- ── How it works ──────────────────────────────────────────── -->
 <section class="section" id="how">
   <div class="container">
-    <div class="bracket-label"><span class="code">[ OPS-003 ]</span> <span class="label-text">/ how it works</span></div>
-    <h2 class="section-title">Three steps. <span class="accent-action">Sixty seconds.</span></h2>
-    <p class="section-sub">No accounts. No configuration. No environment variables. Just one line.</p>
+    <div class="bracket-label"><span class="code">[ OPS-003 ]</span> <span class="label-text">/ setup</span></div>
+    <h2 class="section-title">Setup</h2>
+    <p class="section-sub">No account. No API key. Just a decorator.</p>
 
     <div class="steps">
       <div class="step">
         <div class="step-prefix">[ 01 ]</div>
         <div class="step-title">Install</div>
-        <div class="step-desc">One command. No accounts, no API keys, no configuration.</div>
+        <div class="step-desc">One command. Works on Python 3.10+.</div>
         <div class="step-code"><span class="text-dim">$ </span>pip install glasspipe</div>
       </div>
       <div class="step">
         <div class="step-prefix">[ 02 ]</div>
         <div class="step-title">Decorate</div>
-        <div class="step-desc">Add one line above your agent function. Your code is completely untouched.</div>
+        <div class="step-desc">One decorator above your function. Nothing else changes.</div>
         <div class="step-code">
           <span class="kw">from</span> glasspipe <span class="kw">import</span> <span class="fn">trace</span><br><br>
           <span class="dec">@trace</span><br>
@@ -252,7 +173,7 @@
       <div class="step">
         <div class="step-prefix">[ 03 ]</div>
         <div class="step-title">See &amp; Share</div>
-        <div class="step-desc">Open the dashboard. Explore the timeline. Share a link in one click.</div>
+        <div class="step-desc">Run <code>glasspipe dashboard</code>. Click any run. Click Share to get a public link.</div>
         <div class="step-code">
           <span class="text-dim">$ </span>glasspipe dashboard<br>
           <span class="text-status">&check; </span><span class="text-dim">localhost:3000</span><br><br>
@@ -267,9 +188,9 @@
 <!-- ── Real Traces ──────────────────────────────────────────── -->
 <section class="section" id="traces">
   <div class="container">
-    <div class="bracket-label"><span class="code">[ TRC-LIVE ]</span> <span class="label-text">/ shared runs</span></div>
-    <h2 class="section-title">See a real trace.</h2>
-    <p class="section-sub">Click either card to explore a live, shared agent run.</p>
+    <div class="bracket-label"><span class="code">[ TRC-LIVE ]</span> <span class="label-text">/ examples</span></div>
+    <h2 class="section-title">Example traces</h2>
+    <p class="section-sub">Click a card to open a real shared trace.</p>
 
     <div class="trace-cards">
       <a href="https://glasspipe-app-production.up.railway.app/t/WETXcP" target="_blank" rel="noopener" class="trace-card">
@@ -290,9 +211,9 @@
 <!-- ── Honest Comparison ─────────────────────────────────────── -->
 <section class="section" id="compare">
   <div class="container">
-    <div class="bracket-label"><span class="code">[ DOC-018 ]</span> <span class="label-text">/ honest comparison</span></div>
-    <h2 class="section-title">Right tool, right context.</h2>
-    <p class="section-sub">GlassPipe isn't for everyone. Here's the honest picture &mdash; use what fits you.</p>
+    <div class="bracket-label"><span class="code">[ DOC-018 ]</span> <span class="label-text">/ when to use this</span></div>
+    <h2 class="section-title">When to use GlassPipe (and when not to)</h2>
+    <p class="section-sub">GlassPipe isn't for everyone.</p>
 
     <div class="compare-wrap">
       <table class="compare-table">
@@ -304,7 +225,7 @@
         </thead>
         <tbody>
           <tr class="highlight">
-            <td><strong>Install in 60s, see a trace, share a debugging link &mdash; no account ever</strong></td>
+            <td><strong>Install in 60s, see a trace, share a debugging link. No account ever.</strong></td>
             <td><span class="pill gp">[ GLASSPIPE ]</span></td>
           </tr>
           <tr class="highlight">
@@ -326,7 +247,7 @@
     <div class="compare-note">
       <div class="compare-note-block gp-note">
         <h4>[ USE GLASSPIPE IF ]</h4>
-        You want the fastest path from a broken agent to a shareable trace link. You're an indie dev, a student, or anyone who bounces at &ldquo;create an account.&rdquo;
+        You want to install a tool, see a trace, and share a debug link without making an account. Indie devs, students, and anyone who'd rather skip the signup.
       </div>
       <div class="compare-note-block other-note">
         <h4>[ USE LANGFUSE OR LANGSMITH IF ]</h4>
@@ -343,7 +264,7 @@
 <section class="get-started-section" id="get-started">
   <div class="container">
     <div class="bracket-label"><span class="code">[ RUN-000 ]</span> <span class="label-text">/ install</span></div>
-    <h2>Start tracing in sixty seconds.</h2>
+    <h2>Install GlassPipe</h2>
 
     <div class="quickstart-block">
       <div class="quickstart-header">60-second quickstart</div>
@@ -361,7 +282,7 @@
       </div>
     </div>
 
-    <p class="get-started-footnote">v1 supports synchronous Python + OpenAI + Anthropic &middot; async &amp; streaming in v1.5 &middot; MIT license</p>
+    <p class="get-started-footnote">Currently supports synchronous Python, OpenAI, and Anthropic. MIT license.</p>
   </div>
 </section>
 
@@ -373,7 +294,7 @@
 <div class="status-strip">
   <span class="status-item"><span class="status-dot"></span> OPEN SOURCE</span>
   <span class="status-sep">&middot;</span>
-  <span class="status-item">v0.1.0</span>
+  <span class="status-item">v0.1.4</span>
   <span class="status-sep">&middot;</span>
   <span class="status-item"><a href="https://pypi.org/project/glasspipe/" target="_blank" rel="noopener" class="link-action">PyPI</a></span>
 </div>
