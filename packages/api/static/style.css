@@ -20,8 +20,8 @@
    5. JSON viewer (detail-json): Dark bg-3 surface with monospace code,
       max-height with scroll. Landing page has no code viewer.
 
-   6. Redacted value highlighting: Orange(--c-label) for [REDACTED] text.
-      Security signal — different semantic from amber=labels.
+   6. Redacted value highlighting: Amber pill(--c-label on --c-label-dim bg)
+       for [REDACTED] and [REDACTED:type] text. Matches bracket-label style.
 
    7. Modal overlay backdrop: rgba(8,11,16,0.82) — not tokenized because
       it's a one-off composite surface with blur.
@@ -343,7 +343,13 @@ body::before {
 }
 .detail-json::-webkit-scrollbar { width: 4px; }
 .detail-json::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
-.redacted { color: var(--c-label); }
+.redacted {
+  color: var(--c-label);
+  background: var(--c-label-dim);
+  padding: 1px 4px;
+  border-radius: var(--r);
+  font-weight: 500;
+}
 
 /* ---- FOOTER ---- */
 .footer {

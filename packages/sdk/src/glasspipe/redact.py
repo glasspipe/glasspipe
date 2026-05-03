@@ -4,16 +4,18 @@ import os
 import re
 
 PATTERNS: dict[str, str] = {
-    "openai_key":     r"sk-[a-zA-Z0-9]{20,}",
+    "openai_key":     r"sk-(?:proj-)?[a-zA-Z0-9_-]{20,}",
     "anthropic_key":  r"sk-ant-[a-zA-Z0-9\-_]{20,}",
     "aws_access_key": r"AKIA[0-9A-Z]{16}",
-    "aws_secret_key": r"[a-zA-Z0-9/+=]{40}",
     "github_token":   r"gh[pousr]_[A-Za-z0-9]{36,}",
     "jwt":            r"eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*",
+    "bearer_token":   r"(?i)bearer\s+[a-zA-Z0-9\-._~+/]+=*",
+    "credential":     r"(?i)(?:password|passwd|secret|token|api_?key|apikey|auth)\s*[=:'\"]\s*\S+",
     "email":          r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
     "credit_card":    r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
+    "us_ssn":         r"\b\d{3}-\d{2}-\d{4}\b",
     "phone_us":       r"\b(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b",
-    "url_with_query": r"https?://[^\s]+\?[^\s]+",
+    "sensitive_param": r"(?:[?&])(?:(?:api[_-]?key|token|secret|key|password|passwd|auth|bearer)(?:=[^&\s\"\']*)?)",
 }
 
 

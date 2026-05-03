@@ -151,10 +151,13 @@
       let raw = JSON.stringify(obj, null, 2);
       // HTML-escape
       raw = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      // Highlight [REDACTED] in orange — trust signal that secrets were stripped
+      // Highlight [REDACTED] and [REDACTED:type] as amber pill
       raw = raw.replace(
-        /&quot;\[REDACTED\]&quot;/g,
-        '<span class="redacted">&quot;[REDACTED]&quot;</span>'
+        /&quot;\[REDACTED(?::([a-z_]+))?\]&quot;/g,
+        function(match, type) {
+          var label = type ? '[REDACTED:' + type + ']' : '[REDACTED]';
+          return '<span class="redacted">&quot;' + label + '&quot;</span>';
+        }
       );
       return raw;
     }

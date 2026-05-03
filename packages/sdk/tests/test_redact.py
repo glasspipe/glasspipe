@@ -17,6 +17,12 @@ def test_detect_openai_key():
     assert "openai_key" in types
 
 
+def test_detect_openai_key_proj():
+    hits = detect("sk-proj-FAKE-SECRET-KEY-DO-NOT-SHARE-9c8d7e6f")
+    types = [h["type"] for h in hits]
+    assert "openai_key" in types
+
+
 def test_detect_anthropic_key():
     hits = detect("token: sk-ant-abcdefghijklmnopqrstuvwxyz-ABCDEFG1234")
     types = [h["type"] for h in hits]
@@ -60,10 +66,52 @@ def test_detect_phone_us():
     assert "phone_us" in types
 
 
-def test_detect_url_with_query():
-    hits = detect("fetched https://api.example.com/search?q=secret&token=abc")
+def test_detect_bearer_token():
+    hits = detect("Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.abc.def")
     types = [h["type"] for h in hits]
-    assert "url_with_query" in types
+    assert "bearer_token" in types
+
+
+def test_detect_us_ssn():
+    hits = detect("ssn is 123-45-6789 on file")
+    types = [h["type"] for h in hits]
+    assert "us_ssn" in types
+
+
+def test_detect_credential_password_quote():
+    hits = detect("password 'hunter2SuperSecret!'")
+    types = [h["type"] for h in hits]
+    assert "credential" in types
+
+
+def test_detect_credential_api_key_equals():
+    hits = detect("api_key=sk-abc123longkeyvaluehere")
+    types = [h["type"] for h in hits]
+    assert "credential" in types
+
+
+def test_detect_credential_secret_colon():
+    hits = detect('secret: "my-super-secret-value"')
+    types = [h["type"] for h in hits]
+    assert "credential" in types
+
+
+def test_detect_sensitive_param():
+    hits = detect("https://api.example.com/v1/chat?api_key=sk-abc123longkeyvalue")
+    types = [h["type"] for h in hits]
+    assert "sensitive_param" in types
+
+
+def test_detect_sensitive_param_token():
+    hits = detect("https://api.example.com/search?token=abc123")
+    types = [h["type"] for h in hits]
+    assert "sensitive_param" in types
+
+
+def test_no_detect_benign_query_param():
+    hits = detect("https://api.openai.com/v1/chat?version=2024-01")
+    types = [h["type"] for h in hits]
+    assert "sensitive_param" not in types
 
 
 # ---------------------------------------------------------------------------
@@ -105,3 +153,46 @@ def test_env_var_custom_pattern(monkeypatch):
     )
     result = redact("credential CORP-ABCD-1234 found")
     assert "[REDACTED:corp_secret]" in result
+
+
+# ---------------------------------------------------------------------------
+# Smoketest: all 5 user-reported secret types must be detected
+# ---------------------------------------------------------------------------
+
+def test_smoketest_all_five_secrets():
+    text = (
+        "email: user@example.com, "
+        "card: 4532-1488-0343-6467, "
+        "key: sk-proj-FAKE-SECRET-KEY-DO-NOT-SHARE-9c8d7e6f, "
+        "ssn: 123-45-6789, "
+        "password 'hunter2SuperSecret!'"
+    )
+    hits = detect(text)
+    types = [h["type"] for h in hits]
+    assert "email" in types, "email not detected"
+    assert "credit_card" in types, "credit_card not detected"
+    assert "openai_key" in types, "openai_key not detected"
+    assert "us_ssn" in types, "us_ssn not detected"
+    assert "credential" in types, "credential (password proximity) not detected"
+
+
+def test_smoketest_redact_all_five_secrets():
+    data = {
+        "email": "user@example.com",
+        "card": "4532-1488-0343-6467",
+        "api_key": "sk-proj-FAKE-SECRET-KEY-DO-NOT-SHARE-9c8d7e6f",
+        "ssn": "123-45-6789",
+        "note": "password 'hunter2SuperSecret!'",
+    }
+    result = redact(data)
+    result_str = json.dumps(result)
+    assert "[REDACTED:email]" in result_str
+    assert "[REDACTED:credit_card]" in result_str
+    assert "[REDACTED:openai_key]" in result_str
+    assert "[REDACTED:us_ssn]" in result_str
+    assert "[REDACTED:credential]" in result_str
+    assert "user@example.com" not in result_str
+    assert "4532-1488-0343-6467" not in result_str
+    assert "sk-proj-FAKE" not in result_str
+    assert "123-45-6789" not in result_str
+    assert "hunter2SuperSecret" not in result_str

@@ -785,7 +785,14 @@ body::before {
 .btn-view:hover { background: rgba(0,229,160,0.18); }
 
 /* ---- REDACTED values ---- */
-.redacted { color: var(--c-label); font-style: normal; }
+.redacted {
+  color: var(--c-label);
+  background: var(--c-label-dim);
+  padding: 1px 4px;
+  border-radius: var(--r);
+  font-style: normal;
+  font-weight: 500;
+}
 
 /* ---- BRACKET LABELS ---- */
 .bracket-label {

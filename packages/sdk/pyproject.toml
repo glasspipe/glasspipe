@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "glasspipe"
-version = "0.1.4"
+version = "0.1.5"
 description = "The flight recorder for AI agents. Trace, visualize, and share your agent runs in 60 seconds."
 readme = "README.md"
 license = {text = "MIT"}

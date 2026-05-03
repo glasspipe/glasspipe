@@ -13,10 +13,9 @@
       </div>
       <p class="dimmed modal-subtitle">
         {% if total_redacted > 0 %}
-          {{ total_redacted }} secret{{ 's' if total_redacted != 1 else '' }} found and auto-redacted.
-          Confirm what will be public.
+          Auto-redacted {{ total_redacted }} known pattern{{ 's' if total_redacted != 1 else '' }}. Review carefully &mdash; detection is not exhaustive.
         {% else %}
-          No secrets detected. Confirm what will be public.
+          No known patterns detected &mdash; but review carefully. Detection is not exhaustive.
         {% endif %}
       </p>
 
