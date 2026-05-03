@@ -5,19 +5,28 @@
 <div class="page-header">
   <h1>Recent Runs</h1>
   <span class="live-badge">● live</span>
+  <span class="page-header-actions">
+    <input type="text" id="run-search" class="search-input" placeholder="filter by name…" oninput="filterRuns(this.value)">
+    <button class="btn-clear-all"
+            hx-post="/runs/clear"
+            hx-confirm="Delete ALL runs? This cannot be undone."
+            hx-target="#run-tbody"
+            hx-swap="outerHTML">clear all</button>
+  </span>
 </div>
 
 {% if runs %}
 <table class="run-table">
   <thead>
     <tr>
-      <th class="th-check"></th>
+       <th class="th-check"></th>
       <th>Run ID</th>
       <th>Function</th>
       <th>Started</th>
       <th>Duration</th>
       <th>Spans</th>
       <th>Status</th>
+      <th class="th-delete"></th>
     </tr>
   </thead>
   <tbody
@@ -44,6 +53,13 @@
         {% else %}
           <span class="badge badge-running">running</span>
         {% endif %}
+      </td>
+      <td class="td-delete" onclick="event.stopPropagation()">
+        <button class="btn-delete"
+                hx-delete="/runs/{{ run.id }}"
+                hx-confirm="Delete this run?"
+                hx-target="#run-tbody"
+                hx-swap="outerHTML">×</button>
       </td>
     </tr>
     {% endfor %}
@@ -89,8 +105,21 @@
 
   document.body.addEventListener('htmx:afterSwap', function() {
     updateCompareBar();
+    var searchInput = document.getElementById('run-search');
+    if (searchInput && searchInput.value) {
+      filterRuns(searchInput.value);
+    }
   });
 })();
+
+function filterRuns(query) {
+  var rows = document.querySelectorAll('.run-row');
+  var q = query.toLowerCase();
+  rows.forEach(function(row) {
+    var name = row.cells[2] ? row.cells[2].textContent.toLowerCase() : '';
+    row.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
+}
 </script>
 
 {% else %}

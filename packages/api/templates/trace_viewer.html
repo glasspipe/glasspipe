@@ -19,9 +19,9 @@
       glass<span class="accent">pipe</span>
     </a>
      <a class="topbar-cta"
-       href="https://glasspipe.dev"
+       href="https://glasspipe.dev#get-started"
        target="_blank" rel="noopener">
-       Install
+       Trace yours →
     </a>
   </header>
   {% endif %}
@@ -45,9 +45,23 @@
         <div class="run-meta">
           <span class="mono">{{ run_duration_ms }}ms</span>
           <span class="sep">·</span>
-          <span>{{ spans|length }} span{{ 's' if spans|length != 1 else '' }}</span>
+          {% if llm_count > 0 %}
+          <span>{{ llm_count }} LLM call{{ 's' if llm_count != 1 }}</span>
           <span class="sep">·</span>
-          <span>shared {{ shared_ago }}</span>
+          <span>{{ total_tokens }} token{{ 's' if total_tokens != 1 }}</span>
+          <span class="sep">·</span>
+          <span class="mono" id="run-cost"></span>
+          {% else %}
+          <span>{{ spans|length }} span{{ 's' if spans|length != 1 }}</span>
+          <span class="sep">·</span>
+          <span class="dimmed">no LLM calls</span>
+          {% endif %}
+          {% if models_display %}
+          <span class="sep">·</span>
+          <span class="dimmed">{{ models_display }}</span>
+          {% endif %}
+          <span class="sep">·</span>
+          <span class="dimmed">shared {{ created_at_date }} · {{ shared_ago }}</span>
           {% if run.error_message %}
             <span class="sep">·</span>
              <span style="color: var(--c-error); font-family: var(--font-mono); font-size: 12px;">
@@ -67,7 +81,16 @@
       </div>
     </div>
 
-    <!-- ── Waterfall + detail panel ──────────────────────── -->
+    <!-- ── Tab bar ──────────────────────────────────────────── -->
+    {% if llm_count > 0 %}
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="timeline">[ TIMELINE ]</button>
+      <button class="tab-btn" data-tab="cost">[ COST ]</button>
+    </div>
+    {% endif %}
+
+    <!-- ── Timeline tab ─────────────────────────────────────── -->
+    <div id="tab-timeline" class="tab-content active">
     <div class="viewer-layout">
 
       <div class="waterfall-pane">
@@ -100,6 +123,46 @@
       </div>
 
     </div>
+    </div>
+
+    <!-- ── Cost tab ──────────────────────────────────────────── -->
+    {% if llm_count > 0 %}
+    <div id="tab-cost" class="tab-content">
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Span</th>
+            <th>Model</th>
+            <th>Tokens In</th>
+            <th>Tokens Out</th>
+            <th>Duration</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in cost_rows %}
+          <tr>
+            <td class="mono">{{ row.name }}</td>
+            <td class="mono">{{ row.model }}</td>
+            <td class="mono">{{ row.prompt_tokens }}</td>
+            <td class="mono">{{ row.completion_tokens }}</td>
+            <td class="mono">{{ row.duration_ms }}ms</td>
+            <td class="mono" id="cost-{{ loop.index }}"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="cost-totals">
+            <td class="mono" colspan="2">Totals</td>
+            <td class="mono">{{ cost_rows|sum(attribute='prompt_tokens') }}</td>
+            <td class="mono">{{ cost_rows|sum(attribute='completion_tokens') }}</td>
+            <td class="mono"></td>
+            <td class="mono" id="cost-total"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% endif %}
 
     {% if embed %}
     <div class="embed-footer">
@@ -110,7 +173,13 @@
   </div><!-- /container -->
 
   {% if not embed %}
-  <!-- ── Footer CTA ────────────────────────────────────── -->
+  <!-- ── CTA bar ──────────────────────────────────────────── -->
+  <div class="cta-bar">
+    <span class="cta-text">→ <a href="https://glasspipe.dev#get-started" target="_blank" rel="noopener">Install GlassPipe</a> and trace your own agent</span>
+    <span class="cta-hint mono">pip install glasspipe</span>
+  </div>
+
+  <!-- ── Footer ────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
@@ -123,9 +192,9 @@
         </p>
       </div>
       <a class="footer-cta"
-         href="https://glasspipe.dev"
+         href="https://glasspipe.dev#get-started"
          target="_blank" rel="noopener">
-         Install
+         Install GlassPipe
       </a>
     </div>
   </footer>
@@ -134,7 +203,31 @@
   <!-- ── Span data + click interaction ─────────────────── -->
   <script>
     const SPANS = {{ spans_json | safe }};
+    const COST_ROWS = {{ cost_rows_json | safe }};
     let activeSpanId = null;
+
+    function formatCost(usd) {
+      if (!usd || usd === 0) return '< 0.001¢';
+      var cents = usd * 100;
+      if (cents < 1) return cents.toFixed(3) + '¢';
+      return '$' + cents.toFixed(cents < 10 ? 2 : (cents < 100 ? 2 : 0));
+    }
+
+    // Render cost values
+    (function() {
+      var runCost = document.getElementById('run-cost');
+      if (runCost) runCost.textContent = formatCost({{ total_cost_usd }});
+
+      {% if llm_count > 0 %}
+      var totalEl = document.getElementById('cost-total');
+      if (totalEl) totalEl.textContent = formatCost({{ total_cost_usd }});
+
+      COST_ROWS.forEach(function(row, i) {
+        var el = document.getElementById('cost-' + (i + 1));
+        if (el) el.textContent = formatCost(row.cost_usd);
+      });
+      {% endif %}
+    })();
 
     function esc(s) {
       return String(s)
@@ -189,9 +282,11 @@
         if (m.prompt_tokens != null)
           html += `<dt>tokens</dt><dd class="mono">${m.prompt_tokens} in / ${m.completion_tokens} out</dd>`;
         if (m.cost_usd != null)
-          html += `<dt>cost</dt><dd class="mono">$${Number(m.cost_usd).toFixed(6)}</dd>`;
+          html += `<dt>cost</dt><dd class="mono">${formatCost(m.cost_usd)}</dd>`;
         if (m.latency_ms != null)
           html += `<dt>latency</dt><dd class="mono">${m.latency_ms}ms</dd>`;
+        if (m.stream)
+          html += `<dt>mode</dt><dd class="mono"><span class="badge badge-stream">streaming</span></dd>`;
       }
 
       html += '</dl>';
@@ -235,6 +330,19 @@
         panel.innerHTML = renderDetail(SPANS[id]);
       });
     });
+
+    // Tab toggle
+    (function() {
+      var btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          btns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+          document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+      });
+    })();
   </script>
 
 </body>

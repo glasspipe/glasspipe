@@ -228,3 +228,48 @@ def test_nested_trace_with_span_inside(tmp_path, monkeypatch):
     assert step["kind"] == "tool"
     for sp in spans:
         assert sp["run_id"] == runs[0]["id"]
+
+
+def test_trace_exception_captures_error_and_persists(tmp_path, monkeypatch):
+    db = str(tmp_path / "test.db")
+    monkeypatch.setenv("GLASSPIPE_DB_PATH", db)
+
+    @trace
+    def boom():
+        raise ValueError("kaboom")
+
+    with pytest.raises(ValueError, match="kaboom"):
+        boom()
+
+    runs = _rows(db, "runs")
+    assert len(runs) == 1
+    assert runs[0]["status"] == "error"
+    assert "kaboom" in runs[0]["error_message"]
+    assert runs[0]["ended_at"] is not None
+
+
+def test_span_exception_inside_trace_persists_partial(tmp_path, monkeypatch):
+    db = str(tmp_path / "test.db")
+    monkeypatch.setenv("GLASSPIPE_DB_PATH", db)
+
+    @trace
+    def agent():
+        with span("step1", kind="tool") as s:
+            s.record(input={"q": "hello"}, output={"a": "world"})
+        with span("step2", kind="tool") as s:
+            s.record(input={"q": "goodbye"})
+            raise RuntimeError("step2 blew up")
+
+    with pytest.raises(RuntimeError, match="step2 blew up"):
+        agent()
+
+    spans = _rows(db, "spans")
+    by_name = {s["name"]: s for s in spans}
+    assert by_name["step1"]["status"] == "ok"
+    assert by_name["step2"]["status"] == "error"
+    assert "step2 blew up" in by_name["step2"]["error_message"]
+    assert json.loads(by_name["step2"]["input_json"]) == {"q": "goodbye"}
+    assert by_name["step2"]["ended_at"] is not None
+
+    runs = _rows(db, "runs")
+    assert runs[0]["status"] == "error"

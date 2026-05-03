@@ -442,3 +442,52 @@ def share_confirm(run_id):
         return render_template("share_success.html", url=url)
     except ShareError as exc:
         return render_template("share_error.html", error=str(exc))
+
+
+@app.delete("/runs/<run_id>")
+def delete_run(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None:
+            abort(404)
+        session.query(Span).filter_by(run_id=run_id).delete()
+        session.delete(run)
+        session.commit()
+
+        remaining = session.execute(
+            select(Run).order_by(Run.started_at.desc()).limit(20)
+        ).scalars().all()
+        if not remaining:
+            return render_template("index.html", runs=[])
+
+        now = _utcnow()
+        run_data = []
+        remaining_ids = [r.id for r in remaining]
+        counts: dict[str, int] = {}
+        if remaining_ids:
+            rows = session.execute(
+                select(Span.run_id, func.count().label("n"))
+                .where(Span.run_id.in_(remaining_ids))
+                .group_by(Span.run_id)
+            ).all()
+            counts = {row.run_id: row.n for row in rows}
+        for r in remaining:
+            end = r.ended_at or now
+            run_data.append({
+                "id": r.id,
+                "name": r.name,
+                "started_at": r.started_at,
+                "duration_ms": round(_ms(end - r.started_at)),
+                "span_count": counts.get(r.id, 0),
+                "status": r.status,
+            })
+        return render_template("index.html", runs=run_data)
+
+
+@app.post("/runs/clear")
+def clear_runs():
+    with get_session() as session:
+        session.query(Span).delete()
+        session.query(Run).delete()
+        session.commit()
+    return render_template("index.html", runs=[])

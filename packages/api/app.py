@@ -206,6 +206,12 @@ def _render_trace(trace_id, embed=False):
     run_end   = _parse_dt(run.get("ended_at")) or _utcnow()
     run_duration_ms = max(_ms(run_end - run_start), 1.0)
 
+    llm_count = 0
+    total_tokens = 0
+    total_cost_usd = 0.0
+    models_set = set()
+    cost_rows = []
+
     span_data = []
     for sp in raw_spans:
         sp_start = _parse_dt(sp.get("started_at"))
@@ -217,6 +223,8 @@ def _render_trace(trace_id, embed=False):
         width_pct = max(sp_dur / run_duration_ms * 100, 0.5)
         width_pct = min(width_pct, 100.0 - start_pct)
 
+        meta = _coerce_json(sp.get("metadata") or sp.get("metadata_json"))
+
         span_data.append({
             "id": sp.get("id", ""),
             "name": sp.get("name", ""),
@@ -227,10 +235,45 @@ def _render_trace(trace_id, embed=False):
             "width_pct": round(width_pct, 3),
             "input": _coerce_json(sp.get("input") or sp.get("input_json")),
             "output": _coerce_json(sp.get("output") or sp.get("output_json")),
-            "metadata": _coerce_json(sp.get("metadata") or sp.get("metadata_json")),
+            "metadata": meta,
         })
 
+        if sp.get("kind") == "llm":
+            llm_count += 1
+            prompt_tokens = 0
+            completion_tokens = 0
+            cost_usd = 0.0
+            model = None
+            if meta:
+                model = meta.get("model")
+                prompt_tokens = meta.get("prompt_tokens", 0) or 0
+                completion_tokens = meta.get("completion_tokens", 0) or 0
+                cost_usd = meta.get("cost_usd", 0.0) or 0.0
+            total_tokens += prompt_tokens + completion_tokens
+            total_cost_usd += cost_usd
+            if model:
+                models_set.add(model)
+            cost_rows.append({
+                "name": sp.get("name", ""),
+                "model": model or "—",
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "duration_ms": round(sp_dur, 1),
+                "cost_usd": cost_usd,
+            })
+
+    cost_rows.sort(key=lambda r: r["cost_usd"], reverse=True)
+
     spans_by_id = {sp["id"]: sp for sp in span_data}
+
+    if len(models_set) == 1:
+        models_display = models_set.pop()
+    elif len(models_set) > 1:
+        models_display = f"{len(models_set)} models"
+    else:
+        models_display = None
+
+    created_at_date = trace.created_at.strftime("%b %d, %Y")
 
     return render_template(
         "trace_viewer.html",
@@ -238,8 +281,15 @@ def _render_trace(trace_id, embed=False):
         spans=span_data,
         spans_json=json.dumps(spans_by_id),
         run_duration_ms=round(run_duration_ms),
+        llm_count=llm_count,
+        total_tokens=total_tokens,
+        total_cost_usd=total_cost_usd,
+        cost_rows=cost_rows,
+        cost_rows_json=json.dumps(cost_rows),
+        models_display=models_display,
         share_url=f"{_BASE_URL}/t/{trace_id}",
         shared_ago=_age_string(trace.created_at),
+        created_at_date=created_at_date,
         embed=embed,
     )
 

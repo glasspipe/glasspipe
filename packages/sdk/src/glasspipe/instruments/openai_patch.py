@@ -67,6 +67,7 @@ def _make_wrapper(original):
             prompt_tokens = 0
             completion_tokens = 0
             output_text = None
+            is_stream = kwargs.get("stream", False)
             if response is not None:
                 try:
                     usage = response.usage
@@ -77,19 +78,23 @@ def _make_wrapper(original):
                 except Exception:
                     pass
 
+            meta = {
+                "model": model,
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "latency_ms": latency_ms,
+                "cost_usd": _compute_cost(model, prompt_tokens, completion_tokens),
+            }
+            if is_stream:
+                meta["stream"] = True
+
             _safe_write(
                 storage.write_span_end,
                 span_id,
                 status,
                 messages,
                 {"text": output_text},
-                {
-                    "model": model,
-                    "prompt_tokens": prompt_tokens,
-                    "completion_tokens": completion_tokens,
-                    "latency_ms": latency_ms,
-                    "cost_usd": _compute_cost(model, prompt_tokens, completion_tokens),
-                },
+                meta,
                 error_message,
             )
 
