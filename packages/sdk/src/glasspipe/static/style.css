@@ -734,6 +734,18 @@ body::before {
 /* ---- SHARE SUCCESS ---- */
 .modal-card--success { max-width: 500px; }
 
+.share-error-box {
+  margin: 8px 24px 0;
+  padding: 12px 16px;
+  background: var(--c-error-dim);
+  border: 1px solid var(--c-error-border);
+  border-radius: var(--r);
+  color: var(--c-error);
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
 .share-url-box {
   margin: 8px 24px 0;
   padding: 12px 16px;

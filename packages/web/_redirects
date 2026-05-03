@@ -1,1 +1,2 @@
 /t/*    https://glasspipe-app-production.up.railway.app/t/:splat    200!
+/v1/*   https://glasspipe-app-production.up.railway.app/v1/:splat   200!

@@ -435,7 +435,10 @@ def share_cancel():
 
 @app.post("/share/confirm/<run_id>")
 def share_confirm(run_id):
-    from glasspipe.share import upload_run
+    from glasspipe.share import upload_run, ShareError
 
-    url = upload_run(run_id)
-    return render_template("share_success.html", url=url)
+    try:
+        url = upload_run(run_id)
+        return render_template("share_success.html", url=url)
+    except ShareError as exc:
+        return render_template("share_error.html", error=str(exc))

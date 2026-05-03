@@ -12,6 +12,11 @@ from glasspipe.redact import redact_trace
 from glasspipe.storage import Run, Span, get_session
 
 
+class ShareError(Exception):
+    """Raised when the share upload fails."""
+    pass
+
+
 def _short_id(length: int = 6) -> str:
     alphabet = string.ascii_letters + string.digits
     return "".join(random.choices(alphabet, k=length))
@@ -67,9 +72,9 @@ def upload_run(run_id: str) -> str:
     """Package run + spans, redact secrets, and return a shareable URL.
 
     Behaviour:
-    - GLASSPIPE_SHARE_API=mock  → local mock URL, no network call
+    - GLASSPIPE_SHARE_API=mock  → local mock URL, no network call (for dev/testing)
     - GLASSPIPE_SHARE_API=<url> → POST to that URL
-    - Any connection error      → silent fallback to mock
+    - Any upload failure        → raises ShareError (never returns a fake URL)
     """
     api_url = os.environ.get(
         "GLASSPIPE_SHARE_API",
@@ -77,10 +82,36 @@ def upload_run(run_id: str) -> str:
     )
 
     payload = _build_payload(run_id)
-    payload = redact_trace(payload)  # sanitize before upload
+    payload = redact_trace(payload)
 
     if api_url == "mock":
         return f"https://glasspipe.dev/t/{_short_id()}"
+
+    try:
+        resp = httpx.post(api_url, json=payload, timeout=10.0)
+        resp.raise_for_status()
+        return resp.json()["url"]
+    except httpx.HTTPStatusError as exc:
+        body = ""
+        try:
+            body = exc.response.text[:200]
+        except Exception:
+            pass
+        raise ShareError(
+            f"Upload failed (HTTP {exc.response.status_code}): {body}"
+        ) from exc
+    except httpx.ConnectError as exc:
+        raise ShareError(
+            f"Could not connect to share API at {api_url}: {exc}"
+        ) from exc
+    except httpx.TimeoutException as exc:
+        raise ShareError(
+            f"Share API timed out ({api_url}): {exc}"
+        ) from exc
+    except Exception as exc:
+        raise ShareError(
+            f"Upload failed: {type(exc).__name__}: {exc}"
+        ) from exc
 
     try:
         resp = httpx.post(api_url, json=payload, timeout=10.0)
