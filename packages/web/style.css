@@ -68,6 +68,7 @@ body::before {
 }
 
 .mono { font-family: var(--font-mono); }
+.dimmed { color: var(--text-2); }
 
 .link-inherit { color: inherit; text-decoration: none; }
 .link-action { color: var(--c-action); text-decoration: none; }
@@ -634,14 +635,79 @@ body::before {
 .demo-waterfall {
   background: var(--bg-2);
   padding: 0;
+  position: relative;
+}
+.demo-waterfall::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.demo-run-header {
+  position: relative;
+  padding: 16px var(--gutter) 0;
+}
+.demo-run-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.demo-run-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text);
+}
+.demo-badge-ok {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-status);
+  background: var(--c-status-dim);
+  border: 1px solid var(--c-status-border);
+  border-radius: var(--r);
+  padding: 1px 6px;
+  letter-spacing: 0.04em;
+}
+.demo-run-meta {
+  font-size: var(--fs-xs);
+  margin-bottom: 8px;
+}
+
+.demo-tab-bar {
+  position: relative;
+  display: flex;
+  gap: 0;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.demo-tab {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  padding: 8px 14px;
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+.demo-tab.active {
+  color: var(--c-label);
+  border-bottom: 2px solid var(--c-label);
+  margin-bottom: -1px;
 }
 
 .demo-waterfall-timeline {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: 12px;
   align-items: start;
-  padding: 16px var(--gutter);
+  padding: 0 var(--gutter) 16px;
 }
 
 
@@ -652,14 +718,6 @@ body::before {
   padding: 14px;
   min-height: 160px;
   font-size: 13px;
-}
-
-.demo-status-bar {
-  padding: 10px var(--gutter);
-  border-top: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--text-3);
 }
 
 .demo-placeholder-cta {
