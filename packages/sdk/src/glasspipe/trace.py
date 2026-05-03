@@ -52,21 +52,48 @@ def _make_wrapper(fn, run_name: str):
             _patched = True
             from glasspipe.instruments import patch_all
             patch_all()
-        run_id = _new_id()
-        _safe_write(storage.write_run_start, run_id, run_name)
-        token = _current_run_id.set(run_id)
-        status = "ok"
-        error_message = None
-        try:
-            result = fn(*args, **kwargs)
-            return result
-        except Exception as exc:
-            status = "error"
-            error_message = str(exc)
-            raise
-        finally:
-            _safe_write(storage.write_run_end, run_id, status, error_message)
-            _current_run_id.reset(token)
+
+        existing_run_id = _current_run_id.get()
+
+        if existing_run_id is not None:
+            span_id = _new_id()
+            parent_span_id = _current_span_id.get()
+            _safe_write(
+                storage.write_span_start,
+                span_id, existing_run_id, parent_span_id, "agent", run_name,
+            )
+            span_token = _current_span_id.set(span_id)
+            status = "ok"
+            error_message = None
+            try:
+                result = fn(*args, **kwargs)
+                return result
+            except Exception as exc:
+                status = "error"
+                error_message = str(exc)
+                raise
+            finally:
+                _current_span_id.reset(span_token)
+                _safe_write(
+                    storage.write_span_end,
+                    span_id, status, None, None, None, error_message,
+                )
+        else:
+            run_id = _new_id()
+            _safe_write(storage.write_run_start, run_id, run_name)
+            token = _current_run_id.set(run_id)
+            status = "ok"
+            error_message = None
+            try:
+                result = fn(*args, **kwargs)
+                return result
+            except Exception as exc:
+                status = "error"
+                error_message = str(exc)
+                raise
+            finally:
+                _safe_write(storage.write_run_end, run_id, status, error_message)
+                _current_run_id.reset(token)
 
     return wrapper
 

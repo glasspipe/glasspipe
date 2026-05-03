@@ -139,3 +139,92 @@ def test_db_path_override(tmp_path, monkeypatch):
     # We can't assert the default doesn't exist (it may from earlier manual runs),
     # but we can assert our custom DB has exactly the run we just wrote.
     assert runs[0]["name"] == "noop"
+
+
+def test_nested_trace_creates_single_run(tmp_path, monkeypatch):
+    db = str(tmp_path / "test.db")
+    monkeypatch.setenv("GLASSPIPE_DB_PATH", db)
+
+    @trace
+    def inner():
+        return 42
+
+    @trace
+    def outer():
+        return inner()
+
+    result = outer()
+    assert result == 42
+
+    runs = _rows(db, "runs")
+    spans = _rows(db, "spans")
+    assert len(runs) == 1
+    assert runs[0]["name"] == "outer"
+    assert len(spans) == 1
+    assert spans[0]["name"] == "inner"
+    assert spans[0]["kind"] == "agent"
+    assert spans[0]["run_id"] == runs[0]["id"]
+    assert spans[0]["parent_span_id"] is None
+
+
+def test_deeply_nested_trace(tmp_path, monkeypatch):
+    db = str(tmp_path / "test.db")
+    monkeypatch.setenv("GLASSPIPE_DB_PATH", db)
+
+    @trace
+    def level3():
+        return 3
+
+    @trace
+    def level2():
+        return level3()
+
+    @trace
+    def level1():
+        return level2()
+
+    result = level1()
+    assert result == 3
+
+    runs = _rows(db, "runs")
+    spans = _rows(db, "spans")
+    assert len(runs) == 1
+    assert runs[0]["name"] == "level1"
+    assert len(spans) == 2
+
+    by_name = {s["name"]: s for s in spans}
+    assert by_name["level2"]["parent_span_id"] is None
+    assert by_name["level3"]["parent_span_id"] == by_name["level2"]["id"]
+    for sp in spans:
+        assert sp["run_id"] == runs[0]["id"]
+
+
+def test_nested_trace_with_span_inside(tmp_path, monkeypatch):
+    db = str(tmp_path / "test.db")
+    monkeypatch.setenv("GLASSPIPE_DB_PATH", db)
+
+    @trace
+    def inner():
+        with span("step", kind="tool") as s:
+            s.record(input={"q": 1}, output={"a": 2})
+        return "done"
+
+    @trace
+    def outer():
+        return inner()
+
+    outer()
+
+    runs = _rows(db, "runs")
+    spans = _rows(db, "spans")
+    assert len(runs) == 1
+    assert len(spans) == 2
+
+    by_name = {s["name"]: s for s in spans}
+    step = by_name["step"]
+    inner_sp = by_name["inner"]
+    assert step["parent_span_id"] == inner_sp["id"]
+    assert inner_sp["kind"] == "agent"
+    assert step["kind"] == "tool"
+    for sp in spans:
+        assert sp["run_id"] == runs[0]["id"]
