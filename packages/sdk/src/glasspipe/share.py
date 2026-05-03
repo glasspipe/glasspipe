@@ -3,7 +3,6 @@ import json
 import os
 import random
 import string
-import sys
 
 import httpx
 from sqlalchemy import select
@@ -112,15 +111,3 @@ def upload_run(run_id: str) -> str:
         raise ShareError(
             f"Upload failed: {type(exc).__name__}: {exc}"
         ) from exc
-
-    try:
-        resp = httpx.post(api_url, json=payload, timeout=10.0)
-        resp.raise_for_status()
-        return resp.json()["url"]
-    except Exception as exc:
-        print(
-            f"glasspipe warning: share API unreachable ({type(exc).__name__}), "
-            "using local mock URL",
-            file=sys.stderr,
-        )
-        return f"https://glasspipe.dev/t/{_short_id()}"

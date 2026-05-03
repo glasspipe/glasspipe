@@ -4,6 +4,9 @@
     <span class="kind-dot {{ 'kind-error' if span.status == 'error' else 'kind-' + span.kind }}">●</span>
     <span class="mono" title="{{ span.name }}">{{ span.name | display_name(span.kind, metadata) }}</span>
     <span class="badge badge-{{ span.status }}">{{ span.status }}</span>
+    {% if metadata and metadata.get('stream') %}
+    <span class="badge badge-stream">streaming</span>
+    {% endif %}
   </div>
 
   {% if insight %}

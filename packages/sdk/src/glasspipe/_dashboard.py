@@ -1,7 +1,7 @@
 """GlassPipe local dashboard — Flask app."""
 import json
 import re as _re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, abort, render_template, request
@@ -101,6 +101,46 @@ def redacted_json_filter(obj) -> Markup:
 # Routes
 # ---------------------------------------------------------------------------
 
+def _build_run_data(runs, now=None):
+    if now is None:
+        now = _utcnow()
+    today = now.date()
+    yesterday = today - timedelta(days=1)
+    week_ago = today - timedelta(days=7)
+    run_ids = [r.id for r in runs]
+    counts: dict[str, int] = {}
+    if run_ids:
+        with get_session() as session:
+            rows = session.execute(
+                select(Span.run_id, func.count().label("n"))
+                .where(Span.run_id.in_(run_ids))
+                .group_by(Span.run_id)
+            ).all()
+            counts = {row.run_id: row.n for row in rows}
+    run_data = []
+    for run in runs:
+        end = run.ended_at or now
+        run_date = run.started_at.date()
+        if run_date == today:
+            date_label = "today"
+        elif run_date == yesterday:
+            date_label = "yesterday"
+        elif run_date >= week_ago:
+            date_label = "this week"
+        else:
+            date_label = run_date.strftime("%b %d, %Y")
+        run_data.append({
+            "id": run.id,
+            "name": run.name,
+            "started_at": run.started_at,
+            "duration_ms": round(_ms(end - run.started_at)),
+            "span_count": counts.get(run.id, 0),
+            "status": run.status,
+            "date_label": date_label,
+        })
+    return run_data
+
+
 @app.route("/")
 def index():
     init_db()
@@ -109,30 +149,7 @@ def index():
             select(Run).order_by(Run.started_at.desc()).limit(20)
         ).scalars().all()
 
-        run_ids = [r.id for r in runs]
-        counts: dict[str, int] = {}
-        if run_ids:
-            rows = session.execute(
-                select(Span.run_id, func.count().label("n"))
-                .where(Span.run_id.in_(run_ids))
-                .group_by(Span.run_id)
-            ).all()
-            counts = {row.run_id: row.n for row in rows}
-
-        now = _utcnow()
-        run_data = []
-        for run in runs:
-            end = run.ended_at or now
-            run_data.append({
-                "id": run.id,
-                "name": run.name,
-                "started_at": run.started_at,
-                "duration_ms": round(_ms(end - run.started_at)),
-                "span_count": counts.get(run.id, 0),
-                "status": run.status,
-            })
-
-    return render_template("index.html", runs=run_data)
+    return render_template("index.html", runs=_build_run_data(runs))
 
 
 def _safe_parse_meta(s):
@@ -442,3 +459,30 @@ def share_confirm(run_id):
         return render_template("share_success.html", url=url)
     except ShareError as exc:
         return render_template("share_error.html", error=str(exc))
+
+
+@app.delete("/runs/<run_id>")
+def delete_run(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None:
+            abort(404)
+        session.query(Span).filter_by(run_id=run_id).delete()
+        session.delete(run)
+        session.commit()
+
+        remaining = session.execute(
+            select(Run).order_by(Run.started_at.desc()).limit(20)
+        ).scalars().all()
+        if not remaining:
+            return render_template("index.html", runs=[])
+        return render_template("index.html", runs=_build_run_data(remaining))
+
+
+@app.post("/runs/clear")
+def clear_runs():
+    with get_session() as session:
+        session.query(Span).delete()
+        session.query(Run).delete()
+        session.commit()
+    return render_template("index.html", runs=[])

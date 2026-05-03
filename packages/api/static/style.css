@@ -195,6 +195,7 @@ body::before {
 .badge-ok      { background: var(--c-status-dim);  color: var(--c-status);  border: 1px solid var(--c-status-border); }
 .badge-error   { background: var(--c-error-dim);   color: var(--c-error);   border: 1px solid var(--c-error-border); }
 .badge-running { background: var(--c-action-dim);  color: var(--c-action);  border: 1px solid var(--c-action-border); }
+.badge-stream  { background: var(--c-label-dim);   color: var(--c-label);   border: 1px solid var(--c-label-border); }
 
 /* ---- VIEWER LAYOUT ---- */
 .viewer-layout {
@@ -349,6 +350,108 @@ body::before {
   padding: 1px 4px;
   border-radius: var(--r);
   font-weight: 500;
+}
+
+/* ---- TAB BAR ---- */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  overflow: hidden;
+}
+.tab-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 8px 16px;
+  background: var(--bg-3);
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.tab-btn:last-child { border-right: none; }
+.tab-btn:hover { color: var(--text); background: var(--bg-4); }
+.tab-btn.active { background: var(--bg-2); color: var(--c-action); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+#tab-timeline.active .viewer-layout { display: grid; }
+
+/* ---- COST TABLE ---- */
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--r-card) var(--r-card);
+  overflow: hidden;
+}
+.cost-table th {
+  padding: 10px 16px;
+  background: var(--bg-3);
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+}
+.cost-table td {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+}
+.cost-table tr:last-child td { border-bottom: none; }
+.cost-table tfoot td {
+  background: var(--bg-3);
+  font-weight: 500;
+  color: var(--text);
+  border-top: 1px solid var(--border-2);
+}
+
+/* ---- CTA BAR ---- */
+.cta-bar {
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+  padding: 20px 32px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cta-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.cta-text a {
+  color: var(--c-action);
+  text-decoration: none;
+}
+.cta-text a:hover { text-decoration: underline; }
+.cta-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  background: var(--bg-3);
+  padding: 4px 10px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
 }
 
 /* ---- FOOTER ---- */

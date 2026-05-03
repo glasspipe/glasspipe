@@ -12,6 +12,7 @@ _current_run_id: ContextVar[str | None] = ContextVar("glasspipe_run_id", default
 _current_span_id: ContextVar[str | None] = ContextVar("glasspipe_span_id", default=None)
 
 _patched = False
+_announced = False
 
 
 def _new_id() -> str:
@@ -94,6 +95,10 @@ def _make_wrapper(fn, run_name: str):
             finally:
                 _safe_write(storage.write_run_end, run_id, status, error_message)
                 _current_run_id.reset(token)
+                global _announced
+                if not _announced and status == "ok":
+                    _announced = True
+                    print("glasspipe: trace recorded — run glasspipe dashboard to view", file=sys.stderr)
 
     return wrapper
 
