@@ -90,7 +90,7 @@ body::before {
 .ruler {
   display: flex;
   justify-content: space-between;
-  padding: 5px 12px 5px calc(120px + 12px);
+  padding: 5px 12px 5px calc(200px + 12px);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-2);
@@ -109,7 +109,7 @@ body::before {
 .span-row:last-child { border-bottom: none; }
 .span-row:hover { background: rgba(255,255,255,0.02); }
 .span-label {
-  width: 120px;
+  width: 200px;
   flex-shrink: 0;
   padding: 0 12px;
   font-size: 11px;
