@@ -53,6 +53,11 @@ def detect(text: str) -> list[dict]:
     return results
 
 
+_SENSITIVE_KEYS = re.compile(
+    r"(?i)^(?:password|passwd|secret|token|api_?key|apikey|auth|credential)$"
+)
+
+
 def redact(value, custom_patterns: dict | None = None):
     """Recursively walk dicts/lists, replacing sensitive strings with [REDACTED:type].
 
@@ -66,13 +71,18 @@ def redact(value, custom_patterns: dict | None = None):
             s = re.sub(pattern, f"[REDACTED:{name}]", s)
         return s
 
-    def _walk(v):
+    def _walk(v, key=None):
         if isinstance(v, dict):
-            return {k: _walk(val) for k, val in v.items()}
+            return {k: _walk(val, key=k) for k, val in v.items()}
         if isinstance(v, list):
-            return [_walk(item) for item in v]
+            return [_walk(item, key=key) for item in v]
         if isinstance(v, str):
-            return _redact_str(v)
+            redacted = _redact_str(v)
+            if redacted != v:
+                return redacted
+            if key and _SENSITIVE_KEYS.match(key):
+                return "[REDACTED:sensitive_field]"
+            return v
         return v
 
     return _walk(value)

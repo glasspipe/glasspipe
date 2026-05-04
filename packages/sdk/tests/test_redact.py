@@ -196,3 +196,18 @@ def test_smoketest_redact_all_five_secrets():
     assert "sk-proj-FAKE" not in result_str
     assert "123-45-6789" not in result_str
     assert "hunter2SuperSecret" not in result_str
+
+
+def test_redact_sensitive_key_short_value():
+    result = redact({"api_key": "short"})
+    assert result == {"api_key": "[REDACTED:sensitive_field]"}
+
+
+def test_redact_sensitive_key_long_openai_value():
+    result = redact({"api_key": "sk-proj-FAKE-SECRET-KEY-DO-NOT-SHARE-9c8d7e6f"})
+    assert "[REDACTED:openai_key]" in json.dumps(result)
+
+
+def test_redact_normal_key_untouched():
+    result = redact({"name": "Alice", "query": "hello"})
+    assert result == {"name": "Alice", "query": "hello"}

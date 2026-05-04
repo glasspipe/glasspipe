@@ -10,6 +10,7 @@ from markupsafe import Markup, escape
 from sqlalchemy import func, select
 
 from glasspipe._diff import diff_runs
+from glasspipe.instruments.openai_patch import _PRICING as _OPENAI_PRICING, _normalize_model as _norm_openai
 from glasspipe.redact import detect, redact
 from glasspipe.storage import Run, Span, get_session, init_db
 
@@ -32,6 +33,17 @@ def _safe_sub(a, b):
     elif a.tzinfo is None and b.tzinfo is not None:
         a = a.replace(tzinfo=timezone.utc)
     return a - b
+
+
+def _estimate_cost(model, prompt_tokens, completion_tokens):
+    if not model:
+        return 0.0
+    inp, out = _OPENAI_PRICING.get(
+        model, _OPENAI_PRICING.get(_norm_openai(model), (0.0, 0.0))
+    )
+    if inp == 0.0 and out == 0.0:
+        return 0.0
+    return (prompt_tokens * inp + completion_tokens * out) / 1_000_000
 
 
 def _ms(delta) -> float:
@@ -99,8 +111,8 @@ def redacted_json_filter(obj) -> Markup:
     safe = str(escape(raw))
     # Match [REDACTED] (old format) and [REDACTED:type] (new format)
     safe = _re.sub(
-        r'&quot;(\[REDACTED(?::[a-z_]+)?\])&quot;',
-        lambda m: f'<span class="redacted">&quot;{m.group(1)}&quot;</span>',
+        r'(?:&quot;|&#34;)(\[REDACTED(?::[a-z_]+)?\])(?:&quot;|&#34;)',
+        lambda m: f'<span class="redacted">{m.group(1)}</span>',
         safe,
     )
     return Markup(safe)
@@ -234,6 +246,8 @@ def run_detail(run_id):
                     prompt_tokens = meta.get("prompt_tokens", 0) or 0
                     completion_tokens = meta.get("completion_tokens", 0) or 0
                     cost_usd = meta.get("cost_usd", 0.0) or 0.0
+                    if cost_usd == 0.0 and model and (prompt_tokens or completion_tokens):
+                        cost_usd = _estimate_cost(model, prompt_tokens, completion_tokens)
                 total_tokens += prompt_tokens + completion_tokens
                 total_cost_usd += cost_usd
                 parent_name = span_name_by_id.get(sp.parent_span_id, "")
@@ -382,6 +396,8 @@ def span_detail(span_id):
         prompt_tokens = metadata.get("prompt_tokens") or 0
         completion_tokens = metadata.get("completion_tokens") or 0
         cost_usd = metadata.get("cost_usd") or 0
+        if cost_usd == 0 and (prompt_tokens or completion_tokens):
+            cost_usd = _estimate_cost(model, prompt_tokens, completion_tokens)
         dur_str = _fmt_dur(duration_ms)
 
         if duration_ms > 3000 and prompt_tokens > 100:
