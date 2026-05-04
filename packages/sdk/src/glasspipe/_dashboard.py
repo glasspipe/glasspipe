@@ -1,8 +1,9 @@
 """GlassPipe local dashboard — Flask app."""
 import json
 import re as _re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
 
 from flask import Flask, abort, render_template, request
 from markupsafe import Markup, escape
@@ -22,7 +23,15 @@ app = Flask(
 
 
 def _utcnow() -> datetime:
-    return datetime.utcnow()
+    return datetime.now(timezone.utc)
+
+
+def _safe_sub(a, b):
+    if a.tzinfo is not None and b.tzinfo is None:
+        b = b.replace(tzinfo=timezone.utc)
+    elif a.tzinfo is None and b.tzinfo is not None:
+        a = a.replace(tzinfo=timezone.utc)
+    return a - b
 
 
 def _ms(delta) -> float:
@@ -104,7 +113,8 @@ def redacted_json_filter(obj) -> Markup:
 def _build_run_data(runs, now=None):
     if now is None:
         now = _utcnow()
-    today = now.date()
+    local_now = datetime.now()
+    today = local_now.date()
     yesterday = today - timedelta(days=1)
     week_ago = today - timedelta(days=7)
     run_ids = [r.id for r in runs]
@@ -119,8 +129,12 @@ def _build_run_data(runs, now=None):
             counts = {row.run_id: row.n for row in rows}
     run_data = []
     for run in runs:
+        start = run.started_at
         end = run.ended_at or now
-        run_date = run.started_at.date()
+        if start.tzinfo is not None:
+            run_date = start.astimezone().date()
+        else:
+            run_date = start.date()
         if run_date == today:
             date_label = "today"
         elif run_date == yesterday:
@@ -133,7 +147,7 @@ def _build_run_data(runs, now=None):
             "id": run.id,
             "name": run.name,
             "started_at": run.started_at,
-            "duration_ms": round(_ms(end - run.started_at)),
+            "duration_ms": round(_ms(_safe_sub(end, start))),
             "span_count": counts.get(run.id, 0),
             "status": run.status,
             "date_label": date_label,
@@ -176,7 +190,7 @@ def run_detail(run_id):
 
         now = _utcnow()
         run_end = run.ended_at or now
-        run_duration_ms = max(_ms(run_end - run.started_at), 1.0)
+        run_duration_ms = max(_ms(_safe_sub(run_end, run.started_at)), 1.0)
 
         span_name_by_id = {sp.id: sp.name for sp in spans}
 
@@ -188,8 +202,8 @@ def run_detail(run_id):
         span_data = []
         for sp in spans:
             sp_end = sp.ended_at or now
-            sp_dur = max(_ms(sp_end - sp.started_at), 0.0)
-            offset = max(_ms(sp.started_at - run.started_at), 0.0)
+            sp_dur = max(_ms(_safe_sub(sp_end, sp.started_at)), 0.0)
+            offset = max(_ms(_safe_sub(sp.started_at, run.started_at)), 0.0)
 
             start_pct = min(offset / run_duration_ms * 100, 99.0)
             width_pct = max(sp_dur / run_duration_ms * 100, 0.5)
@@ -279,8 +293,8 @@ def compare():
         ).scalars().all()
 
         now = _utcnow()
-        dur_a = max(_ms((run_a.ended_at or now) - run_a.started_at), 1.0)
-        dur_b = max(_ms((run_b.ended_at or now) - run_b.started_at), 1.0)
+        dur_a = max(_ms(_safe_sub(run_a.ended_at or now, run_a.started_at)), 1.0)
+        dur_b = max(_ms(_safe_sub(run_b.ended_at or now, run_b.started_at)), 1.0)
 
         result = diff_runs(spans_a, spans_b, dur_a, dur_b)
 
@@ -293,8 +307,8 @@ def compare():
             for ds in diff_spans:
                 sp = ds.span
                 sp_end = sp.ended_at or now_l
-                sp_dur = max(_ms(sp_end - sp.started_at), 0.0)
-                offset = max(_ms(sp.started_at - run_start), 0.0)
+                sp_dur = max(_ms(_safe_sub(sp_end, sp.started_at)), 0.0)
+                offset = max(_ms(_safe_sub(sp.started_at, run_start)), 0.0)
 
                 start_pct = min(offset / max_dur * 100, 99.0)
                 width_pct = max(sp_dur / max_dur * 100, 0.5)
@@ -412,7 +426,7 @@ def share_preview(run_id):
 
         now = _utcnow()
         run_end = run.ended_at or now
-        run_duration_ms = round(_ms(run_end - run.started_at))
+        run_duration_ms = round(_ms(_safe_sub(run_end, run.started_at)))
 
         total_redacted = 0
         span_previews = []
@@ -430,7 +444,7 @@ def share_preview(run_id):
                 "name": sp.name,
                 "kind": sp.kind,
                 "status": sp.status,
-                "duration_ms": round(_ms(sp_end - sp.started_at), 1),
+                "duration_ms": round(_ms(_safe_sub(sp_end, sp.started_at)), 1),
                 "input":  redact(raw_input),
                 "output": redact(raw_output),
             })

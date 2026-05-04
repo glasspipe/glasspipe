@@ -19,7 +19,7 @@
       glass<span class="accent">pipe</span>
     </a>
      <a class="topbar-cta"
-       href="https://glasspipe.dev#get-started"
+       href="https://glasspipe.dev/"
        target="_blank" rel="noopener">
        Trace yours →
     </a>
@@ -175,7 +175,7 @@
   {% if not embed %}
   <!-- ── CTA bar ──────────────────────────────────────────── -->
   <div class="cta-bar">
-    <span class="cta-text">→ <a href="https://glasspipe.dev#get-started" target="_blank" rel="noopener">Install GlassPipe</a> and trace your own agent</span>
+    <span class="cta-text">→ <a href="https://glasspipe.dev/" target="_blank" rel="noopener">Install GlassPipe</a> and trace your own agent</span>
     <span class="cta-hint mono">pip install glasspipe</span>
   </div>
 
@@ -192,7 +192,7 @@
         </p>
       </div>
       <a class="footer-cta"
-         href="https://glasspipe.dev#get-started"
+         href="https://glasspipe.dev/"
          target="_blank" rel="noopener">
          Install GlassPipe
       </a>
@@ -242,14 +242,12 @@
         return '<span style="color:var(--text-3)">null</span>';
       }
       let raw = JSON.stringify(obj, null, 2);
-      // HTML-escape
       raw = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      // Highlight [REDACTED] and [REDACTED:type] as amber pill
       raw = raw.replace(
-        /&quot;\[REDACTED(?::([a-z_]+))?\]&quot;/g,
+        /"\[REDACTED(?::([a-z_]+))?\]"/g,
         function(match, type) {
           var label = type ? '[REDACTED:' + type + ']' : '[REDACTED]';
-          return '<span class="redacted">&quot;' + label + '&quot;</span>';
+          return '<span class="redacted">"' + label + '"</span>';
         }
       );
       return raw;
