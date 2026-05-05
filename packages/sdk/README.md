@@ -119,7 +119,7 @@ A preview modal shows you exactly what will be made public. GlassPipe scans for 
 You get a link like:
 
 ```
-https://glasspipe.dev/t/a1f9c2
+https://glasspipe.dev/t/F3Sdpg
 ```
 
 Anyone can open it. No account needed. Ever. Traces expire after 30 days. You get a delete token to remove it early.
@@ -128,10 +128,8 @@ Anyone can open it. No account needed. Ever. Traces expire after 30 days. You ge
 
 ## Example traces
 
-- [Simple research agent](#) — 3 spans, plan → search → synthesize
-- [Customer support agent](#) — 4 spans, classify → fetch → draft → review
-
-*(Replace these with real shared trace URLs after you run the examples)*
+- [Competitive Intel Agent](https://glasspipe.dev/t/F3Sdpg) — 8 spans, plan → analyze competitors → synthesize → draft brief → review
+- [Support Agent](https://glasspipe.dev/t/pWvkVp) — 4 spans, classify → fetch → draft → review
 
 ---
 
@@ -218,6 +216,4 @@ Issues and PRs welcome. This is a v1 — there's plenty to improve.
 
 ---
 
-*Built by Jonathan — [LinkedIn](#) · [glasspipe.dev](#)*
-
-*(Replace # links with your real LinkedIn URL and domain once live)*
+*Built by Jonathan — [LinkedIn](https://www.linkedin.com/in/yonatan-michelson) · [glasspipe.dev](https://glasspipe.dev)*

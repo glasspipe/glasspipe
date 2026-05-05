@@ -119,7 +119,7 @@ A preview modal shows you exactly what will be made public. GlassPipe scans for 
 You get a link like:
 
 ```
-https://glasspipe.dev/t/a1f9c2
+https://glasspipe.dev/t/F3Sdpg
 ```
 
 Anyone can open it. No account, ever. Traces expire after 30 days. You get a delete token to remove a trace early.

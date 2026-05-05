@@ -48,3 +48,6 @@ Thumbs.db
 
 # Internal planning docs (kept locally in ~/Desktop/glasspipe-private/)
 /docs/*.pdf
+
+# Netlify local state
+.netlify/
