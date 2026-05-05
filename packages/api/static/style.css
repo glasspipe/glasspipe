@@ -78,12 +78,20 @@ body::before {
   gap: 10px;
 }
 .topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
   letter-spacing: -0.04em;
+}
+.topbar-logo-img {
+  height: 22px;
+  width: auto;
+  border-radius: 2px;
 }
 .topbar-logo .accent { color: var(--c-action); }
 .topbar-cta {

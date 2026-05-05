@@ -86,12 +86,20 @@ body::before {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   text-decoration: none;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.04em;
+}
+.logo-img {
+  height: 22px;
+  width: auto;
+  border-radius: 2px;
 }
 
 .topbar-sub { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }

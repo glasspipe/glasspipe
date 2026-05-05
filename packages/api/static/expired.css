@@ -36,7 +36,10 @@ body::before {
   padding: 0 32px;
   gap: 10px;
 }
-.topbar a {
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
@@ -44,7 +47,12 @@ body::before {
   text-decoration: none;
   letter-spacing: -0.04em;
 }
-.topbar a .accent { color: var(--c-action); }
+.topbar-logo-img {
+  height: 22px;
+  width: auto;
+  border-radius: 2px;
+}
+.topbar-logo .accent { color: var(--c-action); }
 
 main {
   flex: 1;
