@@ -297,13 +297,13 @@ body::before {
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.06em;
 }
 .topbar-logo-img {
   height: 22px;
