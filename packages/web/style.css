@@ -310,7 +310,8 @@ body::before {
   width: auto;
   border-radius: 2px;
 }
-.topbar-logo span { color: var(--c-action); }
+.topbar-text { color: inherit; }
+.topbar-logo .topbar-text span { color: var(--c-action); }
 .topbar-link {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
