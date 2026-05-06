@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ run.name }} — GlassPipe trace</title>
   <meta name="description" content="AI agent trace for {{ run.name }} — {{ spans|length }} spans, {{ run_duration_ms }}ms. Shared via GlassPipe.">
+  <meta property="og:title" content="{{ run.name }} — GlassPipe trace">
+  <meta property="og:description" content="{{ spans|length }} spans, {{ run_duration_ms }}ms. Shared via GlassPipe.">
+  <meta property="og:image" content="https://glasspipe.dev/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://glasspipe.dev/og-image.png">
+  <meta name="twitter:title" content="{{ run.name }} — GlassPipe trace">
+  <meta name="twitter:description" content="{{ spans|length }} spans, {{ run_duration_ms }}ms. Shared via GlassPipe.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
