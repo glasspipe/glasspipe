@@ -332,28 +332,35 @@
           <span class="faq-card-toggle">[ + ]</span>
           What gets sent to your server?
         </button>
-        <p class="faq-card-a">Nothing &middot; until you click Share. When you do, a preview shows exactly what's about to upload, and you can redact anything before confirming.</p>
+        <p class="faq-card-a">Nothing. Not until you choose to share. When you click Share, you see an exact preview of what would upload. Redact anything, then confirm. If it looks wrong, just close it.</p>
       </div>
       <div class="faq-card">
         <button class="faq-card-q" type="button" aria-expanded="false">
           <span class="faq-card-toggle">[ + ]</span>
-          What about my API keys?
+          What about API keys and secrets?
         </button>
-        <p class="faq-card-a">The pre-share preview scans for common secrets &middot; API keys, tokens, JWTs, emails &middot; and highlights them for redaction. You can add custom patterns via GLASSPIPE_REDACT_PATTERNS. Always review the preview yourself before confirming.</p>
+        <p class="faq-card-a">The pre-share preview automatically scans for common secrets (API keys, tokens, JWTs, emails) and flags them before anything leaves your machine. You can add your own patterns via <code>GLASSPIPE_REDACT_PATTERNS</code>. But always eyeball the preview yourself. We catch the obvious stuff; you know your codebase.</p>
       </div>
       <div class="faq-card">
         <button class="faq-card-q" type="button" aria-expanded="false">
           <span class="faq-card-toggle">[ + ]</span>
           Can I self-host the share service?
         </button>
-        <p class="faq-card-a">Not in v1. The local dashboard runs entirely on your machine. Public share is hosted at glasspipe.dev.</p>
+        <p class="faq-card-a">Not in v1. The local dashboard runs entirely on your machine, no server involved. The public share service runs on <code>glasspipe.dev</code>. Self-hosting is on the roadmap if there's demand.</p>
       </div>
       <div class="faq-card">
         <button class="faq-card-q" type="button" aria-expanded="false">
           <span class="faq-card-toggle">[ + ]</span>
-          LangChain, async, streaming?
+          LangChain? Async? Streaming?
         </button>
-        <p class="faq-card-a">Not in v1. Synchronous Python with raw OpenAI and Anthropic SDKs only. If you need more today, Langfuse and Phoenix are good options.</p>
+        <p class="faq-card-a">Not in v1. GlassPipe focuses on synchronous Python with the raw OpenAI and Anthropic SDKs. If you're deep in LangChain or async today, Langfuse or Phoenix are good fits. We'd rather do one thing really well.</p>
+      </div>
+      <div class="faq-card">
+        <button class="faq-card-q" type="button" aria-expanded="false">
+          <span class="faq-card-toggle">[ + ]</span>
+          How long do shared traces stay up?
+        </button>
+        <p class="faq-card-a">Public traces expire after 30 days. You get a delete token when you share, use it to remove a trace early anytime. No account needed.</p>
       </div>
     </div>
   </div>
