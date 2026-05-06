@@ -839,25 +839,40 @@ body::before {
   border: 1px solid var(--border);
   border-radius: var(--r-card);
 }
-.faq-card-prefix {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--c-label);
-  letter-spacing: 0.06em;
-  margin-bottom: 12px;
-}
 .faq-card-q {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   font-family: var(--font-mono);
   font-size: var(--fs-md);
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 8px;
+  text-align: left;
+  line-height: 1.4;
+  transition: color 0.12s;
+}
+.faq-card-q:hover { color: var(--c-action); }
+.faq-card-toggle {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-label);
+  letter-spacing: 0.06em;
 }
 .faq-card-a {
+  display: none;
   font-size: var(--fs-sm);
   color: var(--text-2);
   line-height: 1.6;
+  margin-top: 12px;
 }
+.faq-card.open .faq-card-a { display: block; }
+.faq-card.open .faq-card-toggle { color: var(--c-action); }
 
 
 /* ================================================================
