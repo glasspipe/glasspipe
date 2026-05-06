@@ -829,8 +829,9 @@ body::before {
    ================================================================ */
 .faq-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
+  max-width: 640px;
 }
 .faq-card {
   padding: 24px;
@@ -1142,7 +1143,6 @@ footer {
   .compare-table td { padding: 10px 12px; font-size: 12px; }
   .compare-note { grid-template-columns: 1fr; }
   .trace-cards { grid-template-columns: 1fr; }
-  .faq-cards { grid-template-columns: 1fr; }
   .hero { padding: 80px 0 60px; }
   .container { padding: 0 20px; }
   .hero-left { padding-left: 0; }
