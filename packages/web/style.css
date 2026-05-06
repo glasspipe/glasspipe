@@ -825,6 +825,41 @@ body::before {
 
 
 /* ================================================================
+   FAQ CARDS
+   ================================================================ */
+.faq-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.faq-card {
+  padding: 24px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+}
+.faq-card-prefix {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-label);
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.faq-card-q {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.faq-card-a {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+
+/* ================================================================
    HOW IT WORKS
    ================================================================ */
 .steps {
@@ -1107,6 +1142,7 @@ footer {
   .compare-table td { padding: 10px 12px; font-size: 12px; }
   .compare-note { grid-template-columns: 1fr; }
   .trace-cards { grid-template-columns: 1fr; }
+  .faq-cards { grid-template-columns: 1fr; }
   .hero { padding: 80px 0 60px; }
   .container { padding: 0 20px; }
   .hero-left { padding-left: 0; }

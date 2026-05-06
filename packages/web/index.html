@@ -326,17 +326,28 @@
     <div class="bracket-label"><span class="code">[ FAQ-000 ]</span> <span class="label-text">/ questions</span></div>
     <h2 class="section-title">Questions you'd ask.</h2>
 
-    <h3 class="step-title">What gets sent to your server?</h3>
-    <p class="step-desc">Nothing &middot; until you click Share. When you do, a preview shows exactly what's about to upload, and you can redact anything before confirming.</p>
-
-    <h3 class="step-title">What about my API keys?</h3>
-    <p class="step-desc">The pre-share preview scans for common secrets &middot; API keys, tokens, JWTs, emails &middot; and highlights them for redaction. You can add custom patterns via GLASSPIPE_REDACT_PATTERNS. Always review the preview yourself before confirming.</p>
-
-    <h3 class="step-title">Can I self-host the share service?</h3>
-    <p class="step-desc">Not in v1. The local dashboard runs entirely on your machine. Public share is hosted at glasspipe.dev.</p>
-
-    <h3 class="step-title">LangChain, async, streaming?</h3>
-    <p class="step-desc">Not in v1. Synchronous Python with raw OpenAI and Anthropic SDKs only. If you need more today, Langfuse and Phoenix are good options.</p>
+    <div class="faq-cards">
+      <div class="faq-card">
+        <div class="faq-card-prefix">[ Q.1 ]</div>
+        <h3 class="faq-card-q">What gets sent to your server?</h3>
+        <p class="faq-card-a">Nothing &middot; until you click Share. When you do, a preview shows exactly what's about to upload, and you can redact anything before confirming.</p>
+      </div>
+      <div class="faq-card">
+        <div class="faq-card-prefix">[ Q.2 ]</div>
+        <h3 class="faq-card-q">What about my API keys?</h3>
+        <p class="faq-card-a">The pre-share preview scans for common secrets &middot; API keys, tokens, JWTs, emails &middot; and highlights them for redaction. You can add custom patterns via GLASSPIPE_REDACT_PATTERNS. Always review the preview yourself before confirming.</p>
+      </div>
+      <div class="faq-card">
+        <div class="faq-card-prefix">[ Q.3 ]</div>
+        <h3 class="faq-card-q">Can I self-host the share service?</h3>
+        <p class="faq-card-a">Not in v1. The local dashboard runs entirely on your machine. Public share is hosted at glasspipe.dev.</p>
+      </div>
+      <div class="faq-card">
+        <div class="faq-card-prefix">[ Q.4 ]</div>
+        <h3 class="faq-card-q">LangChain, async, streaming?</h3>
+        <p class="faq-card-a">Not in v1. Synchronous Python with raw OpenAI and Anthropic SDKs only. If you need more today, Langfuse and Phoenix are good options.</p>
+      </div>
+    </div>
   </div>
 </section>
 
