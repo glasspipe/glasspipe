@@ -132,6 +132,7 @@
 
         <div id="demo-tab-timeline" class="demo-tab-content active">
           <div class="demo-waterfall-timeline">
+          <div class="scroll-fade-wrap">
             <div class="waterfall-pane">
               <div class="ruler">
                 <span>0</span><span>575ms</span><span>1.15s</span><span>1.73s</span><span>2.3s</span>
@@ -161,6 +162,7 @@
                 </div>
               </div>
             </div>
+          </div>
 
             <div id="demo-detail" class="detail-pane demo-detail">
               <p class="detail-hint">&larr; Click a span to inspect it</p>
@@ -169,6 +171,7 @@
         </div>
 
         <div id="demo-tab-cost" class="demo-tab-content">
+          <div class="scroll-fade-wrap">
           <div class="demo-cost-wrap">
             <table class="demo-cost-table">
               <thead>
@@ -210,8 +213,8 @@
               </tfoot>
             </table>
           </div>
+          </div>
         </div>
-
         <div class="demo-placeholder-cta">
           <a href="#get-started" class="link-action">Install GlassPipe</a> to explore traces like this in your own dashboard
         </div>
@@ -769,6 +772,40 @@ function copyInstall(btn) {
       if (toggle) toggle.textContent = open ? '[ \u2212 ]' : '[ + ]';
     });
   });
+})();
+</script>
+
+<!-- ── Scroll fade affordance (mobile only) ──────────────── -->
+<script>
+(function(){
+  function updateFade(wrap) {
+    var scroller = wrap.firstElementChild;
+    if (!scroller || !scroller.scrollWidth) return;
+    var sl = scroller.scrollLeft;
+    wrap.classList.toggle('has-overflow-right', sl + scroller.clientWidth < scroller.scrollWidth - 2);
+    wrap.classList.toggle('has-overflow-left', sl > 2);
+  }
+
+  function updateAll() {
+    document.querySelectorAll('.scroll-fade-wrap').forEach(updateFade);
+  }
+
+  document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
+    var scroller = wrap.firstElementChild;
+    if (scroller) scroller.addEventListener('scroll', function() { updateFade(wrap); });
+  });
+
+  updateAll();
+
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(updateAll);
+    document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
+      var scroller = wrap.firstElementChild;
+      if (scroller) ro.observe(scroller);
+    });
+  }
+
+  window.addEventListener('resize', updateAll);
 })();
 </script>
 

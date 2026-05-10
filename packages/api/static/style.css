@@ -571,4 +571,28 @@ body.embed .embed-footer a:hover { opacity: 1; }
   .cta-bar { padding: 16px; }
   .cost-table th,
   .cost-table td { padding: 8px 10px; font-size: 11px; }
+  .cost-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap { position: relative; }
+  .scroll-fade-wrap::before,
+  .scroll-fade-wrap::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 36px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+  .scroll-fade-wrap::before {
+    left: 1px;
+    background: linear-gradient(to right, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap::after {
+    right: 1px;
+    background: linear-gradient(to left, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap.has-overflow-left::before { opacity: 1; }
+  .scroll-fade-wrap.has-overflow-right::after { opacity: 1; }
 }

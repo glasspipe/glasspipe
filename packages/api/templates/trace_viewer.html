@@ -102,6 +102,7 @@
     <div id="tab-timeline" class="tab-content active">
     <div class="viewer-layout">
 
+      <div class="scroll-fade-wrap">
       <div class="waterfall-pane">
         <div class="ruler">
           <span>0</span>
@@ -125,6 +126,7 @@
         {% else %}
         <p class="empty">No spans recorded for this run.</p>
         {% endfor %}
+      </div>
       </div>
 
       <div id="detail-panel" class="detail-pane">
@@ -349,6 +351,33 @@
           document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
         });
       });
+    })();
+
+    // Scroll fade affordance
+    (function() {
+      function updateFade(wrap) {
+        var scroller = wrap.firstElementChild;
+        if (!scroller || !scroller.scrollWidth) return;
+        var sl = scroller.scrollLeft;
+        wrap.classList.toggle('has-overflow-right', sl + scroller.clientWidth < scroller.scrollWidth - 2);
+        wrap.classList.toggle('has-overflow-left', sl > 2);
+      }
+      function updateAll() {
+        document.querySelectorAll('.scroll-fade-wrap').forEach(updateFade);
+      }
+      document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
+        var scroller = wrap.firstElementChild;
+        if (scroller) scroller.addEventListener('scroll', function() { updateFade(wrap); });
+      });
+      updateAll();
+      if ('ResizeObserver' in window) {
+        var ro = new ResizeObserver(updateAll);
+        document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
+          var scroller = wrap.firstElementChild;
+          if (scroller) ro.observe(scroller);
+        });
+      }
+      window.addEventListener('resize', updateAll);
     })();
   </script>
 
