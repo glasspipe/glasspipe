@@ -558,9 +558,8 @@ body.embed .embed-footer a:hover { opacity: 1; }
 @media (max-width: 768px) {
   .viewer-layout { grid-template-columns: 1fr; }
   .detail-pane { position: static; }
-  .waterfall-pane { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .waterfall-pane .ruler,
-  .waterfall-pane .span-row { min-width: 480px; }
+  .scroll-fade-wrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap .waterfall-pane { min-width: 480px; overflow: hidden; }
   .span-label { width: 100px; }
   .ruler { padding-left: calc(100px + 12px); }
   .topbar { padding: 0 16px; }
@@ -572,7 +571,6 @@ body.embed .embed-footer a:hover { opacity: 1; }
   .cost-table th,
   .cost-table td { padding: 8px 10px; font-size: 11px; }
   .cost-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .scroll-fade-wrap { position: relative; }
   .scroll-fade-wrap::before,
   .scroll-fade-wrap::after {
     content: '';

@@ -21,26 +21,21 @@
   <script>
   (function(){
     function updateFade(wrap) {
-      var scroller = wrap.firstElementChild;
-      if (!scroller || !scroller.scrollWidth) return;
-      var sl = scroller.scrollLeft;
-      wrap.classList.toggle('has-overflow-right', sl + scroller.clientWidth < scroller.scrollWidth - 2);
+      if (!wrap.scrollWidth) return;
+      var sl = wrap.scrollLeft;
+      wrap.classList.toggle('has-overflow-right', sl + wrap.clientWidth < wrap.scrollWidth - 2);
       wrap.classList.toggle('has-overflow-left', sl > 2);
     }
     function updateAll() {
       document.querySelectorAll('.scroll-fade-wrap').forEach(updateFade);
     }
     document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
-      var scroller = wrap.firstElementChild;
-      if (scroller) scroller.addEventListener('scroll', function() { updateFade(wrap); });
+      wrap.addEventListener('scroll', function() { updateFade(wrap); });
     });
     updateAll();
     if ('ResizeObserver' in window) {
       var ro = new ResizeObserver(updateAll);
-      document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
-        var scroller = wrap.firstElementChild;
-        if (scroller) ro.observe(scroller);
-      });
+      document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) { ro.observe(wrap); });
     }
     window.addEventListener('resize', updateAll);
   })();

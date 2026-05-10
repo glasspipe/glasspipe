@@ -1157,14 +1157,12 @@ footer {
   .terminal { max-width: 100%; }
   .terminal-body { font-size: 12px; }
   .demo-waterfall-timeline { grid-template-columns: 1fr; }
-  .demo-waterfall-timeline .waterfall-pane { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .demo-waterfall-timeline .waterfall-pane .ruler,
-  .demo-waterfall-timeline .waterfall-pane .span-row { min-width: 520px; }
+  .scroll-fade-wrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap .waterfall-pane { min-width: 520px; overflow: hidden; }
   .span-label { width: 140px; }
   .ruler { padding: 5px 12px 5px calc(140px + 12px); }
   .demo-cost-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .demo-cost-table { min-width: 540px; }
-  .scroll-fade-wrap { position: relative; }
   .scroll-fade-wrap::before,
   .scroll-fade-wrap::after {
     content: '';
