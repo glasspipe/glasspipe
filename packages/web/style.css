@@ -1159,9 +1159,11 @@ footer {
   .demo-waterfall-timeline { grid-template-columns: 1fr; }
   .demo-waterfall-timeline .waterfall-pane { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .demo-waterfall-timeline .waterfall-pane .ruler,
-  .demo-waterfall-timeline .waterfall-pane .span-row { min-width: 420px; }
-  .span-label { width: 120px; }
-  .ruler { padding: 5px 12px 5px calc(120px + 12px); }
+  .demo-waterfall-timeline .waterfall-pane .span-row { min-width: 520px; }
+  .span-label { width: 140px; }
+  .ruler { padding: 5px 12px 5px calc(140px + 12px); }
+  .demo-cost-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .demo-cost-table { min-width: 540px; }
 }
 
 @media (max-width: 480px) {
