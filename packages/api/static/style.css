@@ -33,7 +33,7 @@
 @import url('tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background: var(--bg);
@@ -43,6 +43,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -552,3 +553,22 @@ body.embed .embed-footer a {
   transition: opacity 0.12s;
 }
 body.embed .embed-footer a:hover { opacity: 1; }
+
+/* ---- MOBILE ---- */
+@media (max-width: 768px) {
+  .viewer-layout { grid-template-columns: 1fr; }
+  .detail-pane { position: static; }
+  .waterfall-pane { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .waterfall-pane .ruler,
+  .waterfall-pane .span-row { min-width: 480px; }
+  .span-label { width: 100px; }
+  .ruler { padding-left: calc(100px + 12px); }
+  .topbar { padding: 0 16px; }
+  .container { padding: 16px 12px 0; }
+  .run-card { padding: 16px; flex-direction: column; }
+  .run-name { font-size: 16px; }
+  .footer { padding: 32px 16px; }
+  .cta-bar { padding: 16px; }
+  .cost-table th,
+  .cost-table td { padding: 8px 10px; font-size: 11px; }
+}

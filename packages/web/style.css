@@ -1,7 +1,7 @@
 @import url('styles/tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 a:focus-visible, button:focus-visible {
   outline: 2px solid var(--c-action);
@@ -773,15 +773,6 @@ body::before {
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 768px) {
-  .demo-waterfall-timeline {
-    grid-template-columns: 1fr;
-  }
-  .span-label { width: 120px; }
-  .ruler { padding: 5px 12px 5px calc(120px + 12px); }
-}
-
-
 /* ================================================================
    REAL TRACES
    ================================================================ */
@@ -1165,11 +1156,17 @@ footer {
   .topbar nav .topbar-link { display: none; }
   .terminal { max-width: 100%; }
   .terminal-body { font-size: 12px; }
+  .demo-waterfall-timeline { grid-template-columns: 1fr; }
+  .demo-waterfall-timeline .waterfall-pane { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .demo-waterfall-timeline .waterfall-pane .ruler,
+  .demo-waterfall-timeline .waterfall-pane .span-row { min-width: 420px; }
+  .span-label { width: 120px; }
+  .ruler { padding: 5px 12px 5px calc(120px + 12px); }
 }
 
 @media (max-width: 480px) {
   .hero-left { padding-left: 0; }
-  .install-block { width: 100%; }
+  .install-block { width: fit-content; }
   .install-block .cmd { font-size: 12px; }
   .btn-primary, .btn-ghost { font-size: 12px; padding: 8px 14px; }
   .status-strip { font-size: 10px; gap: 6px; }
