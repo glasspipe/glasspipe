@@ -1,6 +1,8 @@
 """GlassPipe local dashboard — Flask app."""
+import hashlib
 import json
 import re as _re
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -119,6 +121,37 @@ def redacted_json_filter(obj) -> Markup:
 
 
 # ---------------------------------------------------------------------------
+# DNA + Fingerprint helpers
+# ---------------------------------------------------------------------------
+
+_DNA_KIND_MAP = {
+    "llm": "kind-llm",
+    "tool": "kind-tool",
+    "agent": "kind-agent",
+    "custom": "kind-custom",
+}
+_DNA_MAX_BLOCKS = 20
+
+
+def build_dna(spans):
+    blocks = []
+    for s in spans[:_DNA_MAX_BLOCKS - 1]:
+        blocks.append({"kind": _DNA_KIND_MAP.get(s["kind"], "kind-other")})
+    remaining = len(spans) - (_DNA_MAX_BLOCKS - 1)
+    if remaining > 0:
+        blocks.append({"kind": "overflow", "count": remaining + 1})
+    return blocks
+
+
+def build_fingerprint(run_name, spans):
+    sig = run_name + "|" + ",".join(f"{s['kind']}:{s['name']}" for s in spans)
+    digest = hashlib.md5(sig.encode()).hexdigest()
+    bits = bin(int(digest[:7], 16))[2:].zfill(25)
+    grid = [b == "1" for b in bits[:25]]
+    return grid, digest[:6]
+
+
+# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
@@ -178,7 +211,25 @@ def index():
             query = query.where(Run.agent_version == version_filter)
         runs = session.execute(query).scalars().all()
 
+        run_ids = [r.id for r in runs]
+        spans_rows = []
+        if run_ids:
+            spans_rows = session.execute(
+                select(Span.run_id, Span.kind, Span.name, Span.started_at)
+                .where(Span.run_id.in_(run_ids))
+                .order_by(Span.started_at)
+            ).all()
+
+    spans_by_run = defaultdict(list)
+    for row in spans_rows:
+        spans_by_run[row.run_id].append({"kind": row.kind, "name": row.name})
+
     run_data = _build_run_data(runs)
+    for rd in run_data:
+        run_spans = spans_by_run.get(rd["id"], [])
+        rd["dna"] = build_dna(run_spans)
+        rd["fingerprint"], rd["fp_hash"] = build_fingerprint(rd["name"], run_spans)
+
     versions = sorted({r.agent_version for r in runs if r.agent_version})
     return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter)
 
@@ -210,6 +261,9 @@ def run_detail(run_id):
         run_duration_ms = max(_ms(_safe_sub(run_end, run.started_at)), 1.0)
 
         span_name_by_id = {sp.id: sp.name for sp in spans}
+
+        fp_spans = [{"kind": sp.kind, "name": sp.name} for sp in spans]
+        fingerprint, fp_hash = build_fingerprint(run.name, fp_spans)
 
         llm_count = 0
         total_tokens = 0
@@ -281,6 +335,8 @@ def run_detail(run_id):
         total_cost_usd=total_cost_usd,
         span_count=span_count,
         cost_rows=cost_rows,
+        fingerprint=fingerprint,
+        fp_hash=fp_hash,
     )
 
 

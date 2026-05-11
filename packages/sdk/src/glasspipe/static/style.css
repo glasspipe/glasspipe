@@ -338,6 +338,118 @@ body::before {
   border-color: var(--c-action-border);
 }
 
+/* ---- FINGERPRINT ---- */
+.fingerprint {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+}
+
+.fingerprint-sm {
+  width: 31px;
+  height: 31px;
+}
+
+.fingerprint-lg {
+  width: 48px;
+  height: 48px;
+  gap: 2px;
+}
+
+.fp-cell {
+  border-radius: 1px;
+}
+
+.fingerprint-sm .fp-cell {
+  width: 5px;
+  height: 5px;
+}
+
+.fingerprint-lg .fp-cell {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.fp-cell-on {
+  background: var(--c-action);
+}
+
+.fp-cell-on.fp-cell-error {
+  background: var(--c-error);
+}
+
+.fp-cell-off {
+  background: var(--bg-3);
+}
+
+.td-fingerprint {
+  width: 38px;
+  padding: 8px 6px !important;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.th-fingerprint {
+  width: 38px;
+}
+
+.fp-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-right: 4px;
+}
+
+.fp-label {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* ---- DNA STRIP ---- */
+.run-dna-row td {
+  border-bottom: 1px solid var(--border);
+}
+
+.td-dna {
+  padding: 4px 16px 8px !important;
+}
+
+.dna-strip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 8px;
+  padding-left: 38px;
+}
+
+.dna-block {
+  height: 8px;
+  min-width: 8px;
+  max-width: 24px;
+  flex: 1 1 0;
+  border-radius: 1px;
+}
+
+.dna-kind-llm    { background: var(--c-action); }
+.dna-kind-tool   { background: var(--c-label); }
+.dna-kind-agent  { background: var(--c-agent); }
+.dna-kind-custom { background: var(--c-status); }
+.dna-kind-other  { background: var(--border); }
+
+.dna-overflow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-3);
+  line-height: 8px;
+  min-width: auto;
+  flex: 0 0 auto;
+  padding-left: 2px;
+}
+
 /* ---- RUN DETAIL HEADER ---- */
 .back {
   display: inline-block;

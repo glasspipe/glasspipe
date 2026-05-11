@@ -5,6 +5,14 @@
 <div class="run-header">
   <a href="/" class="back">← All runs</a>
   <div class="run-title-row">
+    <div class="fp-wrap">
+      <div class="fingerprint fingerprint-lg">
+        {% for cell in fingerprint %}
+        <span class="fp-cell {% if cell %}fp-cell-on{% else %}fp-cell-off{% endif %}{% if cell and run.status == 'error' %} fp-cell-error{% endif %}"></span>
+        {% endfor %}
+      </div>
+      <div class="fp-label mono dimmed">fp · {{ fp_hash }}</div>
+    </div>
     <h1 class="mono">{{ run.name }}</h1>
     {% if run.status == 'ok' %}
       <span class="badge badge-ok">ok</span>
