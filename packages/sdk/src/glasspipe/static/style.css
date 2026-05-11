@@ -342,33 +342,18 @@ body::before {
 .fingerprint {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1px;
-}
-
-.fingerprint-sm {
-  width: 31px;
-  height: 31px;
+  gap: 2px;
 }
 
 .fingerprint-lg {
   width: 48px;
   height: 48px;
-  gap: 2px;
 }
 
 .fp-cell {
-  border-radius: 1px;
-}
-
-.fingerprint-sm .fp-cell {
-  width: 5px;
-  height: 5px;
-}
-
-.fingerprint-lg .fp-cell {
+  border-radius: 2px;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
 }
 
 .fp-cell-on {
@@ -381,17 +366,6 @@ body::before {
 
 .fp-cell-off {
   background: var(--bg-3);
-}
-
-.td-fingerprint {
-  width: 38px;
-  padding: 8px 6px !important;
-  vertical-align: middle;
-  text-align: center;
-}
-
-.th-fingerprint {
-  width: 38px;
 }
 
 .fp-wrap {
@@ -423,7 +397,7 @@ body::before {
   align-items: center;
   gap: 2px;
   height: 8px;
-  padding-left: 38px;
+  padding-left: 0;
 }
 
 .dna-block {

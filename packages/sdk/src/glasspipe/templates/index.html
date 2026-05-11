@@ -35,8 +35,7 @@
   <table class="run-table">
     <thead>
       <tr>
-        <th class="th-fingerprint"></th>
-         <th class="th-check"></th>
+        <th class="th-check"></th>
         <th>Run ID</th>
         <th>Function</th>
         <th>Started</th>
@@ -49,13 +48,6 @@
     <tbody>
       {% for run in group.list %}
       <tr class="run-row">
-        <td class="td-fingerprint" onclick="window.location='/run/{{ run.id }}'">
-          <div class="fingerprint fingerprint-sm">
-            {% for cell in run.fingerprint %}
-            <span class="fp-cell {% if cell %}fp-cell-on{% else %}fp-cell-off{% endif %}{% if cell and run.status == 'error' %} fp-cell-error{% endif %}"></span>
-            {% endfor %}
-          </div>
-        </td>
         <td class="td-check" onclick="event.stopPropagation()">
           <input type="checkbox" class="run-check" data-id="{{ run.id }}">
         </td>
@@ -81,9 +73,9 @@
                   hx-swap="outerHTML">×</button>
         </td>
       </tr>
-      {% if run.dna %}
+      {% if run.dna | length > 1 %}
       <tr class="run-dna-row" onclick="window.location='/run/{{ run.id }}'">
-        <td colspan="9" class="td-dna">
+        <td colspan="8" class="td-dna">
           <div class="dna-strip">
             {% for block in run.dna %}
               {% if block.kind == 'overflow' %}
