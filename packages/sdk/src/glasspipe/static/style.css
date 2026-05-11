@@ -517,6 +517,61 @@ body::before {
   color: var(--c-error);
 }
 
+/* ---- LIVE COST TICKER (run list) ---- */
+.td-cost { font-size: 12px; }
+
+.gp-live-cost {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gp-cost-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-label);
+  animation: pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ---- REPLAY BUTTON ---- */
+.btn-replay {
+  padding: 5px 14px;
+  background: var(--c-label-dim);
+  color: var(--c-label);
+  border: 1px solid var(--c-label-border);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.btn-replay:hover {
+  background: rgba(255,159,64,0.18);
+  color: var(--c-label);
+}
+.btn-replay.active {
+  background: var(--c-label);
+  color: var(--bg);
+  border-color: var(--c-label);
+}
+
+/* ---- REPLAY MODE ---- */
+.replaying .span-bar {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.replaying .span-bar.replay-visible {
+  opacity: 1;
+}
+
 /* ---- CONTEXT WINDOW GAUGE ---- */
 .context-gauge {
   margin-bottom: 14px;

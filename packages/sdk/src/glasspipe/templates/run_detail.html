@@ -25,6 +25,9 @@
             hx-get="/share/preview/{{ run.id }}"
             hx-target="#modal-container"
             hx-swap="innerHTML">Share</button>
+    {% if run.status != 'running' %}
+    <button class="btn-replay" id="btn-replay" onclick="startReplay()">▶ replay</button>
+    {% endif %}
   </div>
   <div class="run-meta">
     <span class="mono dimmed">{{ run.id }}</span>
@@ -81,6 +84,8 @@
         <div class="span-track">
           <div class="span-bar {{ 'kind-error' if sp.status == 'error' else 'kind-' + sp.kind }}"
                style="left:{{ sp.start_pct }}%;width:{{ sp.width_pct }}%"
+               data-start-ms="{{ sp.offset_ms }}"
+               data-end-ms="{{ sp.end_ms }}"
                hx-get="/span/{{ sp.id }}"
                hx-target="#detail-panel"
                hx-swap="innerHTML"
@@ -161,6 +166,81 @@
     });
   });
 })();
+
+var _replayTimer = null;
+
+function startReplay() {
+  var btn = document.getElementById('btn-replay');
+  var pane = document.querySelector('.waterfall-pane');
+  if (!pane || !btn) return;
+
+  var bars = Array.prototype.slice.call(pane.querySelectorAll('.span-bar'));
+  if (!bars.length) return;
+
+  bars.sort(function(a, b) {
+    return parseFloat(a.dataset.startMs) - parseFloat(b.dataset.startMs);
+  });
+
+  pane.classList.add('replaying');
+  btn.textContent = '■ stop';
+  btn.classList.add('active');
+  btn.onclick = stopReplay;
+
+  var totalMs = parseFloat(bars[bars.length - 1].dataset.endMs) || 1000;
+  var playDur;
+  if (totalMs <= 2000) playDur = 2000;
+  else if (totalMs >= 8000) playDur = 8000;
+  else playDur = totalMs;
+  var scale = playDur / totalMs;
+
+  var startTime = performance.now();
+  var scheduled = [];
+
+  bars.forEach(function(bar) {
+    var barStart = parseFloat(bar.dataset.startMs) * scale;
+    scheduled.push({ bar: bar, at: barStart });
+  });
+
+  var idx = 0;
+
+  function tick() {
+    var elapsed = performance.now() - startTime;
+    while (idx < scheduled.length && scheduled[idx].at <= elapsed) {
+      scheduled[idx].bar.classList.add('replay-visible');
+      idx++;
+    }
+    if (idx < scheduled.length) {
+      _replayTimer = requestAnimationFrame(tick);
+    } else {
+      while (idx < scheduled.length) {
+        scheduled[idx].bar.classList.add('replay-visible');
+        idx++;
+      }
+      setTimeout(function() { stopReplay(); }, 1200);
+    }
+  }
+
+  _replayTimer = requestAnimationFrame(tick);
+}
+
+function stopReplay() {
+  if (_replayTimer) {
+    cancelAnimationFrame(_replayTimer);
+    _replayTimer = null;
+  }
+  var pane = document.querySelector('.waterfall-pane');
+  var btn = document.getElementById('btn-replay');
+  if (pane) {
+    pane.classList.remove('replaying');
+    var bars = pane.querySelectorAll('.span-bar');
+    bars.forEach(function(b) { b.classList.remove('replay-visible'); });
+  }
+  if (btn) {
+    btn.textContent = '▶ replay';
+    btn.classList.remove('active');
+    btn.onclick = startReplay;
+  }
+}
 </script>
 
 {% endblock %}

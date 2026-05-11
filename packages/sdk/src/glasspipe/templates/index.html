@@ -16,14 +16,6 @@
 </div>
 
 {% if runs %}
-{% if versions|length >= 2 %}
-<div class="version-filter">
-  <a href="/" class="version-chip{% if not current_version %} active{% endif %}">all</a>
-  {% for v in versions %}
-  <a href="/?version={{ v }}" class="version-chip{% if current_version == v %} active{% endif %}">{{ v }}</a>
-  {% endfor %}
-</div>
-{% endif %}
 <div id="runs-container"
      hx-get="/"
      hx-trigger="every 5s"
@@ -41,6 +33,7 @@
         <th>Started</th>
         <th>Duration</th>
         <th>Spans</th>
+        <th>Cost</th>
         <th>Status</th>
         <th class="th-delete"></th>
       </tr>
@@ -52,10 +45,19 @@
           <input type="checkbox" class="run-check" data-id="{{ run.id }}">
         </td>
         <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
-        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}{% if run.agent_version %} <span class="badge-version">{{ run.agent_version }}</span>{% endif %}</td>
+        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}</td>
         <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
         <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
         <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
+        <td class="td-cost" onclick="window.location='/run/{{ run.id }}'">
+          {% if run.status == 'running' %}
+          <span class="gp-live-cost" id="cost-{{ run.id }}" hx-get="/run-cost/{{ run.id }}" hx-trigger="load, every 4s" hx-swap="outerHTML">…</span>
+          {% elif run.cost_usd is not none and run.cost_usd > 0 %}
+          <span class="mono">{{ run.cost_usd | format_cost }}</span>
+          {% else %}
+          <span class="dimmed">—</span>
+          {% endif %}
+        </td>
         <td class="td-status" onclick="window.location='/run/{{ run.id }}'">
           {% if run.status == 'ok' %}
             <span class="badge badge-ok">ok</span>
@@ -76,7 +78,7 @@
       </tr>
       {% if run.dna | length > 1 %}
       <tr class="run-dna-row" onclick="window.location='/run/{{ run.id }}'">
-        <td colspan="8" class="td-dna">
+        <td colspan="9" class="td-dna">
           <div class="dna-strip">
             {% for block in run.dna %}
               {% if block.kind == 'overflow' %}

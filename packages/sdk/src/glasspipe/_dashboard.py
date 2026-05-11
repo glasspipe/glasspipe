@@ -322,6 +322,7 @@ def _build_run_data(runs, now=None):
     week_ago = today - timedelta(days=7)
     run_ids = [r.id for r in runs]
     counts: dict[str, int] = {}
+    costs: dict[str, float] = {}
     if run_ids:
         with get_session() as session:
             rows = session.execute(
@@ -330,6 +331,24 @@ def _build_run_data(runs, now=None):
                 .group_by(Span.run_id)
             ).all()
             counts = {row.run_id: row.n for row in rows}
+
+            cost_rows = session.execute(
+                select(Span.run_id, Span.metadata_json)
+                .where(Span.run_id.in_(run_ids))
+                .where(Span.kind == "llm")
+                .where(Span.status == "ok")
+            ).all()
+            run_costs: dict[str, float] = defaultdict(float)
+            for cr in cost_rows:
+                meta = _safe_parse_meta(cr.metadata_json)
+                if meta:
+                    c = meta.get("cost_usd")
+                    if c is not None:
+                        try:
+                            run_costs[cr.run_id] += float(c)
+                        except (TypeError, ValueError):
+                            pass
+            costs = dict(run_costs)
     run_data = []
     for run in runs:
         start = run.started_at
@@ -350,6 +369,7 @@ def _build_run_data(runs, now=None):
         else:
             date_label = run_date.strftime("%b %d, %Y")
             date_sort = 3
+        run_cost = costs.get(run.id, 0.0) if run.status != "running" else None
         run_data.append({
             "id": run.id,
             "name": run.name,
@@ -360,6 +380,7 @@ def _build_run_data(runs, now=None):
             "status": run.status,
             "date_label": date_label,
             "date_sort": date_sort,
+            "cost_usd": run_cost,
         })
     return run_data
 
@@ -452,6 +473,8 @@ def run_detail(run_id):
                 "kind": sp.kind,
                 "status": sp.status,
                 "duration_ms": round(sp_dur, 1),
+                "offset_ms": round(offset, 1),
+                "end_ms": round(offset + sp_dur, 1),
                 "start_pct": round(start_pct, 3),
                 "width_pct": round(width_pct, 3),
                 "metadata": meta,
@@ -670,6 +693,35 @@ def span_detail(span_id):
         insight=insight,
         context_gauge=context_gauge,
     )
+
+
+@app.get("/run-cost/<run_id>")
+def run_cost_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None:
+            abort(404)
+        is_running = run.status == "running"
+        cost_rows = session.execute(
+            select(Span.metadata_json)
+            .where(Span.run_id == run_id)
+            .where(Span.kind == "llm")
+            .where(Span.status == "ok")
+        ).all()
+        total = 0.0
+        for cr in cost_rows:
+            meta = _safe_parse_meta(cr[0]) if cr[0] else None
+            if meta:
+                c = meta.get("cost_usd")
+                if c is not None:
+                    try:
+                        total += float(c)
+                    except (TypeError, ValueError):
+                        pass
+    formatted = format_cost_filter(total)
+    if is_running:
+        return f'<span class="gp-live-cost" id="cost-{run_id}" hx-get="/run-cost/{run_id}" hx-trigger="load, every 4s" hx-swap="outerHTML"><span class="gp-cost-dot"></span>{formatted}</span>'
+    return f'<span class="gp-live-cost">{formatted}</span>'
 
 
 @app.get("/anomalies/<run_id>")
