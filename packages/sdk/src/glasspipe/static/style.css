@@ -287,6 +287,57 @@ body::before {
   font-size: 13px;
 }
 
+/* ---- VERSION BADGE (inline in run name cell) ---- */
+.badge-version {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--c-agent);
+  background: var(--c-agent-dim);
+  border: 1px solid var(--c-agent-border);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ---- VERSION FILTER STRIP ---- */
+.version-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.version-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.version-chip:hover {
+  color: var(--text);
+  border-color: var(--border-2);
+}
+
+.version-chip.active {
+  color: var(--c-action);
+  background: var(--c-action-dim);
+  border-color: var(--c-action-border);
+}
+
 /* ---- RUN DETAIL HEADER ---- */
 .back {
   display: inline-block;

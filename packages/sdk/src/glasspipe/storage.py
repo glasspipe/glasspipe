@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import DateTime, Index, String, Text, create_engine
+from sqlalchemy import DateTime, Index, String, Text, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 UTC = timezone.utc
@@ -24,6 +24,7 @@ class Run(Base):
 
     id: Mapped[str] = mapped_column(String(12), primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    agent_version: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(Text, nullable=False, default="running")
@@ -73,6 +74,12 @@ def get_session() -> Session:
 
 def init_db() -> None:
     Base.metadata.create_all(get_engine())
+    with get_engine().connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE runs ADD COLUMN agent_version TEXT"))
+            conn.commit()
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -97,12 +104,13 @@ def _safe_json(obj) -> str | None:
 # Write helpers
 # ---------------------------------------------------------------------------
 
-def write_run_start(run_id: str, name: str) -> None:
+def write_run_start(run_id: str, name: str, agent_version: str | None = None) -> None:
     init_db()
     with get_session() as session:
         session.add(Run(
             id=run_id,
             name=name,
+            agent_version=agent_version,
             started_at=datetime.now(UTC),
             status="running",
         ))

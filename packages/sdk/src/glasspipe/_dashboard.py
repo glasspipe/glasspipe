@@ -158,6 +158,7 @@ def _build_run_data(runs, now=None):
         run_data.append({
             "id": run.id,
             "name": run.name,
+            "agent_version": run.agent_version,
             "started_at": run.started_at,
             "duration_ms": round(_ms(_safe_sub(end, start))),
             "span_count": counts.get(run.id, 0),
@@ -170,12 +171,16 @@ def _build_run_data(runs, now=None):
 @app.route("/")
 def index():
     init_db()
+    version_filter = request.args.get("version")
     with get_session() as session:
-        runs = session.execute(
-            select(Run).order_by(Run.started_at.desc()).limit(20)
-        ).scalars().all()
+        query = select(Run).order_by(Run.started_at.desc()).limit(20)
+        if version_filter:
+            query = query.where(Run.agent_version == version_filter)
+        runs = session.execute(query).scalars().all()
 
-    return render_template("index.html", runs=_build_run_data(runs))
+    run_data = _build_run_data(runs)
+    versions = sorted({r.agent_version for r in runs if r.agent_version})
+    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter)
 
 
 def _safe_parse_meta(s):

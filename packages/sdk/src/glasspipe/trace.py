@@ -1,5 +1,6 @@
 """@trace decorator and span() context manager."""
 import functools
+import os
 import sys
 from contextvars import ContextVar
 from typing import Any
@@ -30,22 +31,23 @@ def _safe_write(fn, *args, **kwargs) -> None:
 # @trace decorator
 # ---------------------------------------------------------------------------
 
-def trace(fn=None, *, name: str | None = None):
+def trace(fn=None, *, name: str | None = None, version: str | None = None):
     """Decorator that records a function call as a run in the trace DB.
 
     Supports both ``@trace`` and ``@trace(name="custom")`` call styles.
+    Accepts an optional ``version`` kwarg to tag the run with an agent version.
     """
     if fn is None:
         # Called as @trace(name=...) — return the real decorator
         def decorator(func):
-            return _make_wrapper(func, name or func.__name__)
+            return _make_wrapper(func, name or func.__name__, version=version)
         return decorator
 
     # Called as @trace (no parentheses)
-    return _make_wrapper(fn, name or fn.__name__)
+    return _make_wrapper(fn, name or fn.__name__, version=version)
 
 
-def _make_wrapper(fn, run_name: str):
+def _make_wrapper(fn, run_name: str, version: str | None = None):
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         global _patched
@@ -81,7 +83,8 @@ def _make_wrapper(fn, run_name: str):
                 )
         else:
             run_id = _new_id()
-            _safe_write(storage.write_run_start, run_id, run_name)
+            resolved_version = version or os.environ.get("GLASSPIPE_AGENT_VERSION")
+            _safe_write(storage.write_run_start, run_id, run_name, resolved_version)
             token = _current_run_id.set(run_id)
             status = "ok"
             error_message = None
