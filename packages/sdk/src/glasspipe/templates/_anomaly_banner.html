@@ -1,0 +1,7 @@
+{% for a in anomalies %}
+<div class="gp-anomaly-banner gp-anomaly-{{ a.severity }}">
+  <span class="gp-anomaly-code">{{ a.code }}</span>
+  <span class="gp-anomaly-msg">{{ a.message }}</span>
+  <button class="gp-anomaly-dismiss" onclick="this.closest('.gp-anomaly-banner').remove()">&times;</button>
+</div>
+{% endfor %}

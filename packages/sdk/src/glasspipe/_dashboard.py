@@ -1,6 +1,7 @@
 """GlassPipe local dashboard — Flask app."""
 import hashlib
 import json
+import os
 import re as _re
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -72,6 +73,11 @@ def format_cost_filter(value):
         return "< 0.001¢"
     s = f"{cents:.6f}".rstrip("0").rstrip(".")
     return s + "¢"
+
+
+@app.template_filter("commaify")
+def commaify_filter(value):
+    return f"{int(value):,}"
 
 
 def _display_name(name: str, kind: str, metadata: dict | None = None) -> str:
@@ -149,6 +155,158 @@ def build_fingerprint(run_name, spans):
     bits = bin(int(digest[:7], 16))[2:].zfill(25)
     grid = [b == "1" for b in bits[:25]]
     return grid, digest[:6]
+
+
+# ---------------------------------------------------------------------------
+# Context window limits
+# ---------------------------------------------------------------------------
+
+CONTEXT_LIMITS = {
+    "gpt-4o": 128_000,
+    "gpt-4o-mini": 128_000,
+    "gpt-4-turbo": 128_000,
+    "gpt-4": 8_192,
+    "gpt-3.5-turbo": 16_385,
+    "gpt-4.1": 128_000,
+    "gpt-4.1-mini": 128_000,
+    "gpt-4.1-nano": 128_000,
+    "o3-mini": 128_000,
+    "o4-mini": 128_000,
+    "claude-opus-4": 200_000,
+    "claude-sonnet-4": 200_000,
+    "claude-haiku-4": 200_000,
+    "claude-opus-4-5": 200_000,
+    "claude-sonnet-4-5": 200_000,
+    "claude-haiku-4-5": 200_000,
+}
+
+
+def get_context_limit(model_name: str) -> int | None:
+    if not model_name:
+        return None
+    key = model_name.lower()
+    key = key.split("-202")[0]
+    return CONTEXT_LIMITS.get(key)
+
+
+# ---------------------------------------------------------------------------
+# Oh-shit detector
+# ---------------------------------------------------------------------------
+
+def check_anomalies(run_id: str) -> list[dict]:
+    try:
+        now = _utcnow()
+        with get_session() as session:
+            run = session.get(Run, run_id)
+            if run is None or run.status != "running":
+                return []
+
+            spans = session.execute(
+                select(Span)
+                .where(Span.run_id == run_id)
+                .order_by(Span.started_at)
+            ).scalars().all()
+
+            anomalies = []
+
+            # CHECK 1 — Repeated tool call
+            tool_names = [sp.name for sp in spans if sp.kind == "tool" and sp.status == "ok"]
+            if tool_names:
+                best_name = None
+                best_count = 0
+                cur_name = tool_names[0]
+                cur_count = 1
+                for n in tool_names[1:]:
+                    if n == cur_name:
+                        cur_count += 1
+                    else:
+                        if cur_count > best_count:
+                            best_count = cur_count
+                            best_name = cur_name
+                        cur_name = n
+                        cur_count = 1
+                if cur_count > best_count:
+                    best_count = cur_count
+                    best_name = cur_name
+                if best_count >= 5:
+                    anomalies.append({
+                        "code": "LOOP_SUSPECTED",
+                        "message": f"'{best_name}' called {best_count}\u00d7 in a row \u2014 possible loop",
+                        "severity": "danger",
+                    })
+
+            # CHECK 2 — Cost spike
+            total_cost = 0.0
+            for sp in spans:
+                if sp.metadata_json and sp.status == "ok":
+                    meta = _safe_parse_meta(sp.metadata_json)
+                    if meta:
+                        cost = meta.get("cost_usd")
+                        if cost is not None:
+                            try:
+                                total_cost += float(cost)
+                            except (TypeError, ValueError):
+                                pass
+            threshold = float(os.environ.get("GLASSPIPE_COST_ALERT_USD", "0.50"))
+            if total_cost > threshold:
+                anomalies.append({
+                    "code": "COST_SPIKE",
+                    "message": f"run cost ${total_cost:.3f} \u2014 threshold ${threshold:.2f}",
+                    "severity": "warn",
+                })
+
+            # CHECK 3 — Step count spike
+            completed_count = sum(1 for sp in spans if sp.status == "ok")
+            if completed_count > 10:
+                avg_rows = session.execute(
+                    select(func.count().label("n"))
+                    .where(Run.name == run.name)
+                    .where(Run.status == "ok")
+                    .order_by(Run.started_at.desc())
+                    .limit(20)
+                ).first()
+                if avg_rows and avg_rows.n > 0:
+                    span_counts = []
+                    past_runs = session.execute(
+                        select(Run.id)
+                        .where(Run.name == run.name)
+                        .where(Run.status == "ok")
+                        .where(Run.id != run_id)
+                        .order_by(Run.started_at.desc())
+                        .limit(20)
+                    ).scalars().all()
+                    if past_runs:
+                        past_ids = list(past_runs)
+                        count_rows = session.execute(
+                            select(Span.run_id, func.count().label("n"))
+                            .where(Span.run_id.in_(past_ids))
+                            .where(Span.status == "ok")
+                            .group_by(Span.run_id)
+                        ).all()
+                        span_counts = [r.n for r in count_rows]
+                    if span_counts:
+                        avg = sum(span_counts) / len(span_counts)
+                        if completed_count > avg * 2.5 and completed_count > 10:
+                            anomalies.append({
+                                "code": "STEP_COUNT",
+                                "message": f"{completed_count} steps \u2014 {avg:.0f} is normal for this agent",
+                                "severity": "warn",
+                            })
+
+            # CHECK 4 — Long running
+            if run.started_at:
+                elapsed = _safe_sub(now, run.started_at)
+                minutes = elapsed.total_seconds() / 60.0
+                if minutes > 5:
+                    anomalies.append({
+                        "code": "LONG_RUNNING",
+                        "message": f"running for {minutes:.0f} min \u2014 agents usually finish faster",
+                        "severity": "warn",
+                    })
+
+            return anomalies
+    except Exception:
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +389,12 @@ def index():
         rd["fingerprint"], rd["fp_hash"] = build_fingerprint(rd["name"], run_spans)
 
     versions = sorted({r.agent_version for r in runs if r.agent_version})
-    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter)
+    running_run_id = None
+    for rd in run_data:
+        if rd["status"] == "running":
+            running_run_id = rd["id"]
+            break
+    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter, running_run_id=running_run_id)
 
 
 def _safe_parse_meta(s):
@@ -480,6 +643,24 @@ def span_detail(span_id):
         dname = _display_name(sp.name, sp.kind, metadata)
         insight = f"{dname} completed in {_fmt_dur(duration_ms)}."
 
+    context_gauge = None
+    if sp.kind == "llm" and metadata:
+        model = metadata.get("model")
+        prompt_tokens = metadata.get("prompt_tokens") or 0
+        if model and prompt_tokens:
+            limit = get_context_limit(model)
+            if limit:
+                pct = min(prompt_tokens / limit * 100, 100.0)
+                level = "danger" if pct > 85 else ("warn" if pct > 60 else "ok")
+                context_gauge = {
+                    "pct": round(pct, 1),
+                    "tokens": prompt_tokens,
+                    "limit": limit,
+                    "level": level,
+                }
+            else:
+                context_gauge = {"unknown": model}
+
     return render_template(
         "span_detail.html",
         span=sp,
@@ -487,7 +668,20 @@ def span_detail(span_id):
         output_data=output_data,
         metadata=metadata,
         insight=insight,
+        context_gauge=context_gauge,
     )
+
+
+@app.get("/anomalies/<run_id>")
+def anomalies_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None or run.status != "running":
+            return ""
+    detected = check_anomalies(run_id)
+    if not detected:
+        return ""
+    return render_template("_anomaly_banner.html", anomalies=detected)
 
 
 @app.get("/share/preview/<run_id>")

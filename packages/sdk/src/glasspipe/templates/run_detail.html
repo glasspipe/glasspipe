@@ -46,6 +46,15 @@
   </div>
 </div>
 
+{% if run.status == 'running' %}
+<div id="anomaly-zone"
+     hx-get="/anomalies/{{ run.id }}"
+     hx-trigger="every 5s"
+     hx-target="#anomaly-zone"
+     hx-swap="innerHTML">
+</div>
+{% endif %}
+
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="timeline">[ TIMELINE ]</button>
   <button class="tab-btn" data-tab="cost">[ COST ]</button>

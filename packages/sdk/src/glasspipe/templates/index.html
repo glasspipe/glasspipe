@@ -24,6 +24,14 @@
   {% endfor %}
 </div>
 {% endif %}
+<div id="anomaly-zone">
+  {% if running_run_id %}
+  <div hx-get="/anomalies/{{ running_run_id }}"
+       hx-trigger="every 5s"
+       hx-target="#anomaly-zone"
+       hx-swap="innerHTML"></div>
+  {% endif %}
+</div>
 <div id="runs-container"
      hx-get="/"
      hx-trigger="every 5s"

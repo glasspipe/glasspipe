@@ -52,6 +52,19 @@
     {% endif %}
   </dl>
 
+  {% if context_gauge %}
+    {% if context_gauge.unknown %}
+    <div class="context-gauge-unknown mono dimmed">context limit unknown for {{ context_gauge.unknown }}</div>
+    {% else %}
+    <div class="context-gauge">
+      <div class="context-gauge-label mono">context window &middot; {{ context_gauge.tokens | commaify }} / {{ context_gauge.limit | commaify }} tokens ({{ context_gauge.pct }}%)</div>
+      <div class="context-gauge-track">
+        <div class="context-gauge-fill context-gauge-{{ context_gauge.level }}" style="width:{{ context_gauge.pct }}%"></div>
+      </div>
+    </div>
+    {% endif %}
+  {% endif %}
+
   {% if input_data is not none %}
   <div class="detail-section">
     <div class="detail-section-label">input</div>
