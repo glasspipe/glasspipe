@@ -424,14 +424,7 @@ body::before {
   padding-left: 2px;
 }
 
-/* ---- ANOMALY BANNER ---- */
-#anomaly-zone {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
+/* ---- ANOMALY BANNER (run detail) ---- */
 .gp-anomaly-banner {
   display: flex;
   align-items: center;
@@ -455,15 +448,6 @@ body::before {
   color: var(--c-error);
 }
 
-.gp-anomaly-code {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
 .gp-anomaly-msg {
   flex: 1;
 }
@@ -480,6 +464,72 @@ body::before {
   transition: opacity 0.12s;
 }
 .gp-anomaly-dismiss:hover { opacity: 1; }
+
+/* ---- ANOMALY DOT + TOOLTIP (run list) ---- */
+.td-status {
+  position: relative;
+}
+
+.anomaly-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-label);
+  vertical-align: middle;
+  margin-left: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+  position: relative;
+}
+
+.anomaly-dot-active {
+  opacity: 1;
+  animation: gp-anomaly-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes gp-anomaly-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.anomaly-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--bg-2);
+  border: 0.5px solid var(--c-label-border);
+  border-radius: var(--r);
+  padding: 8px 12px;
+  min-width: 200px;
+  max-width: 320px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.anomaly-dot:hover + .anomaly-tooltip {
+  opacity: 1;
+}
+
+.anomaly-tooltip-msg {
+  line-height: 1.5;
+}
+
+.anomaly-tooltip-warn {
+  color: var(--c-label);
+}
+
+.anomaly-tooltip-danger {
+  color: var(--c-error);
+}
 
 /* ---- CONTEXT WINDOW GAUGE ---- */
 .context-gauge {

@@ -48,7 +48,7 @@
 
 {% if run.status == 'running' %}
 <div id="anomaly-zone"
-     hx-get="/anomalies/{{ run.id }}"
+     hx-get="/anomalies-banner/{{ run.id }}"
      hx-trigger="every 5s"
      hx-target="#anomaly-zone"
      hx-swap="innerHTML">

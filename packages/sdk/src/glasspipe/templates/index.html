@@ -24,14 +24,6 @@
   {% endfor %}
 </div>
 {% endif %}
-<div id="anomaly-zone">
-  {% if running_run_id %}
-  <div hx-get="/anomalies/{{ running_run_id }}"
-       hx-trigger="every 5s"
-       hx-target="#anomaly-zone"
-       hx-swap="innerHTML"></div>
-  {% endif %}
-</div>
 <div id="runs-container"
      hx-get="/"
      hx-trigger="every 5s"
@@ -64,13 +56,17 @@
         <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
         <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
         <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
-        <td onclick="window.location='/run/{{ run.id }}'">
+        <td class="td-status" onclick="window.location='/run/{{ run.id }}'">
           {% if run.status == 'ok' %}
             <span class="badge badge-ok">ok</span>
           {% elif run.status == 'error' %}
             <span class="badge badge-error">error</span>
           {% else %}
             <span class="badge badge-running">running</span>
+            <span class="anomaly-dot"
+                  data-run-id="{{ run.id }}"
+                  data-anomaly-poll="true"></span>
+            <div class="anomaly-tooltip" id="anomaly-tooltip-{{ run.id }}"></div>
           {% endif %}
         </td>
         <td class="td-delete" onclick="event.stopPropagation()">
@@ -106,6 +102,75 @@
 <div id="compare-bar" class="compare-bar hidden">
   <a id="compare-link" class="compare-bar-btn" href="#">Compare selected →</a>
 </div>
+
+<script>
+(function() {
+  var _anomalyTimers = {};
+
+  function pollAnomalies() {
+    var dots = document.querySelectorAll('[data-anomaly-poll="true"]');
+    dots.forEach(function(dot) {
+      var runId = dot.dataset.runId;
+      if (_anomalyTimers[runId]) return;
+      _anomalyTimers[runId] = setInterval(function() {
+        fetch('/anomalies/' + runId)
+          .then(function(r) { return r.json(); })
+          .then(function(anomalies) {
+            var tip = document.getElementById('anomaly-tooltip-' + runId);
+            if (!tip || !dot) return;
+            if (!anomalies.length) {
+              dot.classList.remove('anomaly-dot-active');
+              tip.innerHTML = '';
+              return;
+            }
+            dot.classList.add('anomaly-dot-active');
+            var html = '';
+            anomalies.forEach(function(a) {
+              var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
+              html += '<div class="anomaly-tooltip-msg ' + cls + '">' + a.message + '</div>';
+            });
+            tip.innerHTML = html;
+          })
+          .catch(function() {});
+      }, 5000);
+      // initial check immediately
+      fetch('/anomalies/' + runId)
+        .then(function(r) { return r.json(); })
+        .then(function(anomalies) {
+          var tip = document.getElementById('anomaly-tooltip-' + runId);
+          if (!tip) return;
+          if (anomalies.length) {
+            dot.classList.add('anomaly-dot-active');
+            var html = '';
+            anomalies.forEach(function(a) {
+              var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
+              html += '<div class="anomaly-tooltip-msg ' + cls + '">' + a.message + '</div>';
+            });
+            tip.innerHTML = html;
+          }
+        })
+        .catch(function() {});
+    });
+  }
+
+  pollAnomalies();
+
+  document.body.addEventListener('htmx:afterSwap', function() {
+    // Clear stale timers for removed run rows
+    var currentIds = new Set();
+    document.querySelectorAll('[data-anomaly-poll="true"]').forEach(function(d) {
+      currentIds.add(d.dataset.runId);
+    });
+    Object.keys(_anomalyTimers).forEach(function(id) {
+      if (!currentIds.has(id)) {
+        clearInterval(_anomalyTimers[id]);
+        delete _anomalyTimers[id];
+      }
+    });
+    pollAnomalies();
+  });
+})();
+</script>
 
 <script>
 (function() {

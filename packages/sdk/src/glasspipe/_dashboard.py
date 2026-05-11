@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
-from flask import Flask, abort, render_template, request
+from flask import Flask, abort, jsonify, render_template, request
 from markupsafe import Markup, escape
 from sqlalchemy import func, select
 
@@ -389,12 +389,7 @@ def index():
         rd["fingerprint"], rd["fp_hash"] = build_fingerprint(rd["name"], run_spans)
 
     versions = sorted({r.agent_version for r in runs if r.agent_version})
-    running_run_id = None
-    for rd in run_data:
-        if rd["status"] == "running":
-            running_run_id = rd["id"]
-            break
-    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter, running_run_id=running_run_id)
+    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter)
 
 
 def _safe_parse_meta(s):
@@ -674,6 +669,18 @@ def span_detail(span_id):
 
 @app.get("/anomalies/<run_id>")
 def anomalies_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None or run.status != "running":
+            return jsonify([])
+    detected = check_anomalies(run_id)
+    if not detected:
+        return jsonify([])
+    return jsonify(detected)
+
+
+@app.get("/anomalies-banner/<run_id>")
+def anomalies_banner_route(run_id):
     with get_session() as session:
         run = session.get(Run, run_id)
         if run is None or run.status != "running":
