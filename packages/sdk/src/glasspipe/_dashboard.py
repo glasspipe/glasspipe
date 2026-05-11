@@ -340,12 +340,16 @@ def _build_run_data(runs, now=None):
             run_date = start.date()
         if run_date == today:
             date_label = "today"
+            date_sort = 0
         elif run_date == yesterday:
             date_label = "yesterday"
+            date_sort = 1
         elif run_date >= week_ago:
             date_label = "this week"
+            date_sort = 2
         else:
             date_label = run_date.strftime("%b %d, %Y")
+            date_sort = 3
         run_data.append({
             "id": run.id,
             "name": run.name,
@@ -355,6 +359,7 @@ def _build_run_data(runs, now=None):
             "span_count": counts.get(run.id, 0),
             "status": run.status,
             "date_label": date_label,
+            "date_sort": date_sort,
         })
     return run_data
 

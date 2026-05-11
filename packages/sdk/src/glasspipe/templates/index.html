@@ -29,9 +29,9 @@
      hx-trigger="every 5s"
      hx-select="#runs-container"
      hx-swap="outerHTML">
-{% for group in runs|groupby('date_label') %}
+{% for group in runs|groupby('date_sort') %}
 <div class="date-group">
-  <div class="date-group-header"><span class="bracket-label"><span class="code">[ {{ group.grouper|upper }} ]</span></span></div>
+  <div class="date-group-header"><span class="bracket-label"><span class="code">[ {{ group.list[0].date_label|upper }} ]</span></span></div>
   <table class="run-table">
     <thead>
       <tr>
