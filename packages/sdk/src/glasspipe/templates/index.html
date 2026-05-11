@@ -62,10 +62,7 @@
           {% elif run.status == 'error' %}
             <span class="badge badge-error">error</span>
           {% else %}
-            <span class="badge badge-running">running</span>
-            <span class="anomaly-dot"
-                  data-run-id="{{ run.id }}"
-                  data-anomaly-poll="true"></span>
+            <span class="badge badge-running" data-run-id="{{ run.id }}" data-anomaly-poll="true">running</span>
             <div class="anomaly-tooltip" id="anomaly-tooltip-{{ run.id }}"></div>
           {% endif %}
         </td>
@@ -108,22 +105,27 @@
   var _anomalyTimers = {};
 
   function pollAnomalies() {
-    var dots = document.querySelectorAll('[data-anomaly-poll="true"]');
-    dots.forEach(function(dot) {
-      var runId = dot.dataset.runId;
+    var badges = document.querySelectorAll('[data-anomaly-poll="true"]');
+    badges.forEach(function(badge) {
+      var runId = badge.dataset.runId;
       if (_anomalyTimers[runId]) return;
       _anomalyTimers[runId] = setInterval(function() {
         fetch('/anomalies/' + runId)
           .then(function(r) { return r.json(); })
           .then(function(anomalies) {
             var tip = document.getElementById('anomaly-tooltip-' + runId);
-            if (!tip || !dot) return;
+            var row = badge.closest('tr');
+            if (!tip || !row) return;
             if (!anomalies.length) {
-              dot.classList.remove('anomaly-dot-active');
+              row.classList.remove('run-row-warning');
+              badge.className = 'badge badge-running';
+              badge.textContent = 'running';
               tip.innerHTML = '';
               return;
             }
-            dot.classList.add('anomaly-dot-active');
+            row.classList.add('run-row-warning');
+            badge.className = 'badge badge-warning';
+            badge.textContent = '\u26A0 watch';
             var html = '';
             anomalies.forEach(function(a) {
               var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
@@ -133,14 +135,16 @@
           })
           .catch(function() {});
       }, 5000);
-      // initial check immediately
       fetch('/anomalies/' + runId)
         .then(function(r) { return r.json(); })
         .then(function(anomalies) {
           var tip = document.getElementById('anomaly-tooltip-' + runId);
-          if (!tip) return;
+          var row = badge.closest('tr');
+          if (!tip || !row) return;
           if (anomalies.length) {
-            dot.classList.add('anomaly-dot-active');
+            row.classList.add('run-row-warning');
+            badge.className = 'badge badge-warning';
+            badge.textContent = '\u26A0 watch';
             var html = '';
             anomalies.forEach(function(a) {
               var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
@@ -156,10 +160,9 @@
   pollAnomalies();
 
   document.body.addEventListener('htmx:afterSwap', function() {
-    // Clear stale timers for removed run rows
     var currentIds = new Set();
-    document.querySelectorAll('[data-anomaly-poll="true"]').forEach(function(d) {
-      currentIds.add(d.dataset.runId);
+    document.querySelectorAll('[data-anomaly-poll="true"]').forEach(function(b) {
+      currentIds.add(b.dataset.runId);
     });
     Object.keys(_anomalyTimers).forEach(function(id) {
       if (!currentIds.has(id)) {
