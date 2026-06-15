@@ -287,6 +287,7 @@ def _render_trace(trace_id, embed=False):
         cost_rows=cost_rows,
         cost_rows_json=json.dumps(cost_rows),
         models_display=models_display,
+        share_id=trace_id,
         share_url=f"{_BASE_URL}/t/{trace_id}",
         shared_ago=_age_string(trace.created_at),
         created_at_date=created_at_date,
