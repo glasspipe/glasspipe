@@ -1,5 +1,31 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": null,
-  "outputDirectory": "packages/web"
+  "outputDirectory": "packages/web",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": [
+        "packages/api/templates/**",
+        "packages/api/static/**"
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/v1/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/t/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "/api/index"
+    }
+  ]
 }
