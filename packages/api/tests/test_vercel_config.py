@@ -36,3 +36,9 @@ def test_vercel_function_includes_viewer_templates_and_assets():
     assert config["functions"]["api/index.py"]["includeFiles"] == (
         "packages/api/{templates,static}/**"
     )
+
+
+def test_vercel_root_requirements_match_share_api_requirements():
+    assert (ROOT / "requirements.txt").read_text() == (
+        ROOT / "packages" / "api" / "requirements.txt"
+    ).read_text()
