@@ -33,7 +33,6 @@ def test_vercel_routes_share_api_and_viewer_to_flask_function():
 def test_vercel_function_includes_viewer_templates_and_assets():
     config = _config()
 
-    assert config["functions"]["api/index.py"]["includeFiles"] == [
-        "packages/api/templates/**",
-        "packages/api/static/**",
-    ]
+    assert config["functions"]["api/index.py"]["includeFiles"] == (
+        "packages/api/{templates,static}/**"
+    )
