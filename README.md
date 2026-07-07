@@ -2,9 +2,16 @@
 
 **See what your AI agent actually did. Share the trace in one click.**
 
+[![PyPI](https://img.shields.io/pypi/v/glasspipe)](https://pypi.org/project/glasspipe/)
+[![Python](https://img.shields.io/pypi/pyversions/glasspipe)](https://pypi.org/project/glasspipe/)
+[![Tests](https://github.com/glasspipe/glasspipe/actions/workflows/tests.yml/badge.svg)](https://github.com/glasspipe/glasspipe/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c2ff)](LICENSE)
+
 ```bash
 pip install glasspipe
 ```
+
+![GlassPipe dashboard — waterfall timeline with span inspector](docs/dashboard.png)
 
 ---
 
@@ -38,6 +45,22 @@ glasspipe dashboard
 ```
 
 Every LLM call, every tool, every step — captured and laid out as a visual timeline. Click any span to see exactly what went in and what came out. Share the whole trace with one click.
+
+No agent handy? Seed realistic sample traces and explore:
+
+```bash
+glasspipe demo && glasspipe dashboard
+```
+
+**What you get:**
+
+- **Waterfall timeline** — every span with duration, offset, and a click-through inspector
+- **Cost & token tracking** — per-call and per-run, with live cost ticker for in-flight runs
+- **Run diffing** — select two runs, see exactly which steps appeared, vanished, or slowed down
+- **Agent versions** — tag runs with `@trace(version="v1.3.0")`, filter the run list by version
+- **Anomaly watch** — flags suspected tool loops, cost spikes, and runaway step counts while a run is live
+- **Trace replay** — replay a run's waterfall in real time
+- **One-click sharing** — mandatory redaction preview, then a public link; no account, ever
 
 ---
 
@@ -114,20 +137,24 @@ What gets captured automatically:
 
 In the dashboard, click **Share** on any run.
 
-A preview modal shows you exactly what will be made public. GlassPipe scans for secrets — API keys, tokens, emails, JWTs — and highlights them. Redact anything with one click. Then confirm.
+A preview modal shows you exactly what will be made public. GlassPipe scans for secrets — API keys, tokens, emails, JWTs, credit cards — and auto-redacts every match before anything leaves your machine. Review the redacted preview, then confirm.
 
 You get a link like:
 
 ```
-https://glasspipe.dev/t/F3Sdpg
+https://glasspipe.dev/t/7sq3QX
 ```
 
-Anyone can open it. No account, ever. Traces expire after 30 days. You get a delete token to remove a trace early.
+Anyone can open it — [try that one](https://glasspipe.dev/t/7sq3QX), it's live. No account, ever. Traces expire after 30 days, and sharing gives you a delete token to revoke a trace early:
+
+```bash
+curl -X DELETE "https://glasspipe.dev/v1/trace/<id>?token=<delete-token>"
+```
 
 **Privacy guarantees:**
 
 - Redaction happens on your machine, before upload. The server never sees the original data.
-- The pre-share preview cannot be bypassed.
+- The dashboard's share flow always routes through the redacted preview.
 - Custom redaction patterns: set `GLASSPIPE_REDACT_PATTERNS` as a JSON dict in your environment.
 - Shared traces are public but unlisted — accessible only by direct link.
 
@@ -135,15 +162,27 @@ Anyone can open it. No account, ever. Traces expire after 30 days. You get a del
 
 ## `[ EXAMPLES ]` Examples
 
-Three working examples in the [`/examples`](examples/) folder:
+Live shared traces (no install needed):
+
+- [Competitive Intel Agent](https://glasspipe.dev/t/7sq3QX) — 8 spans: plan → analyze competitors → synthesize → draft brief → review
+- [Support Agent](https://glasspipe.dev/t/TyvF6u) — 4 spans: classify → fetch → draft → review
+
+Working examples in the [`/examples`](examples/) folder:
 
 ```bash
-python examples/hello.py             # minimal — one span
-python examples/research_agent.py    # 3 spans: plan, search, synthesize
-python examples/customer_support.py  # 4 spans: classify, fetch, draft, review
+python examples/hello.py                    # minimal — two spans
+python examples/research_agent.py           # 3 spans: plan, search, synthesize
+python examples/customer_support.py         # 4 spans: classify, fetch, draft, review
+python examples/competitive_intel_agent.py  # 8 spans with realistic token/cost data
 ```
 
-All three run without a real API key.
+All of the above run without an API key. There's also a before/after pair
+(`live_customer_support_agent_*.py`) showing a real OpenAI-backed agent with
+and without instrumentation — those two need `OPENAI_API_KEY`.
+
+Or skip the files entirely: `glasspipe demo` seeds four sample runs, including
+a failing one and two versions of the same agent so you can try run comparison
+and version filtering.
 
 ---
 

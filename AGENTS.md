@@ -1,4 +1,4 @@
-# GlassPipe — Project Memory for Claude Code
+# GlassPipe — Project Memory for Codex
 
 > Read this file at the start of every session. It contains everything you need
 > to know about this project without asking Jonathan to re-explain context.
@@ -54,7 +54,7 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ```
 glasspipe/                          ← repo root, ~/Desktop/glasspipe
-├── CLAUDE.md                       ← this file (AGENTS.md is its Codex twin — keep in sync)
+├── AGENTS.md                       ← this file (CLAUDE.md is its Claude Code twin — keep in sync)
 ├── .github/workflows/              ← tests.yml (pytest matrix) + publish.yml (PyPI)
 ├── .gitignore
 ├── LICENSE                         ← MIT, 2026 Jonathan

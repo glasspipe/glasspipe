@@ -33,7 +33,7 @@
 @import url('tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background: var(--bg);
@@ -43,6 +43,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -272,7 +273,7 @@ body::before {
   border-radius: var(--r-bar);
   cursor: pointer;
   transition: filter 0.12s, transform 0.1s, outline 0.1s;
-  min-width: 4px;
+  min-width: 8px;
 }
 .span-bar:hover { filter: brightness(1.25); transform: scaleY(1.1); }
 .span-bar.active {
@@ -552,3 +553,44 @@ body.embed .embed-footer a {
   transition: opacity 0.12s;
 }
 body.embed .embed-footer a:hover { opacity: 1; }
+
+/* ---- MOBILE ---- */
+@media (max-width: 768px) {
+  .viewer-layout { grid-template-columns: 1fr; }
+  .detail-pane { position: static; }
+  .scroll-fade-wrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap .waterfall-pane { min-width: 480px; overflow: hidden; }
+  .span-label { width: 100px; }
+  .ruler { padding-left: calc(100px + 12px); }
+  .topbar { padding: 0 16px; }
+  .container { padding: 16px 12px 0; }
+  .run-card { padding: 16px; flex-direction: column; }
+  .run-name { font-size: 16px; }
+  .footer { padding: 32px 16px; }
+  .cta-bar { padding: 16px; }
+  .cost-table th,
+  .cost-table td { padding: 8px 10px; font-size: 11px; }
+  .cost-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap::before,
+  .scroll-fade-wrap::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 36px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+  .scroll-fade-wrap::before {
+    left: 1px;
+    background: linear-gradient(to right, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap::after {
+    right: 1px;
+    background: linear-gradient(to left, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap.has-overflow-left::before { opacity: 1; }
+  .scroll-fade-wrap.has-overflow-right::after { opacity: 1; }
+}

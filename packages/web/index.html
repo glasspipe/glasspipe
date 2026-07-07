@@ -85,12 +85,12 @@
     <p class="section-sub">No install needed. These are real shared traces &middot; the same view someone sees when you send them a debug link.</p>
 
     <div class="trace-cards">
-      <a href="https://glasspipe.dev/t/MVxbfb" target="_blank" rel="noopener" class="trace-card">
+      <a href="https://glasspipe.dev/t/7sq3QX" target="_blank" rel="noopener" class="trace-card">
         <div class="trace-card-kind">[ AGENT ]</div>
         <div class="trace-card-name">Competitive Intel Agent</div>
         <div class="trace-card-desc">Competitive Intel Agent &middot; 8 spans</div>
       </a>
-      <a href="https://glasspipe.dev/t/MVxbfb" target="_blank" rel="noopener" class="trace-card">
+      <a href="https://glasspipe.dev/t/TyvF6u" target="_blank" rel="noopener" class="trace-card">
         <div class="trace-card-kind">[ AGENT ]</div>
         <div class="trace-card-name">Support Agent</div>
         <div class="trace-card-desc">Support Agent &middot; 4 spans</div>
@@ -132,6 +132,7 @@
 
         <div id="demo-tab-timeline" class="demo-tab-content active">
           <div class="demo-waterfall-timeline">
+          <div class="scroll-fade-wrap">
             <div class="waterfall-pane">
               <div class="ruler">
                 <span>0</span><span>575ms</span><span>1.15s</span><span>1.73s</span><span>2.3s</span>
@@ -161,6 +162,7 @@
                 </div>
               </div>
             </div>
+          </div>
 
             <div id="demo-detail" class="detail-pane demo-detail">
               <p class="detail-hint">&larr; Click a span to inspect it</p>
@@ -169,6 +171,7 @@
         </div>
 
         <div id="demo-tab-cost" class="demo-tab-content">
+          <div class="scroll-fade-wrap">
           <div class="demo-cost-wrap">
             <table class="demo-cost-table">
               <thead>
@@ -210,8 +213,8 @@
               </tfoot>
             </table>
           </div>
+          </div>
         </div>
-
         <div class="demo-placeholder-cta">
           <a href="#get-started" class="link-action">Install GlassPipe</a> to explore traces like this in your own dashboard
         </div>
@@ -255,7 +258,7 @@
         <div class="step-code">
           <span class="text-dim">$ </span>glasspipe dashboard<br>
           <span class="text-status">&check; </span><span class="text-dim">localhost:3000</span><br><br>
-          <span class="text-dim"># share: glasspipe.dev/t/MVxbfb</span>
+          <span class="text-dim"># share: glasspipe.dev/t/7sq3QX</span>
         </div>
       </div>
     </div>
@@ -487,8 +490,8 @@ function copyInstall(btn) {
     { t: 'out',  s: '' },
     { t: 'out',  s: '  \u2713 done in 2.3s \u00B7 1.2\u00A2', cls: 'out-ok' },
     { t: 'wait', ms: 250 },
-    { t: 'link', s: '  \u2192 glasspipe.dev/t/MVxbfb',
-      href: 'https://glasspipe.dev/t/MVxbfb' }
+    { t: 'link', s: '  \u2192 glasspipe.dev/t/7sq3QX',
+      href: 'https://glasspipe.dev/t/7sq3QX' }
   ];
 
   var token = 0;
@@ -769,6 +772,35 @@ function copyInstall(btn) {
       if (toggle) toggle.textContent = open ? '[ \u2212 ]' : '[ + ]';
     });
   });
+})();
+</script>
+
+<!-- ── Scroll fade affordance (mobile only) ──────────────── -->
+<script>
+(function(){
+  function updateFade(wrap) {
+    if (!wrap.scrollWidth) return;
+    var sl = wrap.scrollLeft;
+    wrap.classList.toggle('has-overflow-right', sl + wrap.clientWidth < wrap.scrollWidth - 2);
+    wrap.classList.toggle('has-overflow-left', sl > 2);
+  }
+
+  function updateAll() {
+    document.querySelectorAll('.scroll-fade-wrap').forEach(updateFade);
+  }
+
+  document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) {
+    wrap.addEventListener('scroll', function() { updateFade(wrap); });
+  });
+
+  updateAll();
+
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(updateAll);
+    document.querySelectorAll('.scroll-fade-wrap').forEach(function(wrap) { ro.observe(wrap); });
+  }
+
+  window.addEventListener('resize', updateAll);
 })();
 </script>
 

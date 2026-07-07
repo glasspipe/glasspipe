@@ -1,7 +1,7 @@
 @import url('styles/tokens.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 a:focus-visible, button:focus-visible {
   outline: 2px solid var(--c-action);
@@ -773,15 +773,6 @@ body::before {
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 768px) {
-  .demo-waterfall-timeline {
-    grid-template-columns: 1fr;
-  }
-  .span-label { width: 120px; }
-  .ruler { padding: 5px 12px 5px calc(120px + 12px); }
-}
-
-
 /* ================================================================
    REAL TRACES
    ================================================================ */
@@ -1165,11 +1156,40 @@ footer {
   .topbar nav .topbar-link { display: none; }
   .terminal { max-width: 100%; }
   .terminal-body { font-size: 12px; }
+  .demo-waterfall-timeline { grid-template-columns: 1fr; }
+  .scroll-fade-wrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-fade-wrap .waterfall-pane { min-width: 520px; overflow: hidden; }
+  .span-label { width: 140px; }
+  .ruler { padding: 5px 12px 5px calc(140px + 12px); }
+  .demo-cost-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .demo-cost-table { min-width: 540px; }
+  .scroll-fade-wrap::before,
+  .scroll-fade-wrap::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    width: 36px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+  .scroll-fade-wrap::before {
+    left: 1px;
+    background: linear-gradient(to right, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap::after {
+    right: 1px;
+    background: linear-gradient(to left, var(--bg-2), transparent);
+  }
+  .scroll-fade-wrap.has-overflow-left::before { opacity: 1; }
+  .scroll-fade-wrap.has-overflow-right::after { opacity: 1; }
 }
 
 @media (max-width: 480px) {
   .hero-left { padding-left: 0; }
-  .install-block { width: 100%; }
+  .install-block { width: fit-content; }
   .install-block .cmd { font-size: 12px; }
   .btn-primary, .btn-ghost { font-size: 12px; padding: 8px 14px; }
   .status-strip { font-size: 10px; gap: 6px; }

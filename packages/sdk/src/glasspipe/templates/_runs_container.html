@@ -1,0 +1,107 @@
+<div id="runs-container"
+     hx-get="/{% if current_version %}?version={{ current_version }}{% endif %}"
+     hx-trigger="every 5s"
+     hx-select="#runs-container"
+     hx-swap="outerHTML">
+{% if runs %}
+{% for group in runs|groupby('date_sort') %}
+<div class="date-group">
+  <div class="date-group-header"><span class="bracket-label"><span class="code">[ {{ group.list[0].date_label|upper }} ]</span></span></div>
+  <table class="run-table">
+    <thead>
+      <tr>
+        <th class="th-check"></th>
+        <th>Run ID</th>
+        <th>Function</th>
+        <th>Started</th>
+        <th>Duration</th>
+        <th>Spans</th>
+        <th>Cost</th>
+        <th>Status</th>
+        <th class="th-delete"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in group.list %}
+      <tr class="run-row">
+        <td class="td-check" onclick="event.stopPropagation()">
+          <input type="checkbox" class="run-check" data-id="{{ run.id }}">
+        </td>
+        <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
+        <td class="mono" onclick="window.location='/run/{{ run.id }}'">
+          {{ run.name }}
+          {% if run.agent_version %}
+          <a class="version-badge" href="/?version={{ run.agent_version }}" onclick="event.stopPropagation()" title="filter by version {{ run.agent_version }}">{{ run.agent_version }}</a>
+          {% endif %}
+        </td>
+        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
+        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
+        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
+        <td class="td-cost" onclick="window.location='/run/{{ run.id }}'">
+          {% if run.status == 'running' %}
+          <span class="gp-live-cost" id="cost-{{ run.id }}" hx-get="/run-cost/{{ run.id }}" hx-trigger="load" hx-swap="outerHTML">…</span>
+          {% elif run.cost_usd is not none and run.cost_usd > 0 %}
+          <span class="mono">{{ run.cost_usd | format_cost }}</span>
+          {% else %}
+          <span class="dimmed">—</span>
+          {% endif %}
+        </td>
+        <td class="td-status" onclick="window.location='/run/{{ run.id }}'">
+          {% if run.status == 'ok' %}
+            <span class="badge badge-ok">ok</span>
+          {% elif run.status == 'error' %}
+            <span class="badge badge-error">error</span>
+          {% else %}
+            <span class="badge badge-running" data-run-id="{{ run.id }}" data-anomaly-poll="true">running</span>
+            <div class="anomaly-tooltip" id="anomaly-tooltip-{{ run.id }}"></div>
+          {% endif %}
+        </td>
+        <td class="td-delete" onclick="event.stopPropagation()">
+          <button class="btn-delete"
+                  hx-delete="/runs/{{ run.id }}{% if current_version %}?version={{ current_version }}{% endif %}"
+                  hx-confirm="Delete this run?"
+                  hx-target="#runs-container"
+                  hx-swap="outerHTML">×</button>
+        </td>
+      </tr>
+      {% if run.dna | length > 1 %}
+      <tr class="run-dna-row" onclick="window.location='/run/{{ run.id }}'">
+        <td colspan="9" class="td-dna">
+          <div class="dna-strip">
+            {% for block in run.dna %}
+              {% if block.kind == 'overflow' %}
+              <span class="dna-block dna-overflow">+{{ block.count }}</span>
+              {% else %}
+              <span class="dna-block dna-{{ block.kind }}"></span>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+{% elif current_version %}
+<div class="empty-state">
+  <div class="bracket-label" style="margin-bottom:16px"><span class="code">[ NO MATCHES ]</span></div>
+  <p class="empty-state-msg">No runs tagged <span class="mono accent">{{ current_version }}</span>.</p>
+  <p class="empty-hint"><a href="/" class="link-action">← show all runs</a></p>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="bracket-label" style="margin-bottom:16px"><span class="code">[ GET STARTED ]</span></div>
+  <p class="empty-state-msg">No traces yet. Add <span class="mono accent">@trace</span> to any function and run it — your first trace will appear here automatically.</p>
+  <pre class="empty-code">from glasspipe import trace
+
+@trace
+def my_agent(question):
+    return "your answer here"
+
+my_agent("hello")</pre>
+  <p class="empty-hint">Or seed sample data: <span class="mono">glasspipe demo</span> — this page refreshes itself.</p>
+</div>
+{% endif %}
+</div>

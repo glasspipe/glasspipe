@@ -68,7 +68,15 @@ def _build_payload(run_id: str) -> dict:
 
 
 def upload_run(run_id: str) -> str:
-    """Package run + spans, redact secrets, and return a shareable URL.
+    """Package run + spans, redact secrets, and return a shareable URL."""
+    return share_run(run_id)["url"]
+
+
+def share_run(run_id: str) -> dict:
+    """Package run + spans, redact secrets, upload, and return share details.
+
+    Returns {"url": str, "delete_token": str | None}. The delete token lets the
+    owner remove the trace before its 30-day expiry via DELETE /v1/trace/<id>.
 
     Behaviour:
     - GLASSPIPE_SHARE_API=mock  → local mock URL, no network call (for dev/testing)
@@ -84,12 +92,16 @@ def upload_run(run_id: str) -> str:
     payload = redact_trace(payload)
 
     if api_url == "mock":
-        return f"https://glasspipe.dev/t/{_short_id()}"
+        return {
+            "url": f"https://glasspipe.dev/t/{_short_id()}",
+            "delete_token": "mock-delete-token",
+        }
 
     try:
         resp = httpx.post(api_url, json=payload, timeout=10.0)
         resp.raise_for_status()
-        return resp.json()["url"]
+        data = resp.json()
+        return {"url": data["url"], "delete_token": data.get("delete_token")}
     except httpx.HTTPStatusError as exc:
         body = ""
         try:

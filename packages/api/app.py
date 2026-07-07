@@ -6,7 +6,7 @@ import random
 import secrets
 import string
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask, abort, jsonify, render_template, request
 from sqlalchemy import create_engine
@@ -37,6 +37,11 @@ if _DATABASE_URL.startswith("postgresql://"):
             _DATABASE_URL += "?sslmode=require"
 
 _BASE_URL     = os.environ.get("GLASSPIPE_BASE_URL", "https://glasspipe.dev")
+# Comma-separated trace ids that never expire (demo traces linked from the
+# landing page and README — without this they die every TTL window).
+_PINNED_IDS   = {
+    t.strip() for t in os.environ.get("GLASSPIPE_PINNED_TRACES", "").split(",") if t.strip()
+}
 _MAX_BYTES    = int(float(os.environ.get("GLASSPIPE_MAX_PAYLOAD_MB", "5")) * 1024 * 1024)
 _TTL_DAYS     = int(os.environ.get("GLASSPIPE_TRACE_TTL_DAYS", "30"))
 
@@ -81,7 +86,8 @@ def _short_id(length: int = 6) -> str:
 
 
 def _utcnow() -> datetime:
-    return datetime.utcnow()
+    # Naive UTC — matches how timestamps are stored (SQLite/Postgres DateTime).
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _ms(delta) -> float:
@@ -94,7 +100,6 @@ def _parse_dt(s: str | None) -> datetime | None:
     dt = datetime.fromisoformat(s)
     # Normalise to naive UTC (SQLite stores naive datetimes)
     if dt.tzinfo is not None:
-        from datetime import timezone
         dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
     return dt
 
@@ -170,10 +175,32 @@ def get_trace(trace_id):
 
     if trace is None:
         return jsonify({"error": "not found"}), 404
-    if trace.expires_at < _utcnow():
+    if trace_id not in _PINNED_IDS and trace.expires_at < _utcnow():
         return jsonify({"error": "trace expired"}), 410
 
     return jsonify(trace.payload)
+
+
+@app.delete("/v1/trace/<trace_id>")
+def delete_trace(trace_id):
+    """Owner-initiated deletion using the delete token from POST /v1/share.
+
+    Token via ?token=… or the X-Delete-Token header.
+    """
+    token = request.args.get("token") or request.headers.get("X-Delete-Token")
+    if not token:
+        return jsonify({"error": "missing delete token"}), 401
+
+    with _get_session() as session:
+        trace = session.get(SharedTrace, trace_id)
+        if trace is None:
+            return jsonify({"error": "not found"}), 404
+        if not secrets.compare_digest(trace.delete_token, token):
+            return jsonify({"error": "invalid delete token"}), 403
+        session.delete(trace)
+        session.commit()
+
+    return jsonify({"deleted": trace_id}), 200
 
 
 def _coerce_json(v):
@@ -192,13 +219,19 @@ def _render_trace(trace_id, embed=False):
     with _get_session() as session:
         trace = session.get(SharedTrace, trace_id)
 
-    if trace is None:
-        return render_template("404.html"), 404
+        if trace is None:
+            return render_template("404.html"), 404
 
-    if trace.expires_at < _utcnow():
-        return render_template("expired.html"), 410
+        if trace_id not in _PINNED_IDS and trace.expires_at < _utcnow():
+            return render_template("expired.html"), 410
 
-    payload = trace.payload
+        view_count = (trace.view_count or 0) + 1
+        trace.view_count = view_count
+        # Copy what the template needs before commit expires the ORM object.
+        payload = trace.payload
+        trace_created_at = trace.created_at
+        session.commit()
+
     run = payload["run"]
     raw_spans = payload.get("spans", [])
 
@@ -273,7 +306,7 @@ def _render_trace(trace_id, embed=False):
     else:
         models_display = None
 
-    created_at_date = trace.created_at.strftime("%b %d, %Y")
+    created_at_date = trace_created_at.strftime("%b %d, %Y")
 
     return render_template(
         "trace_viewer.html",
@@ -289,8 +322,9 @@ def _render_trace(trace_id, embed=False):
         models_display=models_display,
         share_id=trace_id,
         share_url=f"{_BASE_URL}/t/{trace_id}",
-        shared_ago=_age_string(trace.created_at),
+        shared_ago=_age_string(trace_created_at),
         created_at_date=created_at_date,
+        view_count=view_count,
         embed=embed,
     )
 

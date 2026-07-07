@@ -17,6 +17,17 @@
 
     <div class="share-url-box mono">{{ url }}</div>
 
+    {% if delete_token %}
+    <details class="share-delete-details">
+      <summary class="dimmed">Delete token — save this if you may want to remove the trace early</summary>
+      <div class="share-token-box mono">{{ delete_token }}</div>
+      <p class="dimmed share-token-hint">
+        Revoke the trace before its 30-day expiry:<br>
+        <span class="mono">curl -X DELETE "{{ url | replace('/t/', '/v1/trace/') }}?token={{ delete_token }}"</span>
+      </p>
+    </details>
+    {% endif %}
+
     <div class="modal-actions modal-actions--success">
       <button class="btn-copy"
               onclick="navigator.clipboard.writeText('{{ url }}').then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy link', 2000); })">

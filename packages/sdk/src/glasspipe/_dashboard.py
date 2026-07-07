@@ -1,15 +1,19 @@
 """GlassPipe local dashboard — Flask app."""
+import hashlib
 import json
+import os
 import re as _re
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
-from flask import Flask, abort, render_template, request
+from flask import Flask, abort, jsonify, render_template, request
 from markupsafe import Markup, escape
-from sqlalchemy import func, select
+from sqlalchemy import delete as sql_delete, func, select
 
 from glasspipe._diff import diff_runs
+from glasspipe.instruments.anthropic_patch import _PRICING as _ANTHROPIC_PRICING, _normalize_model as _norm_anthropic
 from glasspipe.instruments.openai_patch import _PRICING as _OPENAI_PRICING, _normalize_model as _norm_openai
 from glasspipe.redact import detect, redact
 from glasspipe.storage import Run, Span, get_session, init_db
@@ -42,6 +46,10 @@ def _estimate_cost(model, prompt_tokens, completion_tokens):
         model, _OPENAI_PRICING.get(_norm_openai(model), (0.0, 0.0))
     )
     if inp == 0.0 and out == 0.0:
+        inp, out = _ANTHROPIC_PRICING.get(
+            model, _ANTHROPIC_PRICING.get(_norm_anthropic(model), (0.0, 0.0))
+        )
+    if inp == 0.0 and out == 0.0:
         return 0.0
     return (prompt_tokens * inp + completion_tokens * out) / 1_000_000
 
@@ -70,6 +78,11 @@ def format_cost_filter(value):
         return "< 0.001¢"
     s = f"{cents:.6f}".rstrip("0").rstrip(".")
     return s + "¢"
+
+
+@app.template_filter("commaify")
+def commaify_filter(value):
+    return f"{int(value):,}"
 
 
 def _display_name(name: str, kind: str, metadata: dict | None = None) -> str:
@@ -119,6 +132,179 @@ def redacted_json_filter(obj) -> Markup:
 
 
 # ---------------------------------------------------------------------------
+# DNA + Fingerprint helpers
+# ---------------------------------------------------------------------------
+
+_DNA_KIND_MAP = {
+    "llm": "kind-llm",
+    "tool": "kind-tool",
+    "agent": "kind-agent",
+    "custom": "kind-custom",
+}
+_DNA_MAX_BLOCKS = 20
+
+
+def build_dna(spans):
+    blocks = []
+    for s in spans[:_DNA_MAX_BLOCKS - 1]:
+        blocks.append({"kind": _DNA_KIND_MAP.get(s["kind"], "kind-other")})
+    remaining = len(spans) - (_DNA_MAX_BLOCKS - 1)
+    if remaining > 0:
+        blocks.append({"kind": "overflow", "count": remaining + 1})
+    return blocks
+
+
+def build_fingerprint(run_name, spans):
+    sig = run_name + "|" + ",".join(f"{s['kind']}:{s['name']}" for s in spans)
+    digest = hashlib.md5(sig.encode()).hexdigest()
+    bits = bin(int(digest[:7], 16))[2:].zfill(25)
+    grid = [b == "1" for b in bits[:25]]
+    return grid, digest[:6]
+
+
+# ---------------------------------------------------------------------------
+# Context window limits
+# ---------------------------------------------------------------------------
+
+CONTEXT_LIMITS = {
+    "gpt-4o": 128_000,
+    "gpt-4o-mini": 128_000,
+    "gpt-4-turbo": 128_000,
+    "gpt-4": 8_192,
+    "gpt-3.5-turbo": 16_385,
+    "gpt-4.1": 128_000,
+    "gpt-4.1-mini": 128_000,
+    "gpt-4.1-nano": 128_000,
+    "o3-mini": 128_000,
+    "o4-mini": 128_000,
+    "claude-opus-4": 200_000,
+    "claude-sonnet-4": 200_000,
+    "claude-haiku-4": 200_000,
+    "claude-opus-4-5": 200_000,
+    "claude-sonnet-4-5": 200_000,
+    "claude-haiku-4-5": 200_000,
+}
+
+
+def get_context_limit(model_name: str) -> int | None:
+    if not model_name:
+        return None
+    key = model_name.lower()
+    key = key.split("-202")[0]
+    return CONTEXT_LIMITS.get(key)
+
+
+# ---------------------------------------------------------------------------
+# Oh-shit detector
+# ---------------------------------------------------------------------------
+
+def check_anomalies(run_id: str) -> list[dict]:
+    try:
+        now = _utcnow()
+        with get_session() as session:
+            run = session.get(Run, run_id)
+            if run is None or run.status != "running":
+                return []
+
+            spans = session.execute(
+                select(Span)
+                .where(Span.run_id == run_id)
+                .order_by(Span.started_at)
+            ).scalars().all()
+
+            anomalies = []
+
+            # CHECK 1 — Repeated tool call
+            tool_names = [sp.name for sp in spans if sp.kind == "tool" and sp.status == "ok"]
+            if tool_names:
+                best_name = None
+                best_count = 0
+                cur_name = tool_names[0]
+                cur_count = 1
+                for n in tool_names[1:]:
+                    if n == cur_name:
+                        cur_count += 1
+                    else:
+                        if cur_count > best_count:
+                            best_count = cur_count
+                            best_name = cur_name
+                        cur_name = n
+                        cur_count = 1
+                if cur_count > best_count:
+                    best_count = cur_count
+                    best_name = cur_name
+                if best_count >= 5:
+                    anomalies.append({
+                        "code": "LOOP_SUSPECTED",
+                        "message": f"'{best_name}' called {best_count}\u00d7 in a row \u2014 possible loop",
+                        "severity": "danger",
+                    })
+
+            # CHECK 2 — Cost spike
+            total_cost = 0.0
+            for sp in spans:
+                if sp.metadata_json and sp.status == "ok":
+                    meta = _safe_parse_meta(sp.metadata_json)
+                    if meta:
+                        cost = meta.get("cost_usd")
+                        if cost is not None:
+                            try:
+                                total_cost += float(cost)
+                            except (TypeError, ValueError):
+                                pass
+            threshold = float(os.environ.get("GLASSPIPE_COST_ALERT_USD", "0.50"))
+            if total_cost > threshold:
+                anomalies.append({
+                    "code": "COST_SPIKE",
+                    "message": f"run cost ${total_cost:.3f} \u2014 threshold ${threshold:.2f}",
+                    "severity": "warn",
+                })
+
+            # CHECK 3 — Step count spike
+            completed_count = sum(1 for sp in spans if sp.status == "ok")
+            if completed_count > 10:
+                past_ids = session.execute(
+                    select(Run.id)
+                    .where(Run.name == run.name)
+                    .where(Run.status == "ok")
+                    .where(Run.id != run_id)
+                    .order_by(Run.started_at.desc())
+                    .limit(20)
+                ).scalars().all()
+                if past_ids:
+                    count_rows = session.execute(
+                        select(Span.run_id, func.count().label("n"))
+                        .where(Span.run_id.in_(past_ids))
+                        .where(Span.status == "ok")
+                        .group_by(Span.run_id)
+                    ).all()
+                    span_counts = [r.n for r in count_rows]
+                    if span_counts:
+                        avg = sum(span_counts) / len(span_counts)
+                        if completed_count > avg * 2.5:
+                            anomalies.append({
+                                "code": "STEP_COUNT",
+                                "message": f"{completed_count} steps \u2014 {avg:.0f} is normal for this agent",
+                                "severity": "warn",
+                            })
+
+            # CHECK 4 — Long running
+            if run.started_at:
+                elapsed = _safe_sub(now, run.started_at)
+                minutes = elapsed.total_seconds() / 60.0
+                if minutes > 5:
+                    anomalies.append({
+                        "code": "LONG_RUNNING",
+                        "message": f"running for {minutes:.0f} min \u2014 agents usually finish faster",
+                        "severity": "warn",
+                    })
+
+            return anomalies
+    except Exception:
+        return []
+
+
+# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
@@ -131,6 +317,7 @@ def _build_run_data(runs, now=None):
     week_ago = today - timedelta(days=7)
     run_ids = [r.id for r in runs]
     counts: dict[str, int] = {}
+    costs: dict[str, float] = {}
     if run_ids:
         with get_session() as session:
             rows = session.execute(
@@ -139,6 +326,24 @@ def _build_run_data(runs, now=None):
                 .group_by(Span.run_id)
             ).all()
             counts = {row.run_id: row.n for row in rows}
+
+            cost_rows = session.execute(
+                select(Span.run_id, Span.metadata_json)
+                .where(Span.run_id.in_(run_ids))
+                .where(Span.kind == "llm")
+                .where(Span.status == "ok")
+            ).all()
+            run_costs: dict[str, float] = defaultdict(float)
+            for cr in cost_rows:
+                meta = _safe_parse_meta(cr.metadata_json)
+                if meta:
+                    c = meta.get("cost_usd")
+                    if c is not None:
+                        try:
+                            run_costs[cr.run_id] += float(c)
+                        except (TypeError, ValueError):
+                            pass
+            costs = dict(run_costs)
     run_data = []
     for run in runs:
         start = run.started_at
@@ -149,33 +354,81 @@ def _build_run_data(runs, now=None):
             run_date = start.date()
         if run_date == today:
             date_label = "today"
+            date_sort = 0
         elif run_date == yesterday:
             date_label = "yesterday"
+            date_sort = 1
         elif run_date >= week_ago:
             date_label = "this week"
+            date_sort = 2
         else:
             date_label = run_date.strftime("%b %d, %Y")
+            date_sort = 3
+        run_cost = costs.get(run.id, 0.0) if run.status != "running" else None
         run_data.append({
             "id": run.id,
             "name": run.name,
+            "agent_version": run.agent_version,
             "started_at": run.started_at,
             "duration_ms": round(_ms(_safe_sub(end, start))),
             "span_count": counts.get(run.id, 0),
             "status": run.status,
             "date_label": date_label,
+            "date_sort": date_sort,
+            "cost_usd": run_cost,
         })
     return run_data
+
+
+def _load_run_list(version_filter=None):
+    """Load the most recent runs (optionally filtered by agent version) with
+    span counts, costs, and DNA strips — everything the run list needs."""
+    with get_session() as session:
+        query = select(Run).order_by(Run.started_at.desc()).limit(20)
+        if version_filter:
+            query = query.where(Run.agent_version == version_filter)
+        runs = session.execute(query).scalars().all()
+
+        run_ids = [r.id for r in runs]
+        spans_rows = []
+        if run_ids:
+            spans_rows = session.execute(
+                select(Span.run_id, Span.kind, Span.name, Span.started_at)
+                .where(Span.run_id.in_(run_ids))
+                .order_by(Span.started_at)
+            ).all()
+
+        versions = session.execute(
+            select(Run.agent_version)
+            .where(Run.agent_version.is_not(None))
+            .distinct()
+        ).scalars().all()
+
+    spans_by_run = defaultdict(list)
+    for row in spans_rows:
+        spans_by_run[row.run_id].append({"kind": row.kind, "name": row.name})
+
+    run_data = _build_run_data(runs)
+    for rd in run_data:
+        rd["dna"] = build_dna(spans_by_run.get(rd["id"], []))
+
+    return run_data, sorted(versions)
 
 
 @app.route("/")
 def index():
     init_db()
-    with get_session() as session:
-        runs = session.execute(
-            select(Run).order_by(Run.started_at.desc()).limit(20)
-        ).scalars().all()
+    version_filter = request.args.get("version")
+    run_data, versions = _load_run_list(version_filter)
 
-    return render_template("index.html", runs=_build_run_data(runs))
+    # HTMX polling only needs the runs container, not the whole page.
+    if request.headers.get("HX-Request"):
+        return render_template(
+            "_runs_container.html", runs=run_data, current_version=version_filter
+        )
+    return render_template(
+        "index.html", runs=run_data, versions=versions, current_version=version_filter
+    )
 
 
 def _safe_parse_meta(s):
@@ -206,6 +459,9 @@ def run_detail(run_id):
 
         span_name_by_id = {sp.id: sp.name for sp in spans}
 
+        fp_spans = [{"kind": sp.kind, "name": sp.name} for sp in spans]
+        fingerprint, fp_hash = build_fingerprint(run.name, fp_spans)
+
         llm_count = 0
         total_tokens = 0
         total_cost_usd = 0.0
@@ -230,6 +486,8 @@ def run_detail(run_id):
                 "kind": sp.kind,
                 "status": sp.status,
                 "duration_ms": round(sp_dur, 1),
+                "offset_ms": round(offset, 1),
+                "end_ms": round(offset + sp_dur, 1),
                 "start_pct": round(start_pct, 3),
                 "width_pct": round(width_pct, 3),
                 "metadata": meta,
@@ -276,6 +534,8 @@ def run_detail(run_id):
         total_cost_usd=total_cost_usd,
         span_count=span_count,
         cost_rows=cost_rows,
+        fingerprint=fingerprint,
+        fp_hash=fp_hash,
     )
 
 
@@ -419,6 +679,24 @@ def span_detail(span_id):
         dname = _display_name(sp.name, sp.kind, metadata)
         insight = f"{dname} completed in {_fmt_dur(duration_ms)}."
 
+    context_gauge = None
+    if sp.kind == "llm" and metadata:
+        model = metadata.get("model")
+        prompt_tokens = metadata.get("prompt_tokens") or 0
+        if model and prompt_tokens:
+            limit = get_context_limit(model)
+            if limit:
+                pct = min(prompt_tokens / limit * 100, 100.0)
+                level = "danger" if pct > 85 else ("warn" if pct > 60 else "ok")
+                context_gauge = {
+                    "pct": round(pct, 1),
+                    "tokens": prompt_tokens,
+                    "limit": limit,
+                    "level": level,
+                }
+            else:
+                context_gauge = {"unknown": model}
+
     return render_template(
         "span_detail.html",
         span=sp,
@@ -426,7 +704,63 @@ def span_detail(span_id):
         output_data=output_data,
         metadata=metadata,
         insight=insight,
+        context_gauge=context_gauge,
     )
+
+
+@app.get("/run-cost/<run_id>")
+def run_cost_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None:
+            abort(404)
+        is_running = run.status == "running"
+        cost_rows = session.execute(
+            select(Span.metadata_json)
+            .where(Span.run_id == run_id)
+            .where(Span.kind == "llm")
+            .where(Span.status == "ok")
+        ).all()
+        total = 0.0
+        for cr in cost_rows:
+            meta = _safe_parse_meta(cr[0]) if cr[0] else None
+            if meta:
+                c = meta.get("cost_usd")
+                if c is not None:
+                    try:
+                        total += float(c)
+                    except (TypeError, ValueError):
+                        pass
+    formatted = format_cost_filter(total)
+    if is_running:
+        # "every 4s" only — a "load" trigger here would re-fire on every swap
+        # and turn the ticker into a request loop.
+        return f'<span class="gp-live-cost" id="cost-{run_id}" hx-get="/run-cost/{run_id}" hx-trigger="every 4s" hx-swap="outerHTML"><span class="gp-cost-dot"></span>{formatted}</span>'
+    return f'<span class="gp-live-cost">{formatted}</span>'
+
+
+@app.get("/anomalies/<run_id>")
+def anomalies_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None or run.status != "running":
+            return jsonify([])
+    detected = check_anomalies(run_id)
+    if not detected:
+        return jsonify([])
+    return jsonify(detected)
+
+
+@app.get("/anomalies-banner/<run_id>")
+def anomalies_banner_route(run_id):
+    with get_session() as session:
+        run = session.get(Run, run_id)
+        if run is None or run.status != "running":
+            return ""
+    detected = check_anomalies(run_id)
+    if not detected:
+        return ""
+    return render_template("_anomaly_banner.html", anomalies=detected)
 
 
 @app.get("/share/preview/<run_id>")
@@ -482,11 +816,15 @@ def share_cancel():
 
 @app.post("/share/confirm/<run_id>")
 def share_confirm(run_id):
-    from glasspipe.share import upload_run, ShareError
+    from glasspipe.share import share_run, ShareError
 
     try:
-        url = upload_run(run_id)
-        return render_template("share_success.html", url=url)
+        result = share_run(run_id)
+        return render_template(
+            "share_success.html",
+            url=result["url"],
+            delete_token=result.get("delete_token"),
+        )
     except ShareError as exc:
         return render_template("share_error.html", error=str(exc))
 
@@ -497,22 +835,21 @@ def delete_run(run_id):
         run = session.get(Run, run_id)
         if run is None:
             abort(404)
-        session.query(Span).filter_by(run_id=run_id).delete()
+        session.execute(sql_delete(Span).where(Span.run_id == run_id))
         session.delete(run)
         session.commit()
 
-        remaining = session.execute(
-            select(Run).order_by(Run.started_at.desc()).limit(20)
-        ).scalars().all()
-        if not remaining:
-            return render_template("index.html", runs=[])
-        return render_template("index.html", runs=_build_run_data(remaining))
+    version_filter = request.args.get("version")
+    run_data, _ = _load_run_list(version_filter)
+    return render_template(
+        "_runs_container.html", runs=run_data, current_version=version_filter
+    )
 
 
 @app.post("/runs/clear")
 def clear_runs():
     with get_session() as session:
-        session.query(Span).delete()
-        session.query(Run).delete()
+        session.execute(sql_delete(Span))
+        session.execute(sql_delete(Run))
         session.commit()
-    return render_template("index.html", runs=[])
+    return render_template("_runs_container.html", runs=[], current_version=None)

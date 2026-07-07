@@ -45,6 +45,11 @@ Optional variables:
 |---|---|
 | `GLASSPIPE_MAX_PAYLOAD_MB` | `5` |
 | `GLASSPIPE_TRACE_TTL_DAYS` | `30` |
+| `GLASSPIPE_PINNED_TRACES` | empty — comma-separated trace ids exempt from expiry |
+
+Set `GLASSPIPE_PINNED_TRACES=7sq3QX,TyvF6u` so the demo traces linked from the
+landing page and README never expire (shared 2026-07-07; without pinning they
+die every TTL window and the marketing site links 404).
 
 Redeploy after adding or changing environment variables.
 

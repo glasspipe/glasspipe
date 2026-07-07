@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import DateTime, Index, String, Text, create_engine
+from sqlalchemy import DateTime, Index, String, Text, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 UTC = timezone.utc
@@ -24,6 +24,7 @@ class Run(Base):
 
     id: Mapped[str] = mapped_column(String(12), primary_key=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
+    agent_version: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(Text, nullable=False, default="running")
@@ -71,8 +72,24 @@ def get_session() -> Session:
     return Session(get_engine())
 
 
+_initialized_paths: set[str] = set()
+
+
 def init_db() -> None:
-    Base.metadata.create_all(get_engine())
+    # Idempotent, but creating tables + probing migrations on every run start
+    # is wasted work — do it once per DB path per process.
+    path = _db_path()
+    if path in _initialized_paths:
+        return
+    engine = get_engine()
+    Base.metadata.create_all(engine)
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE runs ADD COLUMN agent_version TEXT"))
+            conn.commit()
+        except Exception:
+            pass  # column already exists (pre-0.1.5 DBs get it added once)
+    _initialized_paths.add(path)
 
 
 # ---------------------------------------------------------------------------
@@ -97,12 +114,13 @@ def _safe_json(obj) -> str | None:
 # Write helpers
 # ---------------------------------------------------------------------------
 
-def write_run_start(run_id: str, name: str) -> None:
+def write_run_start(run_id: str, name: str, agent_version: str | None = None) -> None:
     init_db()
     with get_session() as session:
         session.add(Run(
             id=run_id,
             name=name,
+            agent_version=agent_version,
             started_at=datetime.now(UTC),
             status="running",
         ))
