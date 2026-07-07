@@ -31,13 +31,15 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
   (re-shared 2026-07-07; set GLASSPIPE_PINNED_TRACES=7sq3QX,TyvF6u on the API
   deployment or they expire after 30 days and the landing page 404s again)
 - **Hosting (verified 2026-07-07):** ONE Vercel project — `glasspipe.vercel.app`
-  — serves BOTH the landing page and the Flask share API (its /health answers
-  there), with glasspipe.dev on top. That production deployment was made from
-  a configuration that is NOT in this repo (the committed vercel.json is
-  static-only, and the repo has no Vercel serverless adapter for the Flask
-  app). The Vercel project does NOT auto-deploy from this GitHub repo — pushes
-  to main have never touched it. Redeploys and env vars (e.g.
-  GLASSPIPE_PINNED_TRACES) happen in the Vercel dashboard for that project.
+  / glasspipe.dev — serves BOTH the landing page (packages/web) and the Flask
+  share API (as a serverless function via api/index.py), with Postgres on
+  Supabase. The Vercel project IS git-connected to origin/main, so pushes to
+  main deploy production. The config lives in the repo: vercel.json (functions
+  + rewrites), api/index.py, root requirements.txt — these arrived on
+  origin/main via commits 87340ba..f5e38ca (made outside this machine; local
+  main had diverged until merged 2026-07-07). Env vars (DATABASE_URL,
+  GLASSPIPE_BASE_URL, GLASSPIPE_PINNED_TRACES) are set in the Vercel
+  dashboard; redeploy after changing them. See docs/DEPLOYMENT.md.
 - **Machine note:** this repo lives in iCloud-synced ~/Desktop, and iCloud
   re-applies the macOS `hidden` flag to new .pth files, which Python 3.13+
   skips — that used to break `pip install -e` silently. FIXED 2026-07-07: the

@@ -1,98 +1,83 @@
 # Deployment
 
-GlassPipe has two independently deployable services:
+GlassPipe uses one Vercel project and one Supabase Free Postgres database:
 
-- `packages/web`: the static marketing site
-- `packages/api`: the Flask share API and public trace viewer
+- Vercel serves the static marketing site from `packages/web`.
+- Vercel runs the existing Flask share API through `api/index.py`.
+- Supabase stores newly shared traces in Postgres.
 
-## Marketing site on Vercel
+## Vercel project settings
 
-The root `vercel.json` publishes `packages/web` directly. Use these Vercel
-project settings:
+Connect the `glasspipe/glasspipe` repository and use these settings:
 
 | Setting | Value |
 |---|---|
-| Repository | `glasspipe/glasspipe` |
 | Root Directory | repository root (`.`) |
 | Framework Preset | Other |
 | Build Command | leave empty |
-| Output Directory | `packages/web` |
+| Output Directory | leave empty |
 | Install Command | leave empty |
 
-The committed `vercel.json` supplies the Build Command and Output Directory, so
-the dashboard values should not override them. After the preview deployment
-shows the landing page, add `glasspipe.dev` and `www.glasspipe.dev` under
-Vercel Project Settings > Domains and apply the DNS records Vercel provides.
+Do not override Build Command or Output Directory in the Vercel dashboard. The
+committed `vercel.json` publishes `packages/web` and routes the hosted API and
+viewer paths to the Flask function.
 
-No environment variables are required for the static marketing site.
+Add both `glasspipe.dev` and `www.glasspipe.dev` under Vercel Project Settings
+> Domains. The apex domain should be the production domain.
 
-## Hosted share API
+## Supabase database
 
-**Current production state (verified 2026-07-07):** the API is live and served
-by the Vercel project **`glasspipe`** (`glasspipe.vercel.app`) — the same
-project also serves the landing page, with `glasspipe.dev` as its domain.
-`/health`, `POST /v1/share`, `GET /v1/trace/<id>`, and `GET /t/<id>` all
-answer there. That deployment was made from a configuration that is **not**
-checked into this repo (the committed `vercel.json` is static-only and the
-repo contains no Vercel serverless adapter for the Flask app), and the Vercel
-project does not auto-deploy from GitHub. Practical consequences:
+Create a Supabase Free project and copy its pooled Postgres connection string.
+Use the transaction pooler connection string for Vercel's serverless functions.
+No old Railway data needs to be migrated.
 
-- API env-var changes (e.g. `GLASSPIPE_PINNED_TRACES`) are made in the Vercel
-  dashboard for the `glasspipe` project, followed by a redeploy of that
-  project.
-- Do not point the Vercel project at this repo's `main` without first adding
-  the serverless/rewrite configuration it needs, or the API routes go dead.
-
-The sections below describe running the API on any long-running Python host
-(the original plan; still valid if it ever moves off Vercel functions). It has
-Railway-era deployment files in `packages/api`, but it can run on any host
-that supports Gunicorn and Postgres. Set the service root to `packages/api`
-and start it with:
-
-```bash
-gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
-```
-
-Required API environment variables:
+Set these variables for Production, Preview, and Development in Vercel Project
+Settings > Environment Variables:
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | Persistent Postgres connection string |
-| `GLASSPIPE_BASE_URL` | `https://glasspipe.dev` when the routes below are proxied through the main domain |
+| `DATABASE_URL` | Supabase transaction pooler connection string |
+| `GLASSPIPE_BASE_URL` | `https://glasspipe.dev` |
 
-Optional API environment variables:
+Optional variables:
 
 | Variable | Default |
 |---|---|
 | `GLASSPIPE_MAX_PAYLOAD_MB` | `5` |
 | `GLASSPIPE_TRACE_TTL_DAYS` | `30` |
 | `GLASSPIPE_PINNED_TRACES` | empty — comma-separated trace ids exempt from expiry |
-| `PORT` | supplied by the hosting platform |
 
 Set `GLASSPIPE_PINNED_TRACES=7sq3QX,TyvF6u` so the demo traces linked from the
-landing page and README never expire (they are re-shared 2026-07-07; without
-pinning they die every TTL window and the marketing site 404s).
+landing page and README never expire (shared 2026-07-07; without pinning they
+die every TTL window and the marketing site links 404).
 
-After the API has a healthy HTTPS URL, add external rewrites to `vercel.json`
-so the public domain continues to match the SDK's default share URL:
+Redeploy after adding or changing environment variables.
 
-```json
-"rewrites": [
-  {
-    "source": "/v1/:path*",
-    "destination": "https://YOUR-API-HOST/v1/:path*"
-  },
-  {
-    "source": "/t/:path*",
-    "destination": "https://YOUR-API-HOST/t/:path*"
-  },
-  {
-    "source": "/static/:path*",
-    "destination": "https://YOUR-API-HOST/static/:path*"
-  }
-]
+## Routes
+
+The single Vercel project serves:
+
+- `GET /` and marketing assets from `packages/web`
+- `GET /health` from Flask
+- `POST /v1/share` from Flask
+- `GET /v1/trace/<id>` from Flask
+- `GET /t/<id>` and `GET /t/<id>/embed` from Flask
+- `GET /static/*` for the trace viewer's assets
+
+The first successful `POST /v1/share` creates the `shared_traces` table in the
+fresh Supabase database. The published SDK already posts to
+`https://glasspipe.dev/v1/share`; local development can override that endpoint
+with `GLASSPIPE_SHARE_API`.
+
+## Verification
+
+```bash
+curl -i https://glasspipe.dev/
+curl -i https://glasspipe.dev/health
+curl -i -X POST https://glasspipe.dev/v1/share \
+  -H 'content-type: application/json' \
+  --data-binary @packages/web/demo_trace.json
 ```
 
-Verify the API host's `/health` route before adding the rewrites. The published
-SDK posts to `https://glasspipe.dev/v1/share` by default; local development can
-override that endpoint with `GLASSPIPE_SHARE_API`.
+The share request should return `201` with a `url`. Open that URL and confirm
+the public trace viewer loads.
