@@ -19,12 +19,27 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ---
 
-## Current state
+## Current state (updated 2026-07-07)
 
-- **Last action:** published glasspipe v0.1.0 to PyPI
-- **pip install glasspipe** is now live at pypi.org/project/glasspipe/0.1.0/
-- **Test suite:** 25/25 green
-- **What works:** full stack live — SDK, local dashboard, share flow, public viewer, landing page with interactive demo, PyPI package
+- **Version:** 0.2.0 in repo (0.1.9 is the latest published to PyPI — release pending)
+- **Test suite:** 64/64 green (includes Flask test-client dashboard tests)
+- **What works:** full stack live — SDK, local dashboard (HTMX partial rendering,
+  version filter chips, run compare, anomaly watch, live cost ticker, trace
+  replay), share flow with delete tokens, public viewer with view counts,
+  landing page, PyPI package, `glasspipe demo` seeder, CI test workflow
+- **Live demo traces:** glasspipe.dev/t/7sq3QX and glasspipe.dev/t/TyvF6u
+  (re-shared 2026-07-07; set GLASSPIPE_PINNED_TRACES=7sq3QX,TyvF6u on the API
+  deployment or they expire after 30 days and the landing page 404s again)
+- **Hosting:** landing page on Vercel (glasspipe.dev); /v1/* and /t/* proxying
+  works in production via rewrites configured in the Vercel dashboard — the
+  committed vercel.json does NOT contain them; see docs/DEPLOYMENT.md before
+  any redeploy
+- **Machine warning:** this repo lives in iCloud-synced ~/Desktop. A background
+  process re-applies the macOS `hidden` flag to new .pth files in .venv, and
+  Python 3.13+ skips hidden .pth files — so `pip install -e` silently breaks.
+  The venv currently holds a NON-editable install; after changing SDK code run
+  `pip install --ignore-installed --no-deps packages/sdk`, or (better) move the
+  repo out of iCloud sync and rebuild the venv.
 - **Next session:** demo video + launch prep
 
 ---
@@ -33,38 +48,45 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 
 ```
 glasspipe/                          ← repo root, ~/Desktop/glasspipe
-├── CLAUDE.md                       ← this file
+├── CLAUDE.md                       ← this file (AGENTS.md is its Codex twin — keep in sync)
+├── .github/workflows/              ← tests.yml (pytest matrix) + publish.yml (PyPI)
 ├── .gitignore
 ├── LICENSE                         ← MIT, 2026 Jonathan
-├── README.md
+├── README.md                       ← keep in sync with packages/sdk/README.md (PyPI copy)
+├── vercel.json                     ← landing page deploy (rewrites NOT committed — see docs/DEPLOYMENT.md)
 ├── .venv/                          ← shared virtualenv (never commit)
 ├── docs/
-│   └── README.md
-├── examples/
-│   └── hello.py
+│   ├── DEPLOYMENT.md               ← Vercel + share-API deployment runbook
+│   └── dashboard.png               ← README screenshot
+├── examples/                       ← hello, research, support, competitive intel,
+│                                     live before/after pair (needs OPENAI_API_KEY)
 └── packages/
-    ├── sdk/                        ← the pip-installable library
-    │   ├── pyproject.toml          ← hatchling backend, version 0.0.0
+    ├── sdk/                        ← the pip-installable library (version 0.2.0)
+    │   ├── pyproject.toml          ← hatchling backend
+    │   ├── tests/                  ← 64 tests incl. Flask test-client dashboard suite
     │   └── src/glasspipe/
-    │       ├── __init__.py         ← exports: trace, span
+    │       ├── __init__.py         ← exports: trace, span, redact, detect
     │       ├── trace.py            ← @trace decorator + span() context manager
     │       ├── storage.py          ← SQLAlchemy models + DB write functions
-    │       ├── redact.py           ← secret detection (stub until session 10)
-    │       ├── share.py            ← upload to api.glasspipe.dev (stub until session 12)
-    │       ├── cli.py              ← click CLI (`glasspipe dashboard` command)
-    │       └── instruments/        ← auto-patch openai, anthropic (implemented session 3)
-    ├── dashboard/                  ← local Flask app, port 5050
-    │   ├── app.py
-    │   ├── requirements.txt
-    │   ├── templates/
-    │   └── static/
+    │       ├── redact.py           ← secret detection + redaction (implemented)
+    │       ├── share.py            ← share_run/upload_run → glasspipe.dev/v1/share
+    │       ├── cli.py              ← click CLI: dashboard (--port), demo
+    │       ├── _dashboard.py       ← THE local dashboard Flask app (port 3000)
+    │       ├── _demo.py            ← `glasspipe demo` sample-trace seeder
+    │       ├── _diff.py            ← run comparison engine
+    │       ├── templates/          ← dashboard Jinja templates (incl. _runs_container.html partial)
+    │       ├── static/             ← style.css, vendored htmx.min.js
+    │       └── instruments/        ← auto-patch openai, anthropic
     ├── api/                        ← hosted Flask share service, port 5051
-    │   ├── app.py
+    │   ├── app.py                  ← share/view/delete endpoints, pinned demo traces
     │   └── requirements.txt
-    └── web/                        ← static landing page
+    └── web/                        ← static landing page (deployed to Vercel)
         ├── index.html
         └── landing-mockup.html     ← design reference, DO NOT modify
 ```
+
+Note: there is no packages/dashboard — the dashboard ships inside the SDK
+(`glasspipe/_dashboard.py`) so `pip install glasspipe` includes it.
 
 ---
 
@@ -76,9 +98,9 @@ glasspipe/                          ← repo root, ~/Desktop/glasspipe
 | Build backend | hatchling | modern, src-layout native |
 | Local DB | SQLite via SQLAlchemy 2.x | `~/.glasspipe/traces.db` |
 | DB path override | `GLASSPIPE_DB_PATH` env var | full file path |
-| Dashboard | Flask + HTMX + Tailwind CDN | NOT React |
-| Hosted API | Flask + Postgres | Railway deployment |
-| Deploy | Railway | free tier |
+| Dashboard | Flask + HTMX (vendored) | NOT React; ships in SDK, port 3000 |
+| Hosted API | Flask + Postgres | any gunicorn host; see docs/DEPLOYMENT.md |
+| Deploy | Vercel (web) + gunicorn host (API) | landing at glasspipe.dev |
 | Distribution | PyPI | package name: `glasspipe` |
 | IDs | nanoid (12 chars) | not UUID |
 
@@ -111,6 +133,7 @@ If a feature isn't in the current session plan, ASK before adding it.
 runs
   id              TEXT PK    -- nanoid 12 chars
   name            TEXT       -- function name or @trace(name=...)
+  agent_version   TEXT       -- nullable, @trace(version=) or GLASSPIPE_AGENT_VERSION
   started_at      DATETIME   -- UTC
   ended_at        DATETIME   -- UTC, nullable
   status          TEXT       -- 'running' | 'ok' | 'error'
@@ -134,11 +157,11 @@ spans
 -- hosted only:
 shared_traces
   id              TEXT PK    -- 6 char short ID
-  run_data_json   TEXT       -- full run + spans, post-redaction
+  payload         JSON       -- full run + spans, post-redaction
   created_at      DATETIME
-  expires_at      DATETIME   -- created_at + 30 days
-  delete_token    TEXT       -- secret for owner-initiated deletion
-  view_count      INTEGER
+  expires_at      DATETIME   -- created_at + 30 days (pinned ids exempt)
+  delete_token    TEXT       -- secret for DELETE /v1/trace/<id>
+  view_count      INTEGER    -- incremented on each public view
 ```
 
 ---
@@ -182,20 +205,19 @@ def safe_json(obj):
 # activate virtualenv (always do this first)
 source .venv/bin/activate
 
-# install SDK in editable mode (after any pyproject.toml change)
-pip install -e packages/sdk
+# install SDK after code changes — NOT editable on this machine!
+# (iCloud hides .pth files; see Machine warning in Current state)
+pip install --ignore-installed --no-deps packages/sdk
 
-# install dev deps (pytest etc.)
-pip install -e "packages/sdk[dev]"
+# run tests against the working tree without reinstalling
+PYTHONPATH=packages/sdk/src python -m pytest packages/sdk/tests/ -v
 
-# run tests
-pytest packages/sdk/tests/ -v
-
-# run dashboard
-glasspipe dashboard   # → localhost:3000
+# seed sample traces, then run dashboard
+glasspipe demo
+glasspipe dashboard              # → localhost:3000 (or --port N)
 
 # run API
-python packages/api/app.py         # → localhost:5051
+python packages/api/app.py       # → localhost:5051
 
 # verify SDK import
 python -c "from glasspipe import trace, span; print('ok')"
