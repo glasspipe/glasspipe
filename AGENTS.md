@@ -30,16 +30,20 @@ Built by Jonathan as a session-based portfolio project (started April 27, 2026).
 - **Live demo traces:** glasspipe.dev/t/7sq3QX and glasspipe.dev/t/TyvF6u
   (re-shared 2026-07-07; set GLASSPIPE_PINNED_TRACES=7sq3QX,TyvF6u on the API
   deployment or they expire after 30 days and the landing page 404s again)
-- **Hosting:** landing page on Vercel (glasspipe.dev); /v1/* and /t/* proxying
-  works in production via rewrites configured in the Vercel dashboard — the
-  committed vercel.json does NOT contain them; see docs/DEPLOYMENT.md before
-  any redeploy
-- **Machine warning:** this repo lives in iCloud-synced ~/Desktop. A background
-  process re-applies the macOS `hidden` flag to new .pth files in .venv, and
-  Python 3.13+ skips hidden .pth files — so `pip install -e` silently breaks.
-  The venv currently holds a NON-editable install; after changing SDK code run
-  `pip install --ignore-installed --no-deps packages/sdk`, or (better) move the
-  repo out of iCloud sync and rebuild the venv.
+- **Hosting (verified 2026-07-07):** ONE Vercel project — `glasspipe.vercel.app`
+  — serves BOTH the landing page and the Flask share API (its /health answers
+  there), with glasspipe.dev on top. That production deployment was made from
+  a configuration that is NOT in this repo (the committed vercel.json is
+  static-only, and the repo has no Vercel serverless adapter for the Flask
+  app). The Vercel project does NOT auto-deploy from this GitHub repo — pushes
+  to main have never touched it. Redeploys and env vars (e.g.
+  GLASSPIPE_PINNED_TRACES) happen in the Vercel dashboard for that project.
+- **Machine note:** this repo lives in iCloud-synced ~/Desktop, and iCloud
+  re-applies the macOS `hidden` flag to new .pth files, which Python 3.13+
+  skips — that used to break `pip install -e` silently. FIXED 2026-07-07: the
+  real venv is `.venv.nosync/` (iCloud ignores *.nosync) with `.venv` as a
+  symlink to it, holding a normal editable install. If the venv is ever
+  rebuilt, recreate it as `.venv.nosync` + symlink.
 - **Next session:** demo video + launch prep
 
 ---
@@ -205,12 +209,11 @@ def safe_json(obj):
 # activate virtualenv (always do this first)
 source .venv/bin/activate
 
-# install SDK after code changes — NOT editable on this machine!
-# (iCloud hides .pth files; see Machine warning in Current state)
-pip install --ignore-installed --no-deps packages/sdk
+# install SDK in editable mode (works again — venv lives in .venv.nosync)
+pip install -e "packages/sdk[dev]"
 
-# run tests against the working tree without reinstalling
-PYTHONPATH=packages/sdk/src python -m pytest packages/sdk/tests/ -v
+# run tests
+pytest packages/sdk/tests/ -v
 
 # seed sample traces, then run dashboard
 glasspipe demo

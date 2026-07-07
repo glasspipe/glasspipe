@@ -28,18 +28,26 @@ No environment variables are required for the static marketing site.
 
 ## Hosted share API
 
-The Flask API needs a separate long-running deployment with persistent
-Postgres. It is not deployed by the marketing-site Vercel project. Until it is
-redeployed, these routes will not work:
+**Current production state (verified 2026-07-07):** the API is live and served
+by the Vercel project **`glasspipe`** (`glasspipe.vercel.app`) — the same
+project also serves the landing page, with `glasspipe.dev` as its domain.
+`/health`, `POST /v1/share`, `GET /v1/trace/<id>`, and `GET /t/<id>` all
+answer there. That deployment was made from a configuration that is **not**
+checked into this repo (the committed `vercel.json` is static-only and the
+repo contains no Vercel serverless adapter for the Flask app), and the Vercel
+project does not auto-deploy from GitHub. Practical consequences:
 
-- `POST /v1/share`
-- `GET /v1/trace/<id>`
-- `GET /t/<id>`
-- `GET /t/<id>/embed`
+- API env-var changes (e.g. `GLASSPIPE_PINNED_TRACES`) are made in the Vercel
+  dashboard for the `glasspipe` project, followed by a redeploy of that
+  project.
+- Do not point the Vercel project at this repo's `main` without first adding
+  the serverless/rewrite configuration it needs, or the API routes go dead.
 
-The API currently has Railway deployment files in `packages/api`, but it can
-run on any Python host that supports Gunicorn and Postgres. Set the service
-root to `packages/api` and start it with:
+The sections below describe running the API on any long-running Python host
+(the original plan; still valid if it ever moves off Vercel functions). It has
+Railway-era deployment files in `packages/api`, but it can run on any host
+that supports Gunicorn and Postgres. Set the service root to `packages/api`
+and start it with:
 
 ```bash
 gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT

@@ -3,8 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtualenvs
-.venv/
+# Virtualenvs (.venv is a symlink to .venv.nosync so iCloud leaves it alone)
+.venv
+.venv.nosync/
 venv/
 env/
 ENV/
