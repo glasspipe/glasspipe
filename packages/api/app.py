@@ -37,6 +37,11 @@ if _DATABASE_URL.startswith("postgresql://"):
             _DATABASE_URL += "?sslmode=require"
 
 _BASE_URL     = os.environ.get("GLASSPIPE_BASE_URL", "https://glasspipe.dev")
+# Comma-separated trace ids that never expire (demo traces linked from the
+# landing page and README — without this they die every TTL window).
+_PINNED_IDS   = {
+    t.strip() for t in os.environ.get("GLASSPIPE_PINNED_TRACES", "").split(",") if t.strip()
+}
 _MAX_BYTES    = int(float(os.environ.get("GLASSPIPE_MAX_PAYLOAD_MB", "5")) * 1024 * 1024)
 _TTL_DAYS     = int(os.environ.get("GLASSPIPE_TRACE_TTL_DAYS", "30"))
 
@@ -170,7 +175,7 @@ def get_trace(trace_id):
 
     if trace is None:
         return jsonify({"error": "not found"}), 404
-    if trace.expires_at < _utcnow():
+    if trace_id not in _PINNED_IDS and trace.expires_at < _utcnow():
         return jsonify({"error": "trace expired"}), 410
 
     return jsonify(trace.payload)
@@ -217,14 +222,16 @@ def _render_trace(trace_id, embed=False):
         if trace is None:
             return render_template("404.html"), 404
 
-        if trace.expires_at < _utcnow():
+        if trace_id not in _PINNED_IDS and trace.expires_at < _utcnow():
             return render_template("expired.html"), 410
 
-        trace.view_count = (trace.view_count or 0) + 1
+        view_count = (trace.view_count or 0) + 1
+        trace.view_count = view_count
+        # Copy what the template needs before commit expires the ORM object.
+        payload = trace.payload
+        trace_created_at = trace.created_at
         session.commit()
-        session.expunge(trace)
 
-    payload = trace.payload
     run = payload["run"]
     raw_spans = payload.get("spans", [])
 
@@ -299,7 +306,7 @@ def _render_trace(trace_id, embed=False):
     else:
         models_display = None
 
-    created_at_date = trace.created_at.strftime("%b %d, %Y")
+    created_at_date = trace_created_at.strftime("%b %d, %Y")
 
     return render_template(
         "trace_viewer.html",
@@ -314,9 +321,9 @@ def _render_trace(trace_id, embed=False):
         cost_rows_json=json.dumps(cost_rows),
         models_display=models_display,
         share_url=f"{_BASE_URL}/t/{trace_id}",
-        shared_ago=_age_string(trace.created_at),
+        shared_ago=_age_string(trace_created_at),
         created_at_date=created_at_date,
-        view_count=trace.view_count,
+        view_count=view_count,
         embed=embed,
     )
 
