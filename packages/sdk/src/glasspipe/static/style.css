@@ -130,6 +130,52 @@ body::before {
 .badge-running { background: var(--c-action-dim);  color: var(--c-action);  border: 1px solid var(--c-action-border); animation: pulse 1.4s ease-in-out infinite; }
 .badge-stream  { background: var(--c-label-dim);   color: var(--c-label);   border: 1px solid var(--c-label-border); }
 
+/* ---- Agent version badge + filter chips ---- */
+.version-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--c-label);
+  background: var(--c-label-dim);
+  border: 1px solid var(--c-label-border);
+  text-decoration: none;
+  vertical-align: 1px;
+}
+.version-badge:hover { filter: brightness(1.3); }
+
+.version-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -8px 0 16px;
+  flex-wrap: wrap;
+}
+.version-filter-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.version-chip {
+  padding: 3px 10px;
+  border-radius: var(--r);
+  font-size: 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s;
+}
+.version-chip:hover { border-color: var(--c-action-border); color: var(--text); }
+.version-chip-active {
+  color: var(--c-action);
+  border-color: var(--c-action-border);
+  background: var(--c-action-dim);
+}
+
 .live-badge {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1140,6 +1186,27 @@ body::before {
   font-size: 13px;
   word-break: break-all;
   line-height: 1.5;
+}
+
+.share-delete-details {
+  margin: 12px 24px 0;
+  font-size: 12px;
+}
+.share-delete-details summary { cursor: pointer; }
+.share-token-box {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-size: 12px;
+  word-break: break-all;
+}
+.share-token-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  word-break: break-all;
 }
 
 .btn-copy {

@@ -10,9 +10,10 @@ from pathlib import Path
 
 from flask import Flask, abort, jsonify, render_template, request
 from markupsafe import Markup, escape
-from sqlalchemy import func, select
+from sqlalchemy import delete as sql_delete, func, select
 
 from glasspipe._diff import diff_runs
+from glasspipe.instruments.anthropic_patch import _PRICING as _ANTHROPIC_PRICING, _normalize_model as _norm_anthropic
 from glasspipe.instruments.openai_patch import _PRICING as _OPENAI_PRICING, _normalize_model as _norm_openai
 from glasspipe.redact import detect, redact
 from glasspipe.storage import Run, Span, get_session, init_db
@@ -44,6 +45,10 @@ def _estimate_cost(model, prompt_tokens, completion_tokens):
     inp, out = _OPENAI_PRICING.get(
         model, _OPENAI_PRICING.get(_norm_openai(model), (0.0, 0.0))
     )
+    if inp == 0.0 and out == 0.0:
+        inp, out = _ANTHROPIC_PRICING.get(
+            model, _ANTHROPIC_PRICING.get(_norm_anthropic(model), (0.0, 0.0))
+        )
     if inp == 0.0 and out == 0.0:
         return 0.0
     return (prompt_tokens * inp + completion_tokens * out) / 1_000_000
@@ -258,35 +263,25 @@ def check_anomalies(run_id: str) -> list[dict]:
             # CHECK 3 — Step count spike
             completed_count = sum(1 for sp in spans if sp.status == "ok")
             if completed_count > 10:
-                avg_rows = session.execute(
-                    select(func.count().label("n"))
+                past_ids = session.execute(
+                    select(Run.id)
                     .where(Run.name == run.name)
                     .where(Run.status == "ok")
+                    .where(Run.id != run_id)
                     .order_by(Run.started_at.desc())
                     .limit(20)
-                ).first()
-                if avg_rows and avg_rows.n > 0:
-                    span_counts = []
-                    past_runs = session.execute(
-                        select(Run.id)
-                        .where(Run.name == run.name)
-                        .where(Run.status == "ok")
-                        .where(Run.id != run_id)
-                        .order_by(Run.started_at.desc())
-                        .limit(20)
-                    ).scalars().all()
-                    if past_runs:
-                        past_ids = list(past_runs)
-                        count_rows = session.execute(
-                            select(Span.run_id, func.count().label("n"))
-                            .where(Span.run_id.in_(past_ids))
-                            .where(Span.status == "ok")
-                            .group_by(Span.run_id)
-                        ).all()
-                        span_counts = [r.n for r in count_rows]
+                ).scalars().all()
+                if past_ids:
+                    count_rows = session.execute(
+                        select(Span.run_id, func.count().label("n"))
+                        .where(Span.run_id.in_(past_ids))
+                        .where(Span.status == "ok")
+                        .group_by(Span.run_id)
+                    ).all()
+                    span_counts = [r.n for r in count_rows]
                     if span_counts:
                         avg = sum(span_counts) / len(span_counts)
-                        if completed_count > avg * 2.5 and completed_count > 10:
+                        if completed_count > avg * 2.5:
                             anomalies.append({
                                 "code": "STEP_COUNT",
                                 "message": f"{completed_count} steps \u2014 {avg:.0f} is normal for this agent",
@@ -385,10 +380,9 @@ def _build_run_data(runs, now=None):
     return run_data
 
 
-@app.route("/")
-def index():
-    init_db()
-    version_filter = request.args.get("version")
+def _load_run_list(version_filter=None):
+    """Load the most recent runs (optionally filtered by agent version) with
+    span counts, costs, and DNA strips — everything the run list needs."""
     with get_session() as session:
         query = select(Run).order_by(Run.started_at.desc()).limit(20)
         if version_filter:
@@ -404,18 +398,37 @@ def index():
                 .order_by(Span.started_at)
             ).all()
 
+        versions = session.execute(
+            select(Run.agent_version)
+            .where(Run.agent_version.is_not(None))
+            .distinct()
+        ).scalars().all()
+
     spans_by_run = defaultdict(list)
     for row in spans_rows:
         spans_by_run[row.run_id].append({"kind": row.kind, "name": row.name})
 
     run_data = _build_run_data(runs)
     for rd in run_data:
-        run_spans = spans_by_run.get(rd["id"], [])
-        rd["dna"] = build_dna(run_spans)
-        rd["fingerprint"], rd["fp_hash"] = build_fingerprint(rd["name"], run_spans)
+        rd["dna"] = build_dna(spans_by_run.get(rd["id"], []))
 
-    versions = sorted({r.agent_version for r in runs if r.agent_version})
-    return render_template("index.html", runs=run_data, versions=versions, current_version=version_filter)
+    return run_data, sorted(versions)
+
+
+@app.route("/")
+def index():
+    init_db()
+    version_filter = request.args.get("version")
+    run_data, versions = _load_run_list(version_filter)
+
+    # HTMX polling only needs the runs container, not the whole page.
+    if request.headers.get("HX-Request"):
+        return render_template(
+            "_runs_container.html", runs=run_data, current_version=version_filter
+        )
+    return render_template(
+        "index.html", runs=run_data, versions=versions, current_version=version_filter
+    )
 
 
 def _safe_parse_meta(s):
@@ -720,7 +733,9 @@ def run_cost_route(run_id):
                         pass
     formatted = format_cost_filter(total)
     if is_running:
-        return f'<span class="gp-live-cost" id="cost-{run_id}" hx-get="/run-cost/{run_id}" hx-trigger="load, every 4s" hx-swap="outerHTML"><span class="gp-cost-dot"></span>{formatted}</span>'
+        # "every 4s" only — a "load" trigger here would re-fire on every swap
+        # and turn the ticker into a request loop.
+        return f'<span class="gp-live-cost" id="cost-{run_id}" hx-get="/run-cost/{run_id}" hx-trigger="every 4s" hx-swap="outerHTML"><span class="gp-cost-dot"></span>{formatted}</span>'
     return f'<span class="gp-live-cost">{formatted}</span>'
 
 
@@ -801,11 +816,15 @@ def share_cancel():
 
 @app.post("/share/confirm/<run_id>")
 def share_confirm(run_id):
-    from glasspipe.share import upload_run, ShareError
+    from glasspipe.share import share_run, ShareError
 
     try:
-        url = upload_run(run_id)
-        return render_template("share_success.html", url=url)
+        result = share_run(run_id)
+        return render_template(
+            "share_success.html",
+            url=result["url"],
+            delete_token=result.get("delete_token"),
+        )
     except ShareError as exc:
         return render_template("share_error.html", error=str(exc))
 
@@ -816,22 +835,21 @@ def delete_run(run_id):
         run = session.get(Run, run_id)
         if run is None:
             abort(404)
-        session.query(Span).filter_by(run_id=run_id).delete()
+        session.execute(sql_delete(Span).where(Span.run_id == run_id))
         session.delete(run)
         session.commit()
 
-        remaining = session.execute(
-            select(Run).order_by(Run.started_at.desc()).limit(20)
-        ).scalars().all()
-        if not remaining:
-            return render_template("index.html", runs=[])
-        return render_template("index.html", runs=_build_run_data(remaining))
+    version_filter = request.args.get("version")
+    run_data, _ = _load_run_list(version_filter)
+    return render_template(
+        "_runs_container.html", runs=run_data, current_version=version_filter
+    )
 
 
 @app.post("/runs/clear")
 def clear_runs():
     with get_session() as session:
-        session.query(Span).delete()
-        session.query(Run).delete()
+        session.execute(sql_delete(Span))
+        session.execute(sql_delete(Run))
         session.commit()
-    return render_template("index.html", runs=[])
+    return render_template("_runs_container.html", runs=[], current_version=None)

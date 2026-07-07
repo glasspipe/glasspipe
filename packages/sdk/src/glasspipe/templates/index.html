@@ -15,88 +15,17 @@
   </span>
 </div>
 
-{% if runs %}
-<div id="runs-container"
-     hx-get="/"
-     hx-trigger="every 5s"
-     hx-select="#runs-container"
-     hx-swap="outerHTML">
-{% for group in runs|groupby('date_sort') %}
-<div class="date-group">
-  <div class="date-group-header"><span class="bracket-label"><span class="code">[ {{ group.list[0].date_label|upper }} ]</span></span></div>
-  <table class="run-table">
-    <thead>
-      <tr>
-        <th class="th-check"></th>
-        <th>Run ID</th>
-        <th>Function</th>
-        <th>Started</th>
-        <th>Duration</th>
-        <th>Spans</th>
-        <th>Cost</th>
-        <th>Status</th>
-        <th class="th-delete"></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for run in group.list %}
-      <tr class="run-row">
-        <td class="td-check" onclick="event.stopPropagation()">
-          <input type="checkbox" class="run-check" data-id="{{ run.id }}">
-        </td>
-        <td class="mono dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.id[:8] }}…</td>
-        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.name }}</td>
-        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.started_at.strftime('%H:%M:%S') }}</td>
-        <td class="mono" onclick="window.location='/run/{{ run.id }}'">{{ run.duration_ms }}ms</td>
-        <td class="dimmed" onclick="window.location='/run/{{ run.id }}'">{{ run.span_count }}</td>
-        <td class="td-cost" onclick="window.location='/run/{{ run.id }}'">
-          {% if run.status == 'running' %}
-          <span class="gp-live-cost" id="cost-{{ run.id }}" hx-get="/run-cost/{{ run.id }}" hx-trigger="load, every 4s" hx-swap="outerHTML">…</span>
-          {% elif run.cost_usd is not none and run.cost_usd > 0 %}
-          <span class="mono">{{ run.cost_usd | format_cost }}</span>
-          {% else %}
-          <span class="dimmed">—</span>
-          {% endif %}
-        </td>
-        <td class="td-status" onclick="window.location='/run/{{ run.id }}'">
-          {% if run.status == 'ok' %}
-            <span class="badge badge-ok">ok</span>
-          {% elif run.status == 'error' %}
-            <span class="badge badge-error">error</span>
-          {% else %}
-            <span class="badge badge-running" data-run-id="{{ run.id }}" data-anomaly-poll="true">running</span>
-            <div class="anomaly-tooltip" id="anomaly-tooltip-{{ run.id }}"></div>
-          {% endif %}
-        </td>
-        <td class="td-delete" onclick="event.stopPropagation()">
-          <button class="btn-delete"
-                  hx-delete="/runs/{{ run.id }}"
-                  hx-confirm="Delete this run?"
-                  hx-target="#runs-container"
-                  hx-swap="outerHTML">×</button>
-        </td>
-      </tr>
-      {% if run.dna | length > 1 %}
-      <tr class="run-dna-row" onclick="window.location='/run/{{ run.id }}'">
-        <td colspan="9" class="td-dna">
-          <div class="dna-strip">
-            {% for block in run.dna %}
-              {% if block.kind == 'overflow' %}
-              <span class="dna-block dna-overflow">+{{ block.count }}</span>
-              {% else %}
-              <span class="dna-block dna-{{ block.kind }}"></span>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </td>
-      </tr>
-      {% endif %}
-      {% endfor %}
-    </tbody>
-  </table>
+{% if versions %}
+<div class="version-filter">
+  <span class="version-filter-label mono dimmed">version</span>
+  <a href="/" class="version-chip {% if not current_version %}version-chip-active{% endif %}">all</a>
+  {% for v in versions %}
+  <a href="/?version={{ v }}" class="version-chip mono {% if current_version == v %}version-chip-active{% endif %}">{{ v }}</a>
+  {% endfor %}
 </div>
-{% endfor %}
-</div>
+{% endif %}
+
+{% include "_runs_container.html" %}
 
 <div id="compare-bar" class="compare-bar hidden">
   <a id="compare-link" class="compare-bar-btn" href="#">Compare selected →</a>
@@ -106,56 +35,44 @@
 (function() {
   var _anomalyTimers = {};
 
+  function renderAnomalies(badge, runId, anomalies) {
+    var tip = document.getElementById('anomaly-tooltip-' + runId);
+    var row = badge.closest('tr');
+    if (!tip || !row) return;
+    if (!anomalies.length) {
+      row.classList.remove('run-row-warning');
+      badge.className = 'badge badge-running';
+      badge.textContent = 'running';
+      tip.innerHTML = '';
+      return;
+    }
+    row.classList.add('run-row-warning');
+    badge.className = 'badge badge-warning';
+    badge.textContent = '⚠ watch';
+    var html = '';
+    anomalies.forEach(function(a) {
+      var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
+      html += '<div class="anomaly-tooltip-msg ' + cls + '">' + a.message + '</div>';
+    });
+    tip.innerHTML = html;
+  }
+
+  function checkAnomalies(runId) {
+    fetch('/anomalies/' + runId)
+      .then(function(r) { return r.json(); })
+      .then(function(anomalies) {
+        var badge = document.querySelector('[data-anomaly-poll="true"][data-run-id="' + runId + '"]');
+        if (badge) renderAnomalies(badge, runId, anomalies);
+      })
+      .catch(function() {});
+  }
+
   function pollAnomalies() {
-    var badges = document.querySelectorAll('[data-anomaly-poll="true"]');
-    badges.forEach(function(badge) {
+    document.querySelectorAll('[data-anomaly-poll="true"]').forEach(function(badge) {
       var runId = badge.dataset.runId;
       if (_anomalyTimers[runId]) return;
-      _anomalyTimers[runId] = setInterval(function() {
-        fetch('/anomalies/' + runId)
-          .then(function(r) { return r.json(); })
-          .then(function(anomalies) {
-            var tip = document.getElementById('anomaly-tooltip-' + runId);
-            var row = badge.closest('tr');
-            if (!tip || !row) return;
-            if (!anomalies.length) {
-              row.classList.remove('run-row-warning');
-              badge.className = 'badge badge-running';
-              badge.textContent = 'running';
-              tip.innerHTML = '';
-              return;
-            }
-            row.classList.add('run-row-warning');
-            badge.className = 'badge badge-warning';
-            badge.textContent = '\u26A0 watch';
-            var html = '';
-            anomalies.forEach(function(a) {
-              var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
-              html += '<div class="anomaly-tooltip-msg ' + cls + '">' + a.message + '</div>';
-            });
-            tip.innerHTML = html;
-          })
-          .catch(function() {});
-      }, 5000);
-      fetch('/anomalies/' + runId)
-        .then(function(r) { return r.json(); })
-        .then(function(anomalies) {
-          var tip = document.getElementById('anomaly-tooltip-' + runId);
-          var row = badge.closest('tr');
-          if (!tip || !row) return;
-          if (anomalies.length) {
-            row.classList.add('run-row-warning');
-            badge.className = 'badge badge-warning';
-            badge.textContent = '\u26A0 watch';
-            var html = '';
-            anomalies.forEach(function(a) {
-              var cls = a.severity === 'danger' ? 'anomaly-tooltip-danger' : 'anomaly-tooltip-warn';
-              html += '<div class="anomaly-tooltip-msg ' + cls + '">' + a.message + '</div>';
-            });
-            tip.innerHTML = html;
-          }
-        })
-        .catch(function() {});
+      _anomalyTimers[runId] = setInterval(function() { checkAnomalies(runId); }, 5000);
+      checkAnomalies(runId);
     });
   }
 
@@ -179,26 +96,30 @@
 
 <script>
 (function() {
+  // Compare selections survive the 5s auto-refresh: keep the source of truth
+  // in this Set and re-apply it to the freshly swapped-in checkboxes.
+  var _selected = new Set();
+
   function updateCompareBar() {
-    var checked = document.querySelectorAll('.run-check:checked');
     var bar = document.getElementById('compare-bar');
     var link = document.getElementById('compare-link');
+    var ids = Array.from(_selected);
 
-    if (checked.length === 2) {
+    if (ids.length === 2) {
       bar.classList.remove('hidden');
-      var ids = [checked[0].dataset.id, checked[1].dataset.id];
       link.href = '/compare?a=' + ids[0] + '&b=' + ids[1];
       link.textContent = 'Compare selected →';
       link.classList.remove('disabled');
     } else {
-      bar.classList.remove('hidden');
       link.href = '#';
       link.classList.add('disabled');
-      if (checked.length === 0) {
+      if (ids.length === 0) {
         bar.classList.add('hidden');
-      } else if (checked.length === 1) {
+      } else if (ids.length === 1) {
+        bar.classList.remove('hidden');
         link.textContent = 'Select 1 more run';
       } else {
+        bar.classList.remove('hidden');
         link.textContent = 'Pick exactly 2 to compare';
       }
     }
@@ -206,11 +127,25 @@
 
   document.addEventListener('change', function(e) {
     if (e.target.classList.contains('run-check')) {
+      if (e.target.checked) {
+        _selected.add(e.target.dataset.id);
+      } else {
+        _selected.delete(e.target.dataset.id);
+      }
       updateCompareBar();
     }
   });
 
   document.body.addEventListener('htmx:afterSwap', function() {
+    // Re-apply selection state, dropping ids whose rows no longer exist.
+    var present = new Set();
+    document.querySelectorAll('.run-check').forEach(function(cb) {
+      if (_selected.has(cb.dataset.id)) cb.checked = true;
+      present.add(cb.dataset.id);
+    });
+    _selected.forEach(function(id) {
+      if (!present.has(id)) _selected.delete(id);
+    });
     updateCompareBar();
     var searchInput = document.getElementById('run-search');
     if (searchInput && searchInput.value) {
@@ -233,20 +168,5 @@ function filterRuns(query) {
   }
 }
 </script>
-
-{% else %}
-<div class="empty-state">
-  <div class="bracket-label" style="margin-bottom:16px"><span class="code">[ GET STARTED ]</span></div>
-  <p class="empty-state-msg">No traces yet. Add <span class="mono accent">@trace</span> to any function and run it — your first trace will appear here automatically.</p>
-  <pre class="empty-code">from glasspipe import trace
-
-@trace
-def my_agent(question):
-    return "your answer here"
-
-my_agent("hello")</pre>
-  <p class="empty-hint">Then run: <span class="mono">glasspipe dashboard</span></p>
-</div>
-{% endif %}
 
 {% endblock %}
