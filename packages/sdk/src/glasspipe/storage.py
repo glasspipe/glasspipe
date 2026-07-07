@@ -72,14 +72,24 @@ def get_session() -> Session:
     return Session(get_engine())
 
 
+_initialized_paths: set[str] = set()
+
+
 def init_db() -> None:
-    Base.metadata.create_all(get_engine())
-    with get_engine().connect() as conn:
+    # Idempotent, but creating tables + probing migrations on every run start
+    # is wasted work — do it once per DB path per process.
+    path = _db_path()
+    if path in _initialized_paths:
+        return
+    engine = get_engine()
+    Base.metadata.create_all(engine)
+    with engine.connect() as conn:
         try:
             conn.execute(text("ALTER TABLE runs ADD COLUMN agent_version TEXT"))
             conn.commit()
         except Exception:
-            pass
+            pass  # column already exists (pre-0.1.5 DBs get it added once)
+    _initialized_paths.add(path)
 
 
 # ---------------------------------------------------------------------------

@@ -71,6 +71,10 @@
           {% endif %}
           <span class="sep">·</span>
           <span class="dimmed">shared {{ created_at_date }} · {{ shared_ago }}</span>
+          {% if view_count and view_count > 1 %}
+          <span class="sep">·</span>
+          <span class="dimmed">{{ view_count }} views</span>
+          {% endif %}
           {% if run.error_message %}
             <span class="sep">·</span>
              <span style="color: var(--c-error); font-family: var(--font-mono); font-size: 12px;">

@@ -6,7 +6,7 @@ import random
 import secrets
 import string
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask, abort, jsonify, render_template, request
 from sqlalchemy import create_engine
@@ -81,7 +81,8 @@ def _short_id(length: int = 6) -> str:
 
 
 def _utcnow() -> datetime:
-    return datetime.utcnow()
+    # Naive UTC — matches how timestamps are stored (SQLite/Postgres DateTime).
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _ms(delta) -> float:
@@ -94,7 +95,6 @@ def _parse_dt(s: str | None) -> datetime | None:
     dt = datetime.fromisoformat(s)
     # Normalise to naive UTC (SQLite stores naive datetimes)
     if dt.tzinfo is not None:
-        from datetime import timezone
         dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
     return dt
 
@@ -176,6 +176,28 @@ def get_trace(trace_id):
     return jsonify(trace.payload)
 
 
+@app.delete("/v1/trace/<trace_id>")
+def delete_trace(trace_id):
+    """Owner-initiated deletion using the delete token from POST /v1/share.
+
+    Token via ?token=… or the X-Delete-Token header.
+    """
+    token = request.args.get("token") or request.headers.get("X-Delete-Token")
+    if not token:
+        return jsonify({"error": "missing delete token"}), 401
+
+    with _get_session() as session:
+        trace = session.get(SharedTrace, trace_id)
+        if trace is None:
+            return jsonify({"error": "not found"}), 404
+        if not secrets.compare_digest(trace.delete_token, token):
+            return jsonify({"error": "invalid delete token"}), 403
+        session.delete(trace)
+        session.commit()
+
+    return jsonify({"deleted": trace_id}), 200
+
+
 def _coerce_json(v):
     if v is None:
         return None
@@ -192,11 +214,15 @@ def _render_trace(trace_id, embed=False):
     with _get_session() as session:
         trace = session.get(SharedTrace, trace_id)
 
-    if trace is None:
-        return render_template("404.html"), 404
+        if trace is None:
+            return render_template("404.html"), 404
 
-    if trace.expires_at < _utcnow():
-        return render_template("expired.html"), 410
+        if trace.expires_at < _utcnow():
+            return render_template("expired.html"), 410
+
+        trace.view_count = (trace.view_count or 0) + 1
+        session.commit()
+        session.expunge(trace)
 
     payload = trace.payload
     run = payload["run"]
@@ -290,6 +316,7 @@ def _render_trace(trace_id, embed=False):
         share_url=f"{_BASE_URL}/t/{trace_id}",
         shared_ago=_age_string(trace.created_at),
         created_at_date=created_at_date,
+        view_count=trace.view_count,
         embed=embed,
     )
 
