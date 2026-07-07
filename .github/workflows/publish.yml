@@ -32,9 +32,12 @@ jobs:
           name: dist
           path: packages/sdk/dist/
 
+  # TestPyPI is a nice-to-have smoke test; never let it block the real release
+  # (it fails when no TestPyPI trusted publisher is configured).
   publish-testpypi:
     needs: build
     runs-on: ubuntu-latest
+    continue-on-error: true
     environment: testpypi
     permissions:
       id-token: write
@@ -51,7 +54,7 @@ jobs:
           skip-existing: true
 
   publish-pypi:
-    needs: [build, publish-testpypi]
+    needs: build
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
